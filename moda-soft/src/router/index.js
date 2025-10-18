@@ -7,14 +7,16 @@ import Clientes from '../components/Clientes.vue'
 import Inventario from '../components/Inventario.vue'
 import Reportes from '../components/Reportes.vue'
 import Ventas from '../components/Ventas.vue'
+import Proveedores from '../components/Proveedores.vue'
 
 const routes = [
- { path: '/', component: Dashboard },
- { path: '/login', component: Login },
- { path: '/clientes', component: Clientes },
- { path: '/inventario', component: Inventario },
- { path: '/reportes', component: Reportes },
- { path: '/ventas', component: Ventas },
+    { path: '/', component: Dashboard },
+    { path: '/login', component: Login },
+    { path: '/clientes', component: Clientes },
+    { path: '/inventario', component: Inventario },
+    { path: '/reportes', component: Reportes },
+    { path: '/ventas', component: Ventas },
+    { path: '/proveedores', component: Proveedores }
 ]
 
 const router = createRouter({
