@@ -21,6 +21,23 @@ const total = computed(() => {
   return cart.value.reduce((sum, item) => sum + item.product.price * item.qty, 0)
 })
 
+// Nuevo: estado de búsqueda y lista filtrada
+const search = ref('')
+
+const filteredProducts = computed(() => {
+  const q = (search.value || '').trim().toLowerCase()
+  if (!q) return products
+  return products.filter(p =>
+    (p.name || '').toLowerCase().includes(q) ||
+    (p.id || '').toLowerCase().includes(q) ||
+    (p.description || '').toLowerCase().includes(q)
+  )
+})
+
+function clearSearch() {
+  search.value = ''
+}
+
 function facturar() {
   if (!cart.value.length) {
     alert('El carrito está vacío.')
@@ -87,15 +104,28 @@ TOTAL: $${factura.total}
       <section class="products-section">
         <div class="section-header">
           <h2>Catálogo de Productos</h2>
-          <div class="cart-summary">
-            <span class="cart-count">{{ cart.length }} items</span>
-            <span class="cart-total">${{ total.toFixed(2) }}</span>
+
+          <div class="catalog-controls">
+            <form @submit.prevent>
+              <input
+                v-model="search"
+                type="search"
+                placeholder="Buscar por id, nombre o descripción..."
+                class="search-input"
+              />
+              <button type="button" @click="clearSearch" class="btn-ghost">Limpiar</button>
+            </form>
+
+            <div class="cart-summary">
+              <span class="cart-count">{{ cart.length }} items</span>
+              <span class="cart-total">${{ total.toFixed(2) }}</span>
+            </div>
           </div>
         </div>
 
         <div class="products-grid">
           <ProductCard
-            v-for="p in products"
+            v-for="p in filteredProducts"
             :key="p.id"
             :product="p"
             @add="addToCart"
@@ -150,8 +180,7 @@ TOTAL: $${factura.total}
 
 <style scoped>
 .app-logo {
-  height: 120px;
-  margin-bottom: 0.5rem;
+  height: 300px;
 }
 
 .sales-container {
@@ -222,6 +251,34 @@ TOTAL: $${factura.total}
   font-size: 1.5rem;
   color: #333;
   margin: 0;
+}
+
+.catalog-controls {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.catalog-controls form {
+  display:flex;
+  gap:0.5rem;
+  align-items:center;
+}
+
+.search-input {
+  padding: 0.5rem;
+  border:1px solid #e9ecef;
+  border-radius:6px;
+  min-width: 260px;
+}
+
+.btn-ghost {
+  background:transparent;
+  color:#0b84ff;
+  border:1px solid #e6e6e6;
+  padding:0.45rem 0.7rem;
+  border-radius:6px;
+  cursor:pointer;
 }
 
 .cart-summary {
