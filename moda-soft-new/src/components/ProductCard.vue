@@ -1,20 +1,32 @@
 <script setup>
-import { defineEmits } from 'vue'
-const emit = defineEmits(['add'])
+import { ref } from 'vue'
 const props = defineProps({ product: Object })
+const emit = defineEmits(['add'])
+
+const qty = ref(1)
 
 function add() {
-  emit('add', props.product)
+  emit('add', { product: props.product, qty: Number(qty.value) })
 }
+
+function increment() { qty.value = Math.max(1, qty.value + 1) }
+function decrement() { qty.value = Math.max(1, qty.value - 1) }
 </script>
 
 <template>
   <div class="card">
     <img :src="product.image" alt="" class="thumb" />
     <h4>{{ product.name }}</h4>
-    <p class="price">${{ product.price }}</p>
+    <p class="price">${{ product.price.toFixed(2) }}</p>
     <p class="desc">{{ product.description }}</p>
-    <button @click="add">Agregar</button>
+
+    <div class="qty-controls">
+      <button @click="decrement">-</button>
+      <input type="number" v-model.number="qty" min="1" />
+      <button @click="increment">+</button>
+    </div>
+
+    <button class="add-btn" @click="add">Agregar (x{{ qty }})</button>
   </div>
 </template>
 
@@ -87,5 +99,23 @@ button {
 
 button:hover {
   background: #0066cc;
+}
+
+.qty-controls { 
+  display: flex; 
+  gap: 0.4rem; 
+  align-items: center; 
+  margin-top: 0.5rem; 
+}
+
+.qty-controls input { 
+  width: 56px; 
+  padding: 0.25rem; 
+  text-align: center; 
+}
+
+button.add-btn { 
+  margin-top: 0.6rem; 
+  padding: 0.4rem 0.6rem; 
 }
 </style>
