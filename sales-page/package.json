@@ -1,7 +1,7 @@
 {
-  "name": "sales-page",
+  "name": "ventas-page",
   "version": "1.0.0",
-  "description": "A web application for a sales page that includes user registration and product display.",
+  "description": "una aplicación web para una página de ventas.",
   "main": "src/js/script.js",
   "scripts": {
     "start": "live-server public",
@@ -9,9 +9,9 @@
     "test": "echo 'No tests defined'"
   },
   "keywords": [
-    "sales",
-    "registration",
-    "products"
+    "ventas",
+    "registro",
+    "productos"
   ],
   "author": "Carlos",
   "license": "ISC",
