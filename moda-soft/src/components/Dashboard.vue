@@ -1,13 +1,11 @@
-<template lang="">
-    <div>
-        
-    </div>
-</template>
-<script>
-export default {
-    
-}
+<script setup>
+import Sidebar from './Sidebar.vue';
 </script>
-<style lang="">
-    
+
+<template>
+    <Sidebar/>
+    <h1>Estas en el dashboard</h1>
+</template>
+
+<style>
 </style>
