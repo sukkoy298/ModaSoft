@@ -69,18 +69,13 @@
 </template>
 
 <script setup>
-import { defineProps } from 'vue';
 import Navbar from './Navbar.vue';
 import { reactive, ref } from 'vue';
 import MostrarImagenProd from './MostrarImagenProd.vue';
 
-components:{
-  MostrarImagenProd
-}
-
 //Data para popular la lista de inventario ficticio
 let dataInventario = reactive([
-    { id: 101, sku: 'TSM001', nombre: 'T-Shirt Logo', talla: 'M', color: 'Azul', stock: 25, stockMinimo: 10, precioVenta: 25.00, rutaImagen: "./assets/tshirt.jpg" },
+    { id: 101, sku: 'TSM001', nombre: 'T-Shirt Logo', talla: 'M', color: 'Azul', stock: 25, stockMinimo: 10, precioVenta: 25.00, rutaImagen: "@/assets/tshirt.jpg" },
     { id: 102, sku: 'CLJ045', nombre: 'Chaqueta Ligera', talla: 'L', color: 'Negro', stock: 5, stockMinimo: 10, precioVenta: 70.00, rutaImagen: "./assets/chaqueta_ligera.jpg" },
     { id: 103, sku: 'PNB012', nombre: 'Pantalón Negro', talla: '32', color: 'Negro', stock: 12, stockMinimo: 15, precioVenta: 45.00, rutaImagen: "./assets/pantalon_negro.jpg" },
     ]);

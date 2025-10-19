@@ -44,18 +44,18 @@
 </template>
 
 <script>
-export default {
-  name: 'MostrarImagenProd',
-  props: {
-    imageUrl: {
-      type: String,
-      required: true,
-      default: './assets/img_placeholder.jpg'
-    },
-    productId: {
-      type: [String, Number],
-      required: true
-    }
+import { defineProps } from 'vue';
+
+const props = defineProps({
+  imageUrl:{
+    type: String,
+    required: true,
+    default: "./src/assets/img_placeholder.jpg"
+    
+  },
+  productId:{
+    type: Number,
+    required: true
   }
-}
+})
 </script>
