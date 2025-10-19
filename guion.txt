@@ -1,0 +1,33 @@
+Guión del Video del proyecto ModaSoft Sistema de Gestión para una Tienda de Ropa
+Mi nombre es José Santeliz y el Tema/Módulo a tratar es: Cliente
+
+Lo que se explicará:
+
+    En orden del código:
+
+        -main.js
+        -index.js
+        -App.vue
+        -cliente.js
+        -HomeView.vue
+        -consultaCliente.vue
+        -listaCliente.vue
+        -registroCliente.vue
+
+            Un poco por encima: Header.vue y Footer.vue
+    
+    En las vistas:
+
+        -Vista del HomeView
+        -Vista de la consulta de cliente
+        -Vista de la lista de cliente
+        -Vista del registro de cliente
+        
+            Un poco por encima: El resto de "vistas" y  ademas responsividad
+
+    En funcionalidad:
+
+        -Registrar cliente
+        -Editar datos de cliente
+        -Eliminar cliente
+        -Buscar el cliente en consulta

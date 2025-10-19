@@ -37,17 +37,11 @@ const handleSubmit = (event) => {
     formularioEnviado.value = true;
     const formElement = event.target;
     
-    // 1. Validación de Formulario HTML5/Bootstrap
     if (!formElement.checkValidity()) {
-        console.log("Validación de formulario fallida.");
-        return; // Detiene el proceso si falla la validación básica
+        return;
     }
 
-    // 2. Detección del Modo: ¿Edición o Registro?
     if (id.value) {
-        // ===================================
-        //           MODO EDICIÓN
-        // ===================================
         
         editarCliente(
             id.value,
@@ -62,17 +56,11 @@ const handleSubmit = (event) => {
         alert(`✅ Cliente ${nombre.value} (ID: ${id.value}) actualizado con éxito.`);
         
     } else {
-        // ===================================
-        //          MODO REGISTRO
-        // ===================================
-        
-        // 3. Validación de Duplicados (Solo necesaria al REGISTRAR)
         if (existeCliente(email.value, telefono.value)) {
             alert('❌ ¡Error! Ya existe un cliente registrado con ese correo electrónico o número de teléfono. 🛑');
-            return; // Detiene el proceso
+            return;
         }
 
-        // 4. Crear objeto y llamar a la función de registro
         const nuevoCliente = {
             nombre: nombre.value, 
             telefono: telefono.value,
@@ -86,7 +74,6 @@ const handleSubmit = (event) => {
         alert(`✅ Cliente ${nombre.value} registrado con éxito.`);
     }
 
-    // 5. Redirección final
     router.push('/listaCliente');
 };
 </script>
@@ -96,7 +83,7 @@ const handleSubmit = (event) => {
         <h1>{{ tituloFormulario }}</h1>
     </header>
     <form 
-        :class="['row m-5 g-3', { 'was-validated': formularioEnviado }]" 
+        :class="['row m-5 g-3 border border-secondary-emphasis bg-light rounded', { 'was-validated': formularioEnviado }]" 
         @submit.prevent="handleSubmit"
         novalidate
     >
@@ -149,10 +136,7 @@ const handleSubmit = (event) => {
         </div>
         
         <div class="col-12">
-            <button 
-                type="submit" 
-                :class="['btn border border-dark', id ? 'btn-primary' : 'text-success']"
-            >
+            <button type="submit" class="btn btn-outline-success text-dark mb-2">
                 {{ textoBoton }}
             </button>
         </div>

@@ -1,21 +1,16 @@
 <script setup>
 import Header from '@/components/Header.vue'
 import { useRouter } from 'vue-router'
-// Importamos el array reactivo y las funciones del store
 import { clientes, setClienteAEditar, eliminarCliente } from '@/cliente.js' 
 
 const router = useRouter();
 
-// Función para iniciar la edición (lleva al formulario de registro en modo edición)
 const iniciarEdicion = (cliente) => {
-    // 1. Guarda el objeto del cliente en el store temporal
     setClienteAEditar(cliente);
     
-    // 2. Navega a la vista de registro
     router.push('/registro'); 
 };
 
-// Función para manejar la eliminación
 const manejarEliminacion = (id, nombre) => {
     if (window.confirm(`¿Estás seguro de que deseas eliminar permanentemente al cliente ${nombre} (ID: ${id})? Esta acción es irreversible.`)) {
         
