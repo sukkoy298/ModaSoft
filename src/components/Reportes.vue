@@ -341,7 +341,7 @@ const handleReportClick = (reportKey) => {
     
     <div class="bg-white m-4 p-4 rounded-3 border shadow-sm">
         <div class="text-center mt-3 mb-4">
-            <label class="h3 text-primary">Reportes y Análisis</label>
+            <label class="h3 text-danger">Reportes y Análisis</label>
         </div>
         
         <div class="row g-2 mb-4">
@@ -350,7 +350,7 @@ const handleReportClick = (reportKey) => {
             <div class="col-12 col-md-3">
                 <button 
                     @click="handleReportClick('sales')"
-                    :class="{'btn-primary': activeReport === 'sales', 'btn-outline-primary': activeReport !== 'sales'}"
+                    :class="{'btn-danger': activeReport === 'sales', 'btn-outline-danger': activeReport !== 'sales'}"
                     class="btn w-100 fw-bold"
                 >
                     <i class="bi bi-cash-coin"></i> Reporte de Ventas
@@ -361,7 +361,7 @@ const handleReportClick = (reportKey) => {
             <div class="col-12 col-md-3">
                 <button 
                     @click="handleReportClick('purchases')"
-                    :class="{'btn-primary': activeReport === 'purchases', 'btn-outline-primary': activeReport !== 'purchases'}"
+                    :class="{'btn-danger': activeReport === 'purchases', 'btn-outline-danger': activeReport !== 'purchases'}"
                     class="btn w-100 fw-bold"
                 >
                     <i class="bi bi-shop"></i> Reportes de Compras a Proveedores
@@ -372,7 +372,7 @@ const handleReportClick = (reportKey) => {
             <div class="col-12 col-md-3">
                 <button 
                     @click="handleReportClick('products')"
-                    :class="{'btn-primary': activeReport === 'products', 'btn-outline-primary': activeReport !== 'products'}"
+                    :class="{'btn-danger': activeReport === 'products', 'btn-outline-danger': activeReport !== 'products'}"
                     class="btn w-100 fw-bold"
                 >
                     <i class="bi bi-receipt-cutoff" ></i> Reporte de Productos más Vendidos
@@ -383,7 +383,7 @@ const handleReportClick = (reportKey) => {
             <div class="col-12 col-md-3">
                 <button 
                     @click="handleReportClick('projection')"
-                    :class="{'btn-primary': activeReport === 'projection', 'btn-outline-primary': activeReport !== 'projection'}"
+                    :class="{'btn-danger': activeReport === 'projection', 'btn-outline-danger': activeReport !== 'projection'}"
                     class="btn w-100 fw-bold"
                 >
                     <i class="bi bi-graph-up-arrow"></i> Proyecciones
