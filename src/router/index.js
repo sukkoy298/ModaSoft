@@ -4,6 +4,7 @@ import Registro from '@/components/registroCliente.vue'
 import HomeView from '@/components/HomeView.vue'
 import consultaCliente from '@/components/consultaCliente.vue'
 import listaCliente from '@/components/listaCliente.vue'
+import Proveedores from '@/components/Proveedores.vue'
 
 const routes = [
     {
@@ -25,6 +26,11 @@ const routes = [
         path: '/listaCliente',
         name: 'listaCliente',
         component: listaCliente
+    },
+    {
+        path: '/Proveedores',
+        name: 'Proveedores',
+        component: Proveedores  
     },
 ]
 

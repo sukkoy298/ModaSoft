@@ -84,10 +84,10 @@ import Header from '@/components/Header.vue';
                                 <h5 class="card-title fw-bold text-secondary">Proveedor</h5>
                                 <h6 class="card-subtitle mb-4 text-body-secondary">Detalles del Proveedor</h6>
 
-                                <i class="bi bi-person fs-1 text-secondary d-block mb-4"></i>
+                                <i class="bi bi-clipboard-check fs-1 text-secondary d-block mb-4"></i>
                             </div>
                             
-                            <router-link to="/proveedor" class="btn btn-secondary text-light">
+                            <router-link to="/Proveedores" class="btn btn-secondary text-light">
                                 <i class="bi bi-box-seam"></i> Ver Proveedor
                             </router-link>
                         </div>
