@@ -93,7 +93,8 @@ import MostrarImagenProd from './MostrarImagenProd.vue';
 const dataInventario = ref([
     { id: 101, sku: 'TSM001', nombre: 'T-Shirt Logo', talla: 'M', color: 'Azul', stock: 25, stockMinimo: 10, precioVenta: 25.00, rutaImagen: "/tshirt.jpg" },
     { id: 102, sku: 'CLJ045', nombre: 'Chaqueta Ligera', talla: 'L', color: 'Negro', stock: 5, stockMinimo: 10, precioVenta: 70.00, rutaImagen: "/chaqueta_ligera.jpg" },
-    { id: 103, sku: 'PNB012', nombre: 'Pantalón Negro', talla: '32', color: 'Negro', stock: 12, stockMinimo: 15, precioVenta: 45.00, rutaImagen: "/patalon_negro.jpg" }
+    { id: 103, sku: 'PNB012', nombre: 'Pantalón Negro', talla: '32', color: 'Negro', stock: 12, stockMinimo: 15, precioVenta: 45.00, rutaImagen: "/patalon_negro.jpg" },
+    { id: 104, sku: 'PNB013', nombre: 'Pantalón Azul', talla: '32', color: 'Azul', stock: 20, stockMinimo: 15, precioVenta: 46.00, rutaImagen: "" }
     ]);
 
   //funcionalidad para poder filtrar valores en la tabla con computed
