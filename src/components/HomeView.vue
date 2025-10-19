@@ -36,7 +36,7 @@ import Header from '@/components/Header.vue';
                                 <i class="bi bi-bar-chart fs-1 text-danger d-block mb-4"></i>
                             </div>
                             
-                            <router-link to="/reporte" class="btn btn-danger text-white">
+                            <router-link to="/Reportes" class="btn btn-danger text-white">
                                 <i class="bi bi-flag"></i> Ver
                             </router-link>
                         </div>
