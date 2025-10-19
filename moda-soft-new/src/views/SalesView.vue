@@ -87,9 +87,15 @@ TOTAL: $${factura.total}
   <div class="sales-container">
     <!-- Header -->
     <header class="app-header">
-      <div class="header-content">
-        <img src="../assets/logo.jpg" alt="Logo" class="app-logo" />
-        <p class="app-subtitle">Ventas</p>
+      <div class="header-inner">
+        <img src="../assets/logo.jpg" alt="Moda Soft" class="app-logo" />
+        <div class="header-titles">
+          <h1 class="app-title">Moda Soft</h1>
+          <p class="app-subtitle">Ventas</p>
+        </div>
+        <div class="header-actions">
+          <!-- Espacio para acciones futuras (usuario, carrito, etc.) -->
+        </div>
       </div>
     </header>
 
@@ -103,7 +109,7 @@ TOTAL: $${factura.total}
       <!-- Catálogo de Productos -->
       <section class="products-section">
         <div class="section-header">
-          <h2>Catálogo de Productos</h2>
+          <h2>Productos</h2>
 
           <div class="catalog-controls">
             <form @submit.prevent>
@@ -115,11 +121,6 @@ TOTAL: $${factura.total}
               />
               <button type="button" @click="clearSearch" class="btn-ghost">Limpiar</button>
             </form>
-
-            <div class="cart-summary">
-              <span class="cart-count">{{ cart.length }} items</span>
-              <span class="cart-total">${{ total.toFixed(2) }}</span>
-            </div>
           </div>
         </div>
 
@@ -179,40 +180,48 @@ TOTAL: $${factura.total}
 </template>
 
 <style scoped>
-.app-logo {
-  height: 300px;
+/* Header ajustado */
+.app-header {
+  background: #ffffff;
+  border-bottom: 1px solid #e9ecef;
 }
+.header-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  justify-content: space-between;
+}
+.app-logo {
+  height: 64px;
+  width: auto;
+  border-radius: 8px;
+  object-fit: cover;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+.header-titles {
+  flex: 1;
+  margin-left: 8px;
+  text-align: left;
+}
+.app-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #222;
+}
+.app-subtitle {
+  margin: 4px 0 0;
+  font-size: 0.95rem;
+  color: #666;
+}
+.header-actions { display:flex; gap:8px; align-items:center; }
 
 .sales-container {
   min-height: 100vh;
   background: #f8f9fa;
-}
-
-.app-header {
-  background: white;
-  padding: 2rem 0;
-  text-align: center;
-  border-bottom: 1px solid #e9ecef;
-  margin-bottom: 2rem;
-}
-
-.header-content {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 20px;
-}
-
-.app-title {
-  font-size: 2.5rem;
-  font-weight: 300;
-  color: #333;
-  margin-bottom: 0.5rem;
-}
-
-.app-subtitle {
-  font-size: 1.1rem;
-  color: #666;
-  margin: 0;
 }
 
 .user-section {
