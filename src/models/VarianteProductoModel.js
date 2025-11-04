@@ -1,17 +1,14 @@
-// src/models/VarianteProductoModel.js
-
 import { DataTypes } from 'sequelize';
 import { sequelize } from '../../db.js';
 
-// Definimos la tabla como 'variante_producto' (en minúsculas, como en tu SQL)
 const VarianteProductoModel = sequelize.define('variante_producto', {
     id_variante: {
         type: DataTypes.INTEGER,
         primaryKey: true,
-        autoIncrement: true, // Debe ser autoIncrement, según tu SQL
+        autoIncrement: true,
         allowNull: false
     },
-    id_producto: { // Clave Foránea a la tabla producto
+    id_producto: {
         type: DataTypes.INTEGER,
         allowNull: false
     },
@@ -23,7 +20,7 @@ const VarianteProductoModel = sequelize.define('variante_producto', {
         type: DataTypes.STRING(50),
         allowNull: false
     },
-    codigo_barras: { // Este campo actuará como nuestro SKU/identificador
+    codigo_barras: {
         type: DataTypes.STRING(50),
         allowNull: false,
         unique: true
@@ -38,15 +35,10 @@ const VarianteProductoModel = sequelize.define('variante_producto', {
         defaultValue: 0
     }
 }, {
-    // Nombre de la tabla
     tableName: 'variante_producto',
-    // Sequelize automáticamente añade createdAt y updatedAt. Los desactivamos si no existen en tu tabla.
     timestamps: false 
 });
 
-// Importante: También necesitaremos el modelo ProductoModel.js (simple) para las relaciones
-
-// src/models/ProductoModel.js
 const ProductoModel = sequelize.define('producto', {
     id_producto: {
         type: DataTypes.INTEGER,
@@ -80,7 +72,6 @@ const ProductoModel = sequelize.define('producto', {
     timestamps: false
 });
 
-// Establecer la relación uno-a-muchos (Un Producto tiene muchas Variantes)
 ProductoModel.hasMany(VarianteProductoModel, { foreignKey: 'id_producto' });
 VarianteProductoModel.belongsTo(ProductoModel, { foreignKey: 'id_producto' });
 

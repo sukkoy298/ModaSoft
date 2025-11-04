@@ -1,7 +1,6 @@
-import { DataTypes } from 'sequelize'; // CAMBIO
+import { DataTypes } from 'sequelize';
 import { sequelize } from '../../db.js';
 
-// Definimos la tabla como 'cliente' (en minúsculas)
 const ClienteModel = sequelize.define('cliente', {
     cedula: {
         type: DataTypes.STRING(30),

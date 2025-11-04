@@ -2,7 +2,6 @@
 import Header from '@/components/Header.vue'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-// Importamos la función de búsqueda API
 import { obtenerClientePorCedula, limpiarClienteAEditar } from '@/cliente.js' 
 
 const router = useRouter()
@@ -16,7 +15,7 @@ const irARegistrar = () => {
     router.push('/registro');
 };
 
-const buscarCliente = async () => { // FUNCIÓN ASÍNCRONA
+const buscarCliente = async () => {
     busquedaEjecutada.value = true;
     clienteEncontrado.value = null; 
 
@@ -27,7 +26,6 @@ const buscarCliente = async () => { // FUNCIÓN ASÍNCRONA
     }
 
     try {
-        // CAMBIO: Usamos la función API para buscar por Cédula
         const resultado = await obtenerClientePorCedula(cedulaBuscada);
         clienteEncontrado.value = resultado;
     } catch (error) {

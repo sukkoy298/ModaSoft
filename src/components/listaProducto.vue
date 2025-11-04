@@ -1,18 +1,14 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue';
 
-// Importamos la función de fetching que acabamos de crear para el frontend
 import { obtenerTodoElInventario } from '@/producto.js';
 
-// Estado reactivo
 const inventarioList = ref([]);
 const loading = ref(true);
 const errorConexion = ref(false);
 const busqueda = ref('');
 
-// Función para determinar el estado de inventario
 const getEstadoStock = (stockActual, stockMinimo) => {
-    // Usamos el stock mínimo real si existe, o un valor por defecto de 10 si no
     const min = stockMinimo || 10;
 
     if (stockActual <= 0) return 'Agotado';
@@ -20,7 +16,6 @@ const getEstadoStock = (stockActual, stockMinimo) => {
     return 'Suficiente';
 };
 
-// Función para cargar los datos
 const cargarInventario = async () => {
     loading.value = true;
     errorConexion.value = false;
@@ -35,24 +30,21 @@ const cargarInventario = async () => {
     }
 };
 
-// Propiedad computada para filtrar la lista según la búsqueda
 const inventarioFiltrado = computed(() => {
     if (!busqueda.value) {
         return inventarioList.value;
     }
     const query = busqueda.value.toLowerCase();
     return inventarioList.value.filter(item => {
-        // Filtra por SKU, Nombre del Producto, Talla o Color
         return (
             item.sku.toLowerCase().includes(query) ||
-            item.producto.toLowerCase().includes(query) || // 'producto' es el alias del nombre
+            item.producto.toLowerCase().includes(query) ||
             item.talla.toLowerCase().includes(query) ||
             item.color.toLowerCase().includes(query)
         );
     });
 });
 
-// Cargar datos al montar el componente
 onMounted(() => {
     cargarInventario();
 });
@@ -64,7 +56,6 @@ onMounted(() => {
             📦 Módulo de Inventario de Productos
         </h1>
 
-        <!-- Campo de búsqueda y acciones -->
         <div class="mb-6 p-4 bg-white rounded-xl shadow-lg flex flex-col md:flex-row justify-between items-center">
 
             <div class="form-floating flex-grow me-4 mb-3 md:mb-0">
@@ -80,7 +71,6 @@ onMounted(() => {
             </button>
         </div>
 
-        <!-- Alerta de Error de Conexión -->
         <div v-if="errorConexion"
             class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4 rounded-lg shadow-md" role="alert">
             <p class="font-bold">Error de Conexión</p>
@@ -88,12 +78,10 @@ onMounted(() => {
                 http://localhost:3000.</p>
         </div>
 
-        <!-- Mensaje de Carga -->
         <div v-else-if="loading" class="text-center p-8 text-lg text-gray-500">
             Cargando datos del inventario...
         </div>
 
-        <!-- Tabla de Inventario -->
         <div v-else-if="inventarioFiltrado.length > 0" class="bg-white rounded-xl shadow-xl overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50 sticky top-0">
@@ -182,7 +170,6 @@ onMounted(() => {
 </template>
 
 <style scoped>
-/* Estilos para asegurar que la tabla sea legible */
 .container {
     max-width: 1200px;
 }

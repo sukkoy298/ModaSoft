@@ -5,12 +5,12 @@ import {
     editarClienteDB, 
     agregarClienteDB,
     eliminarClienteDB 
-} from '../../cliente.service.js'; // ✅ Ajusta la ruta según tu estructura
+} from '../../cliente.service.js';
 
 const router = Router();
 
 // =========================================================
-// ✅ RUTA 1: OBTENER TODOS LOS CLIENTES (GET /)
+//  RUTA 1: OBTENER TODOS LOS CLIENTES (GET /)
 // =========================================================
 router.get('/', async (req, res) => {
     try {
@@ -23,7 +23,7 @@ router.get('/', async (req, res) => {
 });
 
 // =========================================================
-// ✅ RUTA 2: OBTENER CLIENTE POR CÉDULA (GET /:cedula)
+//  RUTA 2: OBTENER CLIENTE POR CÉDULA (GET /:cedula)
 // =========================================================
 router.get('/:cedula', async (req, res) => {
     try {
@@ -40,7 +40,7 @@ router.get('/:cedula', async (req, res) => {
 });
 
 // =========================================================
-// ✅ RUTA 3: REGISTRAR NUEVO CLIENTE (POST /)
+//  RUTA 3: REGISTRAR NUEVO CLIENTE (POST /)
 // =========================================================
 router.post('/', async (req, res) => {
     try {
@@ -60,7 +60,7 @@ router.post('/', async (req, res) => {
 });
 
 // =========================================================
-// ✅ RUTA 4: ACTUALIZAR CLIENTE (PUT /:cedula)
+//  RUTA 4: ACTUALIZAR CLIENTE (PUT /:cedula)
 // =========================================================
 router.put('/:cedula', async (req, res) => {
     try {
@@ -78,7 +78,7 @@ router.put('/:cedula', async (req, res) => {
 });
 
 // =========================================================
-// ✅ RUTA 5: ELIMINAR CLIENTE (DELETE /:cedula)
+//  RUTA 5: ELIMINAR CLIENTE (DELETE /:cedula)
 // =========================================================
 router.delete('/:cedula', async (req, res) => {
     try {

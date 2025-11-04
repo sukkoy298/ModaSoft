@@ -1,11 +1,8 @@
-// src/server/routes/marca.route.js
-
 import { Router } from 'express';
 import { obtenerTodasLasMarcas } from '../../marca.service.js'; 
 
 const router = Router();
 
-// ** GET /api/marcas **
 router.get('/', async (req, res) => {
     try {
         const marcas = await obtenerTodasLasMarcas();

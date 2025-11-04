@@ -20,7 +20,7 @@ export const obtenerTodosLosClientes = async () => {
     }
 };
 
-// 2. ✅ CORREGIDO: Obtener un cliente por Cédula (usando API REST)
+// 2. Obtener un cliente por Cédula (usando API REST)
 export const obtenerClientePorCedula = async (cedula) => {
     try {
         const response = await axios.get(`${API_URL}/${cedula}`);
@@ -37,7 +37,7 @@ export const obtenerClientePorCedula = async (cedula) => {
     }
 };
 
-// 3. ✅ CORREGIDO: Actualizar cliente (usando API REST)
+// 3. Actualizar cliente (usando API REST)
 export const editarCliente = async (cedula, datos) => {
     try {
         const response = await axios.put(`${API_URL}/${cedula}`, datos);

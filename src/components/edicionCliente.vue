@@ -1,13 +1,13 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useRouter, useRoute } from 'vue-router' // ✅ AGREGAR useRoute
+import { useRouter, useRoute } from 'vue-router'
 import Header from '@/components/Header.vue' 
 import { obtenerClientePorCedula, editarCliente } from '@/cliente.js' 
 
 const router = useRouter();
-const route = useRoute(); // ✅ OBTENER LA RUTA ACTUAL
+const route = useRoute();
 
-// ✅ OBTENER CÉDULA DESDE LOS PARÁMETROS DE LA RUTA
+// OBTENER CÉDULA DESDE LOS PARÁMETROS DE LA RUTA
 const cedula = route.params.cedula;
 
 console.log('🔍 Cédula desde route.params:', cedula); // Para debug
@@ -94,7 +94,7 @@ const navegarALista = () => {
             {{ mensaje }}
         </div>
 
-        <!-- ✅ MOSTRAR INFORMACIÓN DE DEBUG TEMPORALMENTE -->
+        <!--  MOSTRAR INFORMACIÓN DE DEBUG TEMPORALMENTE -->
         <div v-if="!cliente.cedula" class="alert alert-info">
             <strong>Debug Info:</strong><br>
             Cédula desde route: <code>{{ cedula }}</code><br>

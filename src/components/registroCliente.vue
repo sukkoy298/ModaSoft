@@ -1,7 +1,6 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
-// ✅ SOLO importar agregarCliente - eliminar las importaciones de edición
 import { agregarCliente } from '@/cliente.js'; 
 import Header from '@/components/Header.vue';
 
@@ -32,7 +31,6 @@ const handleSubmit = async (event) => {
         return;
     }
     
-    // Objeto con los datos que se enviarán
     const datosCliente = {
         cedula: cedula.value, 
         nombre: nombre.value, 
@@ -46,24 +44,21 @@ const handleSubmit = async (event) => {
     let exito = false;
 
     try {
-        // ✅ SOLO registro - sin lógica de edición
         await agregarCliente(datosCliente);
         mensaje = `✅ Cliente ${nombre.value} registrado con éxito.`;
         exito = true;
 
     } catch (error) {
-        // Manejo de errores
         const errorMsg = error.response?.data?.message || 'Error de conexión con el servidor o datos inválidos.';
         mensaje = `❌ Error: ${errorMsg}`;
     }
     
     alert(mensaje);
     if (exito) {
-        router.push('/listaCliente'); // Redirigir al listado
+        router.push('/listaCliente');
     }
 };
 
-// ✅ Función para limpiar el formulario
 const limpiarFormulario = () => {
     cedula.value = '';
     nombre.value = '';

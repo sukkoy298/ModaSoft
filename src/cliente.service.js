@@ -1,4 +1,4 @@
-// 💡 IMPORTACIÓN CORRECTA: Aquí SÍ se debe importar el modelo de Sequelize
+// Modelo de Sequelize
 import ClienteModel from './models/ClienteModel.js'; 
 
 // 1. OBTENER LISTA

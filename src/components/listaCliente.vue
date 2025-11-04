@@ -2,23 +2,20 @@
 import Header from '@/components/Header.vue'
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-// ✅ DESCOMENTAMOS LAS IMPORTACIONES DE LA API
 import { obtenerTodosLosClientes, eliminarCliente } from '@/cliente.js' 
 
 const router = useRouter();
 const listaClientes = ref([]); 
 const errorConexion = ref(false); 
 
-// 1. FUNCIÓN DE CARGA CENTRALIZADA (Ahora con lógica de API)
 const cargarClientes = async () => {
     errorConexion.value = false;
     try {
-        const data = await obtenerTodosLosClientes(); // ✅ LLAMADA REAL A LA API
+        const data = await obtenerTodosLosClientes();
         listaClientes.value = data;
     } catch (error) {
         console.error('Fallo grave al cargar clientes:', error);
         errorConexion.value = true;
-        // Muestra el error de conexión en la consola.
         console.error('❌ Error al conectar con el servidor. Verifique que el backend (Puerto 3000) esté funcionando.');
     }
 };
@@ -37,15 +34,13 @@ const navegarAEdicion = (cedula) => {
 // 3. FUNCIÓN QUE GESTIONA LA ELIMINACIÓN Y CONFIRMACIÓN
 const manejarEliminacion = async (cedula, nombre) => { 
     
-    // Usamos window.confirm() para una confirmación rápida.
-    // Aunque se desaconseja, es el método más rápido si no hay un modal custom.
     if (!window.confirm(`¿Está seguro de eliminar al cliente ${nombre} (${cedula})?`)) {
-        return; // Sale si el usuario cancela
+        return;
     }
 
     try {
         console.log(`Intentando eliminar cliente: ${nombre} (${cedula})...`);
-        await eliminarCliente(cedula); // ✅ LLAMADA REAL A LA API
+        await eliminarCliente(cedula);
         console.log(`✅ Cliente ${nombre} eliminado correctamente.`);
         
         // Notificamos al usuario del éxito (usando alert)
@@ -113,7 +108,7 @@ const navegarARegistro = () => {
                             >
                                 <i class="bi bi-pencil-square"></i> Editar
                             </button>
-                            <!-- ✅ Llama a la función simplificada de eliminación -->
+                            <!--  Llama a la función simplificada de eliminación -->
                             <button @click="manejarEliminacion(cliente.cedula, cliente.nombre)" class="btn btn-sm btn-outline-danger">
                                 <i class="bi bi-trash-fill"></i> Eliminar
                             </button>

@@ -21,7 +21,6 @@ app.get('/', (req, res) => {
     res.send('Bienvenido a mi servidor con Express!');
 });
 
-// ✅ Asegúrate de que esta línea esté presente
 app.use('/api/clientes', clienteRoutes);
 
 app.use('/api/productos', productoRoutes);
