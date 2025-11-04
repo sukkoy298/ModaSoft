@@ -1,28 +1,68 @@
 <script setup>
 import Header from '@/components/Header.vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { clientes, setClienteAEditar, eliminarCliente } from '@/cliente.js' 
+// ✅ DESCOMENTAMOS LAS IMPORTACIONES DE LA API
+import { obtenerTodosLosClientes, eliminarCliente } from '@/cliente.js' 
 
 const router = useRouter();
+const listaClientes = ref([]); 
+const errorConexion = ref(false); 
 
-const iniciarEdicion = (cliente) => {
-    setClienteAEditar(cliente);
-    
-    router.push('/registro'); 
-};
-
-const manejarEliminacion = (id, nombre) => {
-    if (window.confirm(`¿Estás seguro de que deseas eliminar permanentemente al cliente ${nombre} (ID: ${id})? Esta acción es irreversible.`)) {
-        
-        const exito = eliminarCliente(id); 
-
-        if (exito) {
-            alert(`✅ Cliente ${nombre} eliminado correctamente.`);
-        } else {
-            alert('❌ Error: El cliente no pudo ser encontrado en la base de datos.');
-        }
+// 1. FUNCIÓN DE CARGA CENTRALIZADA (Ahora con lógica de API)
+const cargarClientes = async () => {
+    errorConexion.value = false;
+    try {
+        const data = await obtenerTodosLosClientes(); // ✅ LLAMADA REAL A LA API
+        listaClientes.value = data;
+    } catch (error) {
+        console.error('Fallo grave al cargar clientes:', error);
+        errorConexion.value = true;
+        // Muestra el error de conexión en la consola.
+        console.error('❌ Error al conectar con el servidor. Verifique que el backend (Puerto 3000) esté funcionando.');
     }
 };
+
+onMounted(() => {
+    cargarClientes(); // Carga inicial al montar el componente
+});
+
+// 2. FUNCIÓN PARA NAVEGAR A LA PÁGINA DE EDICIÓN
+const navegarAEdicion = (cedula) => {
+    // Esto funciona perfectamente para ir a la vista EdicionCliente.vue
+    router.push({ name: 'edicion-cliente', params: { cedula: cedula } });
+};
+
+
+// 3. FUNCIÓN QUE GESTIONA LA ELIMINACIÓN Y CONFIRMACIÓN
+const manejarEliminacion = async (cedula, nombre) => { 
+    
+    // Usamos window.confirm() para una confirmación rápida.
+    // Aunque se desaconseja, es el método más rápido si no hay un modal custom.
+    if (!window.confirm(`¿Está seguro de eliminar al cliente ${nombre} (${cedula})?`)) {
+        return; // Sale si el usuario cancela
+    }
+
+    try {
+        console.log(`Intentando eliminar cliente: ${nombre} (${cedula})...`);
+        await eliminarCliente(cedula); // ✅ LLAMADA REAL A LA API
+        console.log(`✅ Cliente ${nombre} eliminado correctamente.`);
+        
+        // Notificamos al usuario del éxito (usando alert)
+        alert(`✅ Cliente ${nombre} eliminado correctamente.`);
+
+        cargarClientes(); // Recarga la lista después de eliminar
+    } catch (error) {
+        const errorMsg = error.response?.data?.message || 'Error al eliminar. Verifique si el cliente tiene ventas asociadas.';
+        console.error(`❌ Fallo al eliminar: ${errorMsg}`);
+        alert(`❌ Fallo: ${errorMsg}`); 
+    }
+};
+
+
+const navegarARegistro = () => {
+    router.push('/registro');
+}
 </script>
 
 <template>
@@ -30,18 +70,25 @@ const manejarEliminacion = (id, nombre) => {
     <div class="container mt-5">
         <h1 class="text-center mb-4">Administración de Clientes</h1>
         <div class="d-flex justify-content-between mb-4">
-            <h5 class="text-muted">Total de Clientes: {{ clientes.length }}</h5>
+            <h5 class="text-muted">Total de Clientes: {{ listaClientes.length }}</h5>
+            <button @click="navegarARegistro" class="btn btn-success">
+                <i class="bi bi-person-plus-fill"></i> Registrar Nuevo Cliente
+            </button>
         </div>
 
-        <div v-if="clientes.length === 0" class="alert alert-info text-center">
-            Aún no hay clientes registrados.
+        <div v-if="errorConexion" class="alert alert-danger text-center">
+            ⚠️ Error de Conexión: El servidor Express (Puerto 3000) no respondió o fue inaccesible.
+        </div>
+
+        <div v-else-if="listaClientes.length === 0" class="alert alert-info text-center">
+            Aún no hay clientes registrados en la base de datos.
         </div>
 
         <div v-else class="table-responsive">
             <table class="table table-striped table-hover align-middle">
                 <thead class="table-dark">
                     <tr>
-                        <th scope="col">ID</th>
+                        <th scope="col">Cédula</th> 
                         <th scope="col">Nombre</th>
                         <th scope="col">Teléfono</th>
                         <th scope="col">Email</th>
@@ -51,18 +98,23 @@ const manejarEliminacion = (id, nombre) => {
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="cliente in clientes" :key="cliente.id">
-                        <td>{{ cliente.id }}</td>
+                    <tr v-for="cliente in listaClientes" :key="cliente.cedula"> 
+                        <td>{{ cliente.cedula }}</td> 
                         <td>{{ cliente.nombre }}</td>
                         <td>{{ cliente.telefono }}</td>
                         <td>{{ cliente.email }}</td>
                         <td>{{ cliente.tipo }}</td>
-                        <td>{{ cliente.fecha_registro }}</td>
+                        <!-- Aseguramos que la fecha se muestre formateada para mejor lectura -->
+                        <td>{{ new Date(cliente.fecha_registro).toLocaleDateString() }}</td> 
                         <td class="text-center">
-                            <button @click="iniciarEdicion(cliente)" class="btn btn-sm btn-outline-primary me-2">
+                            <button 
+                                @click="navegarAEdicion(cliente.cedula)" 
+                                class="btn btn-sm btn-outline-primary me-2"
+                            >
                                 <i class="bi bi-pencil-square"></i> Editar
                             </button>
-                            <button @click="manejarEliminacion(cliente.id, cliente.nombre)" class="btn btn-sm btn-outline-danger">
+                            <!-- ✅ Llama a la función simplificada de eliminación -->
+                            <button @click="manejarEliminacion(cliente.cedula, cliente.nombre)" class="btn btn-sm btn-outline-danger">
                                 <i class="bi bi-trash-fill"></i> Eliminar
                             </button>
                         </td>

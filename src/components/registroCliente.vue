@@ -1,11 +1,14 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { agregarCliente, existeCliente, editarCliente, clienteAEditar, limpiarClienteAEditar } from '@/cliente.js';
+// ✅ SOLO importar agregarCliente - eliminar las importaciones de edición
+import { agregarCliente } from '@/cliente.js'; 
+import Header from '@/components/Header.vue';
 
 const router = useRouter(); 
 
-const id = ref(null); 
+// Datos del formulario
+const cedula = ref(''); 
 const nombre = ref('');
 const telefono = ref('');
 const email = ref('');
@@ -14,131 +17,157 @@ const tipo = ref('');
 const formularioEnviado = ref(false);
 
 const tituloFormulario = computed(() => {
-    return id.value ? 'Editar Cliente' : 'Registrar Nuevo Cliente';
+    return 'Registrar Nuevo Cliente';
 });
 
 const textoBoton = computed(() => {
-    return id.value ? 'Guardar Cambios' : 'Registrar';
+    return 'Registrar';
 });
 
-onMounted(() => {
-    if (clienteAEditar.value) {
-        id.value = clienteAEditar.value.id;
-        nombre.value = clienteAEditar.value.nombre;
-        telefono.value = clienteAEditar.value.telefono;
-        email.value = clienteAEditar.value.email;
-        direccion.value = clienteAEditar.value.direccion;
-        tipo.value = clienteAEditar.value.tipo;
-    }
-});
-
-
-const handleSubmit = (event) => {
+const handleSubmit = async (event) => {
     formularioEnviado.value = true;
     const formElement = event.target;
     
     if (!formElement.checkValidity()) {
         return;
     }
+    
+    // Objeto con los datos que se enviarán
+    const datosCliente = {
+        cedula: cedula.value, 
+        nombre: nombre.value, 
+        telefono: telefono.value,
+        email: email.value,
+        direccion: direccion.value,
+        tipo: tipo.value,
+    };
+    
+    let mensaje = '';
+    let exito = false;
 
-    if (id.value) {
-        
-        editarCliente(
-            id.value,
-            nombre.value,
-            telefono.value,
-            email.value,
-            direccion.value,
-            tipo.value
-        );
-        
-        limpiarClienteAEditar(); 
-        alert(`✅ Cliente ${nombre.value} (ID: ${id.value}) actualizado con éxito.`);
-        
-    } else {
-        if (existeCliente(email.value, telefono.value)) {
-            alert('❌ ¡Error! Ya existe un cliente registrado con ese correo electrónico o número de teléfono. 🛑');
-            return;
-        }
+    try {
+        // ✅ SOLO registro - sin lógica de edición
+        await agregarCliente(datosCliente);
+        mensaje = `✅ Cliente ${nombre.value} registrado con éxito.`;
+        exito = true;
 
-        const nuevoCliente = {
-            nombre: nombre.value, 
-            telefono: telefono.value,
-            email: email.value,
-            direccion: direccion.value,
-            tipo: tipo.value,
-            fecha_registro: new Date().toISOString().slice(0, 10) 
-        };
-        
-        agregarCliente(nuevoCliente);
-        alert(`✅ Cliente ${nombre.value} registrado con éxito.`);
+    } catch (error) {
+        // Manejo de errores
+        const errorMsg = error.response?.data?.message || 'Error de conexión con el servidor o datos inválidos.';
+        mensaje = `❌ Error: ${errorMsg}`;
     }
+    
+    alert(mensaje);
+    if (exito) {
+        router.push('/listaCliente'); // Redirigir al listado
+    }
+};
 
+// ✅ Función para limpiar el formulario
+const limpiarFormulario = () => {
+    cedula.value = '';
+    nombre.value = '';
+    telefono.value = '';
+    email.value = '';
+    direccion.value = '';
+    tipo.value = '';
+    formularioEnviado.value = false;
+};
+
+const volverALista = () => {
     router.push('/listaCliente');
 };
 </script>
 
 <template>
-    <header class="d-flex flex-row justify-content-center mt-5">
-        <h1>{{ tituloFormulario }}</h1>
-    </header>
-    <form 
-        :class="['row m-5 g-3 border border-secondary-emphasis bg-light rounded', { 'was-validated': formularioEnviado }]" 
-        @submit.prevent="handleSubmit"
-        novalidate
-    >
-        <div class="form-floating col-md-6">
-            <input type="text" v-model="nombre" required maxlength="20" minlength="3" class="form-control"
-                placeholder="Ingrese su nombre" id="floatingName">
-            <label for="floatingName" class="form-label">Ingrese su nombre</label>
-            <div class="invalid-feedback">
-                El nombre es requerido y debe tener entre 3 y 20 caracteres.
-            </div>
-        </div>
+    <Header />
+    <div class="container mt-4">
+        <header class="d-flex flex-row justify-content-center mb-4">
+            <h1>{{ tituloFormulario }}</h1>
+        </header>
         
-        <div class="col-md-6 form-floating">
-            <input type="tel" v-model="telefono" required minlength="11" maxlength="11" class="form-control" id="floatingTel"
-                placeholder="Digite su número de teléfono">
-            <label for="floatingTel" class="form-label">Digite su número de teléfono</label>
-            <div class="invalid-feedback">
-                El teléfono es requerido y debe tener 11 dígitos.
+        <form 
+            :class="['row g-3 border border-secondary-emphasis bg-light rounded p-4', { 'was-validated': formularioEnviado }]" 
+            @submit.prevent="handleSubmit"
+            novalidate
+        >
+            
+            <div class="form-floating col-md-6">
+                <input 
+                    type="text" 
+                    v-model="cedula" 
+                    required 
+                    maxlength="30" 
+                    minlength="5" 
+                    class="form-control"
+                    placeholder="Cédula" 
+                    id="floatingCedula">
+                <label for="floatingCedula" class="form-label">Cédula</label>
+                <div class="invalid-feedback">
+                    La cédula es requerida (mínimo 5 caracteres).
+                </div>
             </div>
-        </div>
-        
-        <div class="form-floating col-12">
-            <input type="email" v-model="email" required minlength="12" maxlength="50" class="form-control" id="floatingEmail"
-                placeholder="Coloque su Email">
-            <label for="floatingEmail" class="form-label">Email</label>
-            <div class="invalid-feedback">
-                El email es requerido y debe ser válido.
+            
+            <div class="form-floating col-md-6">
+                <input type="text" v-model="nombre" required maxlength="150" minlength="3" class="form-control"
+                    placeholder="Ingrese su nombre" id="floatingName">
+                <label for="floatingName" class="form-label">Nombre completo</label>
+                <div class="invalid-feedback">
+                    El nombre es requerido (mínimo 3 caracteres).
+                </div>
             </div>
-        </div>
-        
-        <div class="form-floating col-12">
-            <input type="text" v-model="direccion" required minlength="25" maxlength="100" class="form-control" id="floatingDireccion"
-                placeholder="Escriba su dirección">
-            <label for="floatingDireccion" class="form-label">Dirección</label>
-            <div class="invalid-feedback">
-                La dirección es requerida y debe tener entre 25 y 100 caracteres.
+            
+            <div class="col-md-6 form-floating">
+                <input type="tel" v-model="telefono" required minlength="7" maxlength="20" class="form-control" id="floatingTel"
+                    placeholder="Digite su número de teléfono">
+                <label for="floatingTel" class="form-label">Teléfono</label>
+                <div class="invalid-feedback">
+                    El teléfono es requerido (mínimo 7 dígitos).
+                </div>
             </div>
-        </div>
-        
-        <div class="col-md-4">
-            <label for="inputState" class="form-label">Tipo</label>
-            <select id="inputState" v-model="tipo" required class="form-select">
-                <option value="" disabled selected>Seleccione el tipo</option> 
-                <option value="Natural">Natural</option>
-                <option value="Juridico">Jurídico</option>
-            </select>
-            <div class="invalid-feedback">
-                Debe seleccionar un tipo de cliente.
+            
+            <div class="form-floating col-md-6">
+                <input type="email" v-model="email" required maxlength="100" class="form-control" id="floatingEmail"
+                    placeholder="Coloque su Email">
+                <label for="floatingEmail" class="form-label">Email</label>
+                <div class="invalid-feedback">
+                    El email es requerido y debe ser válido.
+                </div>
             </div>
-        </div>
-        
-        <div class="col-12">
-            <button type="submit" class="btn btn-outline-success text-dark mb-2">
-                {{ textoBoton }}
-            </button>
-        </div>
-    </form>
+            
+            <div class="form-floating col-12">
+                <input type="text" v-model="direccion" required maxlength="255" class="form-control" id="floatingDireccion"
+                    placeholder="Escriba su dirección">
+                <label for="floatingDireccion" class="form-label">Dirección</label>
+                <div class="invalid-feedback">
+                    La dirección es requerida.
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <label for="inputState" class="form-label">Tipo de Cliente</label>
+                <select id="inputState" v-model="tipo" required class="form-select">
+                    <option value="" disabled selected>Seleccione el tipo</option> 
+                    <option value="Natural">Natural</option>
+                    <option value="Jurídico">Jurídico</option>
+                    <option value="Genérico">Genérico</option>
+                </select>
+                <div class="invalid-feedback">
+                    Debe seleccionar un tipo de cliente.
+                </div>
+            </div>
+            
+            <div class="col-12 d-flex gap-2">
+                <button type="submit" class="btn btn-success">
+                    <i class="bi bi-person-plus-fill"></i> {{ textoBoton }}
+                </button>
+                <button type="button" @click="limpiarFormulario" class="btn btn-outline-secondary">
+                    <i class="bi bi-eraser-fill"></i> Limpiar
+                </button>
+                <button type="button" @click="volverALista" class="btn btn-outline-primary">
+                    <i class="bi bi-arrow-left"></i> Volver a la Lista
+                </button>
+            </div>
+        </form>
+    </div>
 </template>

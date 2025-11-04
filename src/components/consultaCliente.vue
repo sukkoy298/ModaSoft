@@ -2,7 +2,8 @@
 import Header from '@/components/Header.vue'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { clientes, limpiarClienteAEditar } from '@/cliente.js'
+// Importamos la función de búsqueda API
+import { obtenerClientePorCedula, limpiarClienteAEditar } from '@/cliente.js' 
 
 const router = useRouter()
 
@@ -15,21 +16,29 @@ const irARegistrar = () => {
     router.push('/registro');
 };
 
-const buscarCliente = () => {
+const buscarCliente = async () => { // FUNCIÓN ASÍNCRONA
     busquedaEjecutada.value = true;
     clienteEncontrado.value = null; 
 
-    const idBuscado = Number(terminoBusqueda.value.trim()); 
+    const cedulaBuscada = terminoBusqueda.value.trim(); 
 
-    if (isNaN(idBuscado) || idBuscado === 0) {
+    if (!cedulaBuscada) {
         return; 
     }
 
-    const resultado = clientes.value.find(cliente => cliente.id === idBuscado);
-
-    if (resultado) {
+    try {
+        // CAMBIO: Usamos la función API para buscar por Cédula
+        const resultado = await obtenerClientePorCedula(cedulaBuscada);
         clienteEncontrado.value = resultado;
-    } 
+    } catch (error) {
+        // Manejamos error 404 (cliente no encontrado) o error de conexión
+        if (error.response && error.response.status === 404) {
+            clienteEncontrado.value = null; // Cliente no encontrado
+        } else {
+             console.error('Error al buscar cliente:', error);
+             alert('Error al buscar cliente. Verifique la conexión con el servidor.');
+        }
+    }
 };
 
 </script>
@@ -41,12 +50,12 @@ const buscarCliente = () => {
 
         <form class="d-flex mb-4" role="search" @submit.prevent="buscarCliente">
             <div class="form-floating flex-grow-1 me-2 mx-auto p-2">
-                <input type="text" class="h5 form-control mx-auto p-2" required placeholder="Buscar ID del Cliente" v-model="terminoBusqueda"
+                <input type="text" class="h5 form-control mx-auto p-2" required placeholder="Buscar Cédula del Cliente" v-model="terminoBusqueda"
                     id="floatingInput" aria-label="Search" />
-                <label class="h5" for="floatingInput">Buscar por ID</label>
+                <label class="h5" for="floatingInput">Buscar por Cédula/RUC</label>
             </div>
             <button class="btn btn-outline-success" type="submit">
-                 <i class="bi bi-search"></i> Buscar
+                   <i class="bi bi-search"></i> Buscar
             </button>
         </form>
 
@@ -75,11 +84,11 @@ const buscarCliente = () => {
         </table>
 
         <div v-else-if="busquedaEjecutada" class="alert alert-warning mt-4 text-center">
-            ❌ No se encontró ningún cliente con el ID **{{ terminoBusqueda }}**. ¿Desea registrarlo?
+            ❌ No se encontró ningún cliente con la Cédula/RUC **{{ terminoBusqueda }}**. ¿Desea registrarlo?
         </div>
 
         <div v-else class="alert alert-info mt-4 text-center h4">
-            Introduzca un ID de cliente para iniciar una venta.
+            Introduzca una Cédula/RUC de cliente para iniciar una venta.
         </div>
 
     </div>

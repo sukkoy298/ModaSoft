@@ -4,6 +4,7 @@ import Registro from '@/components/registroCliente.vue'
 import HomeView from '@/components/HomeView.vue'
 import consultaCliente from '@/components/consultaCliente.vue'
 import listaCliente from '@/components/listaCliente.vue'
+import edicionCliente from '@/components/edicionCliente.vue' 
 
 const routes = [
     {
@@ -26,11 +27,17 @@ const routes = [
         name: 'listaCliente',
         component: listaCliente
     },
+    {
+        path: '/edicionCliente/:cedula',
+        name: 'edicion-cliente',
+        component: edicionCliente,
+        props: true
+    },
 ]
 
 const router = createRouter({
-  history: createWebHistory(), 
-  routes
+    history: createWebHistory(), 
+    routes
 })
 
 export default router
