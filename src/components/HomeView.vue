@@ -54,7 +54,7 @@ import Footer from '@/components/Footer.vue';
                                 <i class="bi bi-boxes fs-1 text-warning d-block mb-4"></i>
                             </div>
                             
-                            <router-link to="/inventario" class="btn btn-outline-warning text-dark w-50 mx-auto p-2">
+                            <router-link to="/listaProducto" class="btn btn-outline-warning text-dark w-50 mx-auto p-2">
                                 <i class="bi bi-list-check"></i> Ir a Inventario
                             </router-link>
                         </div>

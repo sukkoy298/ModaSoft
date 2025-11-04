@@ -1,7 +1,10 @@
 import express from 'express';
 import cors from 'cors';
 import { connectDB, sequelize } from './db.js';
-import clienteRoutes from "./src/server/routes/cliente.route.js"; // ✅ Esta ruta
+import clienteRoutes from "./src/server/routes/cliente.route.js";
+import productoRoutes from './src/server/routes/producto.route.js';
+import categoriaRoutes from './src/server/routes/categoria.route.js';
+import marcaRoutes from './src/server/routes/marca.route.js';
 
 const app = express();
 const PORT = 3000; 
@@ -20,6 +23,12 @@ app.get('/', (req, res) => {
 
 // ✅ Asegúrate de que esta línea esté presente
 app.use('/api/clientes', clienteRoutes);
+
+app.use('/api/productos', productoRoutes);
+
+app.use('/api/categorias', categoriaRoutes);
+
+app.use('/api/marcas', marcaRoutes);
 
 // Iniciar servidor
 app.listen(PORT, async () => {

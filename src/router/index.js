@@ -5,6 +5,7 @@ import HomeView from '@/components/HomeView.vue'
 import consultaCliente from '@/components/consultaCliente.vue'
 import listaCliente from '@/components/listaCliente.vue'
 import edicionCliente from '@/components/edicionCliente.vue' 
+import listaProducto from '@/components/listaProducto.vue';
 
 const routes = [
     {
@@ -21,6 +22,11 @@ const routes = [
         path: '/consultaCliente',
         name: 'consultaCliente',
         component: consultaCliente
+    },
+    {
+        path: '/listaProducto',
+        name: 'listaProducto',
+        component: listaProducto
     },
     {
         path: '/listaCliente',
