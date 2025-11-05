@@ -3,6 +3,11 @@ import { Sequelize } from 'sequelize';
 const sequelize = new Sequelize('modasoft1', 'root', '', {
     host: 'localhost',
     dialect: 'mysql',
+    timezone: '-04:00', // Zona horaria de Caracas (UTC-4)
+    dialectOptions: {
+        dateStrings: true,
+        typeCast: true
+    },
     logging: false, 
 });
 

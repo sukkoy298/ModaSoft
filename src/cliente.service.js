@@ -26,7 +26,13 @@ export const obtenerClientePorCedulaDB = async (cedula) => {
 // 3. REGISTRAR CLIENTE
 export const agregarClienteDB = async (data) => {
     try {
-        const nuevoCliente = await ClienteModel.create(data);
+        const fechaHoy = new Date().toISOString().split('T')[0];
+        
+        const nuevoCliente = await ClienteModel.create({
+            ...data,
+            fecha_registro: fechaHoy
+        });
+        
         return nuevoCliente;
     } catch (error) {
         if (error.name === 'SequelizeUniqueConstraintError') {
