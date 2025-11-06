@@ -6,6 +6,10 @@ import consultaCliente from '@/components/consultaCliente.vue'
 import listaCliente from '@/components/listaCliente.vue'
 import edicionCliente from '@/components/edicionCliente.vue' 
 import listaProducto from '@/components/listaProducto.vue';
+import registroProducto from '@/components/registroProducto.vue'; 
+import registroVarianteProducto from '@/components/registroVarianteProducto.vue';
+import registroCategoria from '@/components/registroCategoria.vue';
+import registroMarca from '@/components/registroMarca.vue';
 
 const routes = [
     {
@@ -38,6 +42,26 @@ const routes = [
         name: 'edicion-cliente',
         component: edicionCliente,
         props: true
+    },
+    {
+        path: '/registroProducto', 
+        name: 'registroProducto', 
+        component: registroProducto 
+    },
+    {
+        path: '/registroVarianteProducto', 
+        name: 'registroVarianteProducto', 
+        component: registroVarianteProducto 
+    },
+    {
+        path: '/registroCategoria', 
+        name: 'registroCategoria', 
+        component: registroCategoria 
+    },
+    {
+        path: '/registroMarca', 
+        name: 'registroMarca', 
+        component: registroMarca 
     },
 ]
 

@@ -1,7 +1,13 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue';
-
+import { useRouter } from 'vue-router';
 import { obtenerTodoElInventario } from '@/producto.js';
+
+const router = useRouter();
+
+const goToRegistroVariante = () => {
+    router.push('/registroVarianteProducto');
+};
 
 const inventarioList = ref([]);
 const loading = ref(true);
@@ -64,8 +70,25 @@ onMounted(() => {
                 <label for="floatingBuscador" class="form-label">Buscar Producto (SKU, Nombre, Variante...)</label>
             </div>
 
+            <button @click="router.push('/registroProducto')"
+                class="btn btn-outline-success w-full md:w-auto px-6 py-2 rounded shadow me-3 md:mb-0">
+                + Producto Principal
+            </button>
+            <button @click="router.push('/registroCategoria')"
+                class="btn btn-outline-dark w-full md:w-auto px-4 py-2 rounded shadow me-2 md:mb-0">
+                + Categoría
+            </button>
+
+            <button @click="router.push('/registroMarca')"
+                class="btn btn-outline-info w-full text-dark md:w-auto px-4 py-2 rounded shadow me-2 md:mb-0">
+                + Marca
+            </button>
+            <button @click="goToRegistroVariante"
+                class="btn btn-outline-primary w-full md:w-auto px-6 py-2 rounded shadow me-3 md:mb-0">
+                + Registrar Nueva Variante
+            </button>
             <button @click="cargarInventario" :disabled="loading"
-                class="btn btn-outline-success w-full md:w-auto px-6 py-2 rounded shadow">
+                class="btn btn-outline-danger w-full md:w-auto px-6 py-2 rounded shadow">
                 <span v-if="loading">Cargando...</span>
                 <span v-else>Actualizar Inventario</span>
             </button>
@@ -83,86 +106,76 @@ onMounted(() => {
         </div>
 
         <div v-else-if="inventarioFiltrado.length > 0" class="bg-white rounded-xl shadow-xl overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50 sticky top-0">
+            
+            <table class="table table-striped table-hover align-middle min-w-full">
+                <thead class="table-dark">
                     <tr>
-                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">SKU
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">
-                            Producto</th>
-                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">
-                            Variante</th>
-                        <th class="px-6 py-3 text-center text-xs font-bold text-gray-600 uppercase tracking-wider">Stock
-                            Mín.</th>
-                        <th class="px-6 py-3 text-center text-xs font-bold text-gray-600 uppercase tracking-wider">Stock
-                            Act.</th>
-                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Precio
-                            Venta</th>
-                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Estado
-                        </th>
+                        <th scope="col">SKU</th>
+                        <th scope="col">Producto</th>
+                        <th scope="col">Marca / Categoría</th>
+                        <th scope="col" class="text-center">Talla / Color</th>
+                        <th scope="col" class="text-center">Stock Mín.</th>
+                        <th scope="col" class="text-center">Stock Act.</th>
+                        <th scope="col">Precio Venta</th>
+                        <th scope="col" class="text-center">Estado</th>
+                        <th scope="col" class="text-center">Acciones</th>
                     </tr>
                 </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                    <tr v-for="variante in inventarioFiltrado" :key="variante.sku" :class="[
-                        'hover:bg-gray-50 transition duration-100 ease-in-out',
-                        { 'bg-red-100/50': getEstadoStock(variante.stock_actual, variante.stock_minimo) === 'Agotado' },
-                        { 'bg-yellow-100/50': getEstadoStock(variante.stock_actual, variante.stock_minimo) === 'REORDENAR' }
-                    ]">
+                <tbody>
+                    <tr v-for="variante in inventarioFiltrado" :key="variante.sku" :class="{
+                        'table-danger': getEstadoStock(variante.stock_actual, variante.stock_minimo) === 'Agotado',
+                        'table-warning': getEstadoStock(variante.stock_actual, variante.stock_minimo) === 'REORDENAR'
+                    }">
+                        
+                        <td class="font-semibold">{{ variante.sku }}</td>
+                        
+                        <td class="text-gray-700">{{ variante.producto }}</td>
+                        
+                        <td class="text-sm text-gray-500">{{ variante.marca }} / {{ variante.categoria }}</td>
 
-                        <!-- SKU -->
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
-                            {{ variante.sku }}
-                        </td>
-
-                        <!-- Producto -->
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 max-w-xs truncate">
-                            {{ variante.producto }}
-                        </td>
-
-                        <!-- Variante (Talla/Color) -->
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            <span class="font-medium text-gray-800">{{ variante.talla }}</span> /
-                            <span :style="{ backgroundColor: variante.color.toLowerCase() }"
-                                class="inline-block w-3 h-3 rounded-full border border-gray-400"></span>
+                        <td class="text-center">
+                            <span class="font-medium text-gray-800">{{ variante.talla }}</span> / 
                             {{ variante.color }}
                         </td>
 
-                        <!-- Stock Mínimo -->
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-500">
-                            {{ variante.stock_minimo }}
-                        </td>
+                        <td class="text-center">{{ variante.stock_minimo }}</td>
 
-                        <!-- Stock Actual -->
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-center" :class="{
-                            'text-red-600': getEstadoStock(variante.stock_actual, variante.stock_minimo) === 'Agotado',
-                            'text-yellow-600': getEstadoStock(variante.stock_actual, variante.stock_minimo) === 'REORDENAR',
-                            'text-green-600': getEstadoStock(variante.stock_actual, variante.stock_minimo) === 'Suficiente'
+                        <td class="font-bold text-center" :class="{
+                            'text-danger': getEstadoStock(variante.stock_actual, variante.stock_minimo) === 'Agotado',
+                            'text-warning': getEstadoStock(variante.stock_actual, variante.stock_minimo) === 'REORDENAR',
+                            'text-success': getEstadoStock(variante.stock_actual, variante.stock_minimo) === 'Suficiente'
                         }">
                             {{ variante.stock_actual }}
                         </td>
 
-                        <!-- Precio Venta -->
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 font-mono">
+                        <td>
                             ${{ variante.precio_venta.toFixed(2) }}
                         </td>
 
-                        <!-- Estado -->
-                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                        <td class="text-center">
                             <span :class="[
-                                'px-2 inline-flex text-xs leading-5 font-semibold rounded-full',
-                                { 'bg-red-200 text-red-800': getEstadoStock(variante.stock_actual, variante.stock_minimo) === 'Agotado' },
-                                { 'bg-yellow-200 text-yellow-800': getEstadoStock(variante.stock_actual, variante.stock_minimo) === 'REORDENAR' },
-                                { 'bg-green-200 text-green-800': getEstadoStock(variante.stock_actual, variante.stock_minimo) === 'Suficiente' }
+                                'badge',
+                                { 'bg-danger': getEstadoStock(variante.stock_actual, variante.stock_minimo) === 'Agotado' },
+                                { 'bg-warning text-dark': getEstadoStock(variante.stock_actual, variante.stock_minimo) === 'REORDENAR' },
+                                { 'bg-success': getEstadoStock(variante.stock_actual, variante.stock_minimo) === 'Suficiente' }
                             ]">
                                 {{ getEstadoStock(variante.stock_actual, variante.stock_minimo) }}
                             </span>
+                        </td>
+                        
+                        <td class="text-center">
+                            <button class="btn btn-sm btn-outline-info me-2">
+                                <i class="bi bi-pencil-square"></i> Editar
+                            </button>
+                            <button class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-arrow-up"></i> Ingreso
+                            </button>
                         </td>
                     </tr>
                 </tbody>
             </table>
         </div>
 
-        <!-- Mensaje de Sin Resultados -->
         <div v-else class="bg-white rounded-xl shadow-lg p-8 text-center text-gray-500">
             <p>No se encontraron productos en el inventario o la búsqueda no arrojó resultados.</p>
         </div>
@@ -171,6 +184,6 @@ onMounted(() => {
 
 <style scoped>
 .container {
-    max-width: 1200px;
+    max-width: 1300px;
 }
 </style>

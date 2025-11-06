@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import { connectDB, sequelize } from './db.js';
+import { setupAssociations } from './src/models/asociaciones.js';
 import clienteRoutes from "./src/server/routes/cliente.route.js";
 import productoRoutes from './src/server/routes/producto.route.js';
 import categoriaRoutes from './src/server/routes/categoria.route.js';
