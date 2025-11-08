@@ -1,6 +1,6 @@
 moda-soft-new
 
-Esta plantilla te ayudará a comenzar a desarrollar con Vue 3 en Vite.
+
 
 Configuración Recomendada del IDE
 
