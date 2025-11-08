@@ -1,8 +1,18 @@
 {
   "compilerOptions": {
+<<<<<<< HEAD
     "paths": {
       "@/*": ["./src/*"]
     }
   },
   "exclude": ["node_modules", "dist"]
 }
+=======
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    }
+  },
+  "include": ["src/**/*.js", "src/**/*.vue"]
+}
+>>>>>>> origin/Clientes

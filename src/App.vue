@@ -1,4 +1,5 @@
 <script setup>
+<<<<<<< HEAD
 import SalesView from './views/SalesView.vue'
 </script>
 
@@ -63,3 +64,17 @@ input {
   width: 100%;
 }
 </style>
+=======
+  
+</script>
+
+<template>
+  <div>
+    <router-view />
+ </div>
+</template>
+
+<style scoped>
+
+</style>
+>>>>>>> origin/Clientes
