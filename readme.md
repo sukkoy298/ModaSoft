@@ -1,5 +1,38 @@
-# Vue 3 + Vite
+moda-soft-new
 
-This template should help get you started developing with Vue 3 in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
 
-Learn more about IDE Support for Vue in the [Vue Docs Scaling up Guide](https://vuejs.org/guide/scaling-up/tooling.html#ide-support).
+
+Configuración Recomendada del IDE
+
+VS Code + Vue (Oficial) (y desactiva Vetur).
+
+Configuración Recomendada del Navegador
+
+· Navegadores basados en Chromium (Chrome, Edge, Brave, etc.):
+  · Vue.js devtools
+  · Activar Custom Object Formatter en Chrome DevTools
+· Firefox:
+  · Vue.js devtools
+  · Activar Custom Object Formatter en Firefox DevTools
+
+Personalizar la configuración
+
+Consulta la Referencia de Configuración de Vite.
+
+Configuración del Proyecto
+
+```sh
+npm install
+```
+
+Compilar y Recarga en Caliente para Desarrollo
+
+```sh
+npm run dev
+```
+
+Compilar y Minificar para Producción
+
+```sh
+npm run build
+```
