@@ -1,9 +1,18 @@
-import { ProductoModel, VarianteProductoModel } from './VarianteProductoModel.js';
+import VarianteProductoModel from './VarianteProductoModel.js';
+import ProductoModel from './ProductoModel.js';
 import MarcaModel from './MarcaModel.js';
 import CategoriaModel from './CategoriaModel.js';
 import VentaModel from './VentaModel.js';
 import DetalleVentaModel from './DetalleVentaModel.js';
 import ClienteModel from './ClienteModel.js';
+import UsuariosModel from './UsuarioModel.js';
+import RolUsuarioModel from './RolUsuarioModel.js';
+import InventarioModel from './InventarioModel.js';
+import CompraModel from './CompraModel.js';
+import DevolucionModel from './DevolucionModel.js';
+import ProveedorModel from './ProveedorModel.js';
+import DetalleCompraModel from './DetalleCompraModel.js';
+import DetalleDevolucionModel from './DetalleDevolucionModel.js';
 
 // 1. Producto (id_marca) <--> Marca
 ProductoModel.belongsTo(MarcaModel, {
@@ -25,7 +34,6 @@ CategoriaModel.hasMany(ProductoModel, {
     as: 'Productos'
 });
 
-
 // 3. VarianteProducto (id_producto) <--> Producto
 VarianteProductoModel.belongsTo(ProductoModel, {
     foreignKey: 'id_producto',
@@ -36,18 +44,19 @@ ProductoModel.hasMany(VarianteProductoModel, {
     as: 'Variantes'
 });
 
-export const setupAssociations = () => {
-    console.log("✅ Asociaciones de Sequelize cargadas.");
-    // Esto asegura que el archivo se ejecute
-};
-
-// Venta (Cabecera) <--> Cliente
+// 4. Venta (Cabecera) <--> Cliente (CORREGIDO: usar cedula_cliente en lugar de id_cliente)
 VentaModel.belongsTo(ClienteModel, {
-    foreignKey: 'id_cliente',
+    foreignKey: 'cedula_cliente',
+    targetKey: 'cedula',
     as: 'Cliente'
 });
+ClienteModel.hasMany(VentaModel, {
+    foreignKey: 'cedula_cliente',
+    sourceKey: 'cedula',
+    as: 'Ventas'
+});
 
-// Venta (Cabecera) <--> DetalleVenta (Items)
+// 5. Venta (Cabecera) <--> DetalleVenta (Items)
 VentaModel.hasMany(DetalleVentaModel, {
     foreignKey: 'id_venta',
     as: 'Detalles'
@@ -57,8 +66,118 @@ DetalleVentaModel.belongsTo(VentaModel, {
     as: 'VentaPrincipal'
 });
 
-// DetalleVenta <--> VarianteProducto
+// 6. DetalleVenta <--> VarianteProducto
 DetalleVentaModel.belongsTo(VarianteProductoModel, {
     foreignKey: 'id_variante',
     as: 'VarianteProducto' // Para saber qué producto se vendió
 });
+VarianteProductoModel.hasMany(DetalleVentaModel, {
+    foreignKey: 'id_variante',
+    as: 'DetallesVenta'
+});
+
+// 7. Usuario <--> RolUsuario
+UsuariosModel.belongsTo(RolUsuarioModel, {
+    foreignKey: 'id_rol',
+    as: 'RolUsuario'
+});
+
+RolUsuarioModel.hasMany(UsuariosModel, {
+    foreignKey: 'id_rol',
+    as: 'Usuarios'
+});
+
+// 8. Inventario <--> Usuario
+InventarioModel.belongsTo(UsuariosModel, {
+    foreignKey: 'id_usuario',
+    as: 'Usuario'
+});
+
+UsuariosModel.hasMany(InventarioModel, {
+    foreignKey: 'id_usuario',
+    as: 'Inventarios'
+});
+
+// 9. Inventario <--> VarianteProducto  
+InventarioModel.belongsTo(VarianteProductoModel, {
+    foreignKey: 'id_variante',
+    as: 'Variante'
+});
+
+VarianteProductoModel.hasOne(InventarioModel, {
+    foreignKey: 'id_variante',
+    as: 'Inventario'
+});
+
+// 10. Compra <--> Proveedor
+CompraModel.belongsTo(ProveedorModel, {
+    foreignKey: 'cedula_proveedor',
+    targetKey: 'doc_identidad',
+    as: 'Proveedor'
+});
+
+ProveedorModel.hasMany(CompraModel, {
+    foreignKey: 'cedula_proveedor',
+    sourceKey: 'doc_identidad',
+    as: 'Compras'
+});
+
+// 11. Compra <--> DetalleCompra
+CompraModel.hasMany(DetalleCompraModel, {
+    foreignKey: 'id_compra',
+    as: 'Detalles'
+});
+
+DetalleCompraModel.belongsTo(CompraModel, {
+    foreignKey: 'id_compra',
+    as: 'Compra'
+});
+
+// 12. DetalleCompra <--> VarianteProducto
+DetalleCompraModel.belongsTo(VarianteProductoModel, {
+    foreignKey: 'id_variante',
+    as: 'Variante'
+});
+
+VarianteProductoModel.hasMany(DetalleCompraModel, {
+    foreignKey: 'id_variante',
+    as: 'DetallesCompra'
+});
+
+// 13. Devolucion <--> Venta
+DevolucionModel.belongsTo(VentaModel, {
+    foreignKey: 'id_venta',
+    as: 'Venta'
+});
+
+VentaModel.hasMany(DevolucionModel, {
+    foreignKey: 'id_venta',
+    as: 'Devoluciones'
+});
+
+// 14. Devolucion <--> DetalleDevolucion
+DevolucionModel.hasMany(DetalleDevolucionModel, {
+    foreignKey: 'id_devolucion',
+    as: 'Detalles'
+});
+
+DetalleDevolucionModel.belongsTo(DevolucionModel, {
+    foreignKey: 'id_devolucion',
+    as: 'Devolucion'
+});
+
+// 15. DetalleDevolucion <--> VarianteProducto
+DetalleDevolucionModel.belongsTo(VarianteProductoModel, {
+    foreignKey: 'id_variante',
+    as: 'Variante'
+});
+
+VarianteProductoModel.hasMany(DetalleDevolucionModel, {
+    foreignKey: 'id_variante',
+    as: 'DetallesDevolucion'
+});
+
+export const setupAssociations = () => {
+    console.log("✅ Asociaciones de Sequelize cargadas.");
+    // Esto asegura que el archivo se ejecute
+};

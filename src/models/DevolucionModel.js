@@ -1,4 +1,3 @@
-// models/DevolucionModel.js
 import { DataTypes } from 'sequelize';
 import { sequelize } from '../../db.js';
 
@@ -6,8 +5,7 @@ const DevolucionModel = sequelize.define('devolucion', {
     id_devolucion: {
         type: DataTypes.INTEGER,
         primaryKey: true,
-        autoIncrement: true,
-        allowNull: false
+        autoIncrement: true
     },
     id_venta: {
         type: DataTypes.INTEGER,
@@ -15,8 +13,7 @@ const DevolucionModel = sequelize.define('devolucion', {
     },
     fecha: {
         type: DataTypes.DATEONLY,
-        allowNull: false,
-        defaultValue: DataTypes.NOW
+        allowNull: false
     },
     motivo: {
         type: DataTypes.TEXT,
@@ -25,6 +22,14 @@ const DevolucionModel = sequelize.define('devolucion', {
     id_usuario: {
         type: DataTypes.INTEGER,
         allowNull: false
+    },
+    created_at: {
+        type: DataTypes.DATE,
+        allowNull: true
+    },
+    updated_at: {
+        type: DataTypes.DATE,
+        allowNull: true
     }
 }, {
     tableName: 'devolucion',

@@ -1,43 +1,35 @@
-// models/UsuarioModel.js
 import { DataTypes } from 'sequelize';
 import { sequelize } from '../../db.js';
 
-const UsuarioModel = sequelize.define('usuario', {
+const UsuariosModel = sequelize.define('usuarios', {
     id_usuario: {
         type: DataTypes.INTEGER,
         primaryKey: true,
-        autoIncrement: true,
-        allowNull: false
+        autoIncrement: true
     },
     usuario: {
         type: DataTypes.STRING(50),
-        allowNull: false,
-        unique: true
+        allowNull: false
     },
     password_hash: {
         type: DataTypes.STRING(255),
         allowNull: false
     },
-    rol: {
-        type: DataTypes.STRING(15),
-        allowNull: false,
-        validate: {
-            isIn: [['admin', 'vendedor', 'contador']]
-        }
+    id_rol: {
+        type: DataTypes.INTEGER,
+        allowNull: false
     },
-    estado: {
-        type: DataTypes.STRING(10),
-        allowNull: false,
-        defaultValue: 'activo'
+    created_at: {
+        type: DataTypes.DATE,
+        allowNull: true
     },
-    fecha_creacion: {
-        type: DataTypes.DATEONLY,
-        allowNull: false,
-        defaultValue: DataTypes.NOW
+    updated_at: {
+        type: DataTypes.DATE,
+        allowNull: true
     }
 }, {
     tableName: 'usuarios',
     timestamps: false
 });
 
-export default UsuarioModel;
+export default UsuariosModel;

@@ -1,13 +1,11 @@
-// models/MovimientoInventarioModel.js
 import { DataTypes } from 'sequelize';
 import { sequelize } from '../../db.js';
 
-const MovimientoInventarioModel = sequelize.define('movimiento_inventario', {
-    id_movimiento: {
+const InventarioModel = sequelize.define('inventario', {
+    id_inventario: {
         type: DataTypes.INTEGER,
         primaryKey: true,
-        autoIncrement: true,
-        allowNull: false
+        autoIncrement: true
     },
     id_variante: {
         type: DataTypes.INTEGER,
@@ -15,19 +13,23 @@ const MovimientoInventarioModel = sequelize.define('movimiento_inventario', {
     },
     tipo: {
         type: DataTypes.STRING(20),
-        allowNull: false,
-        validate: {
-            isIn: [['entrada', 'salida', 'ajuste', 'devolucion']]
-        }
+        allowNull: false
     },
     cantidad: {
         type: DataTypes.INTEGER,
         allowNull: false
     },
-    fecha: {
+    stock_actual: {
+        type: DataTypes.INTEGER,
+        allowNull: false
+    },
+    stock_minimo: {
+        type: DataTypes.INTEGER,
+        allowNull: false
+    },
+    fecha_ultima_entrada: {
         type: DataTypes.DATE,
-        allowNull: false,
-        defaultValue: DataTypes.NOW
+        allowNull: false
     },
     referencia: {
         type: DataTypes.STRING(100),
@@ -36,10 +38,18 @@ const MovimientoInventarioModel = sequelize.define('movimiento_inventario', {
     id_usuario: {
         type: DataTypes.INTEGER,
         allowNull: false
+    },
+    created_at: {
+        type: DataTypes.DATE,
+        allowNull: true
+    },
+    updated_at: {
+        type: DataTypes.DATE,
+        allowNull: true
     }
 }, {
-    tableName: 'movimiento_inventario',
+    tableName: 'inventario',
     timestamps: false
 });
 
-export default MovimientoInventarioModel;
+export default InventarioModel;

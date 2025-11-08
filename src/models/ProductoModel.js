@@ -1,23 +1,32 @@
 import { DataTypes } from 'sequelize';
 import { sequelize } from '../../db.js';
 
-const DetalleDevolucionModel = sequelize.define('detalle_devolucion', {
-    id_detalledevolucion: {
+const ProductoModel = sequelize.define('producto', {
+    id_producto: {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true
     },
-    id_devolucion: {
+    nombre: {
+        type: DataTypes.STRING(150),
+        allowNull: false
+    },
+    descripcion: {
+        type: DataTypes.TEXT,
+        allowNull: true
+    },
+    id_categoria: {
         type: DataTypes.INTEGER,
         allowNull: false
     },
-    id_variante: {
+    id_marca: {
         type: DataTypes.INTEGER,
-        allowNull: false
+        allowNull: true
     },
-    cantidad: {
-        type: DataTypes.INTEGER,
-        allowNull: false
+    activo: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: true
     },
     created_at: {
         type: DataTypes.DATE,
@@ -28,8 +37,8 @@ const DetalleDevolucionModel = sequelize.define('detalle_devolucion', {
         allowNull: true
     }
 }, {
-    tableName: 'detalle_devolucion',
+    tableName: 'producto',
     timestamps: false
 });
 
-export default DetalleDevolucionModel;
+export default ProductoModel;

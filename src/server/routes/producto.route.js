@@ -1,116 +1,91 @@
-import { Router } from 'express';
-//  Importación de funciones necesarias para la escritura
-import { 
-    obtenerTodoElInventario,
-    registrarProducto,
-    registrarVarianteProducto,
-    obtenerProductosPrincipales,
-    actualizarStockVariante
-} from '../../producto.service.js';
+import express from 'express';
+import {
+  registrarProducto,
+  registrarVarianteProducto,
+  obtenerProductosPrincipales,
+  obtenerTodasLasVariantes,
+  actualizarStockVariante
+} from '../services/producto.service.js';
+import { obtenerTodasLasCategorias } from '../services/categoria.service.js';
 
-const router = Router();
+const router = express.Router();
 
-// ----------------------------------------------------------------------
-// 1. RUTA DE LECTURA (TÚ CÓDIGO EXISTENTE)
-// ----------------------------------------------------------------------
-
-router.get('/', async (req, res) => {
-    try {
-        const inventario = await obtenerTodoElInventario();
-        res.status(200).json(inventario); 
-    } catch (error) {
-        console.error("Error en la ruta GET /api/productos:", error);
-        res.status(500).json({ 
-            message: "Error al obtener el inventario", 
-            error: error.message 
-        });
-    }
-});
-
-
-// ----------------------------------------------------------------------
-// 2. RUTA DE LECTURA ESPECÍFICA: LISTA PRODUCTOS PRINCIPALES PARA SELECTS
-// ----------------------------------------------------------------------
+// PRODUCTOS PRINCIPALES
+// GET /api/productos/principales - Obtener productos principales
 router.get('/principales', async (req, res) => {
-    try {
-        const productos = await obtenerProductosPrincipales();
-        res.status(200).json(productos); 
-    } catch (error) {
-        // Se añade el error al log para debug
-        console.error("Error al listar productos principales:", error);
-        res.status(500).json({ 
-            message: "Error al listar productos principales", 
-            error: error.message 
-        });
-    }
+  try {
+    const productos = await obtenerProductosPrincipales();
+    res.json(productos);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
 });
 
-// ----------------------------------------------------------------------
-// 3. RUTAS DE ESCRITURA (FUNCIONALIDAD AÑADIDA)
-// ----------------------------------------------------------------------
-
-// 3.1. POST para Producto Principal (Nombre, Categoría, Marca)
-router.post('/', async (req, res) => {
-    try {
-        const nuevoProducto = await registrarProducto(req.body);
-        res.status(201).json({ 
-            message: "Producto principal registrado con éxito.",
-            id_producto: nuevoProducto.id_producto,
-            producto: nuevoProducto 
-        });
-    } catch (error) {
-        console.error("Error en la ruta POST /api/productos:", error);
-        res.status(400).json({ 
-            message: "Fallo al registrar el producto.",
-            error: error.message 
-        });
-    }
+// POST /api/productos/principales - Registrar producto principal
+router.post('/principales', async (req, res) => {
+  try {
+    const nuevoProducto = await registrarProducto(req.body);
+    res.status(201).json(nuevoProducto);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
 });
 
+// GET para obtener variantes
+router.get('/variantes', async (req, res) => {
+  try {
+    const variantes = await obtenerTodasLasVariantes();
+    res.json(variantes);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
 
-// 3.2. POST para Variantes (SKU, Talla, Color, Precio)
+// GET /api/productos/variantes/:id - Obtener variante por ID
+router.get('/variantes/:id', async (req, res) => {
+  try {
+    const variante = await obtenerVariantePorId(req.params.id);
+    if (!variante) {
+      return res.status(404).json({ message: 'Variante no encontrada' });
+    }
+    res.json(variante);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// VARIANTES DE PRODUCTO
+// POST /api/productos/variantes - Registrar variante de producto
 router.post('/variantes', async (req, res) => {
-    try {
-        const nuevaVariante = await registrarVarianteProducto(req.body);
-        res.status(201).json({ 
-            message: "Variante de producto registrada con éxito.",
-            codigo_barras: nuevaVariante.codigo_barras,
-            variante: nuevaVariante
-        });
-    } catch (error) {
-        console.error("Error en la ruta POST /api/productos/variantes:", error);
-        res.status(400).json({ 
-            message: "Fallo al registrar la variante del producto.",
-            error: error.message 
-        });
-    }
+  try {
+    const nuevaVariante = await registrarVarianteProducto(req.body);
+    res.status(201).json(nuevaVariante);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
 });
 
+// STOCK
+// PUT /api/productos/stock/:codigoBarras - Actualizar stock
+router.put('/stock/:codigoBarras', async (req, res) => {
+  try {
+    const { cantidad } = req.body;
+    const resultado = await actualizarStockVariante(req.params.codigoBarras, cantidad);
+    res.json(resultado);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+});
 
-// 3.3. PUT para Actualización de Stock (Entradas/Salidas)
-router.put('/variantes/stock/:codigoBarras', async (req, res) => {
-    const { codigoBarras } = req.params;
-    const { cantidad } = req.body; 
-
-    if (typeof cantidad !== 'number' || cantidad === 0) {
-        return res.status(400).json({ message: "La 'cantidad' debe ser un número diferente de cero." });
-    }
-
-    try {
-        const varianteActualizada = await actualizarStockVariante(codigoBarras, cantidad);
-        
-        res.status(200).json({ 
-            message: `Stock de código de barras ${codigoBarras} actualizado. Nuevo stock: ${varianteActualizada.stock_actual}`,
-            variante: varianteActualizada
-        });
-    } catch (error) {
-        console.error(`Error en la ruta PUT /api/productos/variantes/stock/${codigoBarras}:`, error);
-        const statusCode = error.message.includes('no encontrada') ? 404 : 400;
-        res.status(statusCode).json({ 
-            message: "Fallo al actualizar el stock.",
-            error: error.message 
-        });
-    }
+// CATEGORÍAS
+// GET /api/productos/categorias - Obtener todas las categorías
+router.get('/categorias', async (req, res) => {
+  try {
+    const categorias = await obtenerTodasLasCategorias();
+    res.json(categorias);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
 });
 
 export default router;

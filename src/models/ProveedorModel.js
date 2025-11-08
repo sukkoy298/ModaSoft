@@ -1,9 +1,8 @@
-// models/ProveedorModel.js
 import { DataTypes } from 'sequelize';
 import { sequelize } from '../../db.js';
 
 const ProveedorModel = sequelize.define('proveedor', {
-    cedula: {
+    doc_identidad: {
         type: DataTypes.STRING(30),
         primaryKey: true,
         allowNull: false
@@ -18,11 +17,18 @@ const ProveedorModel = sequelize.define('proveedor', {
     },
     email: {
         type: DataTypes.STRING(100),
-        allowNull: true,
-        unique: true
+        allowNull: true
     },
     direccion: {
         type: DataTypes.STRING(255),
+        allowNull: true
+    },
+    created_at: {
+        type: DataTypes.DATE,
+        allowNull: true
+    },
+    updated_at: {
+        type: DataTypes.DATE,
         allowNull: true
     }
 }, {

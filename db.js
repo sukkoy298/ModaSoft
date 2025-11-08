@@ -1,15 +1,23 @@
 import { Sequelize } from 'sequelize';
+import dotenv from 'dotenv';
 
-const sequelize = new Sequelize('modasoft1', 'root', '', {
-    host: 'localhost',
-    dialect: 'mysql',
-    timezone: '-04:00', // Zona horaria de Caracas (UTC-4)
-    dialectOptions: {
-        dateStrings: true,
-        typeCast: true
-    },
-    logging: false, 
-});
+dotenv.config();
+
+const sequelize = new Sequelize(
+    process.env.DB_NAME || 'modasoft2',
+    process.env.DB_USER || 'root',
+    process.env.DB_PASSWORD || '',
+    {
+        host: process.env.DB_HOST || 'localhost',
+        dialect: process.env.DB_DIALECT || 'mysql',
+        timezone: process.env.TIMEZONE || '-04:00',
+        dialectOptions: {
+            dateStrings: true,
+            typeCast: true
+        },
+        logging: false,
+    }
+);
 
 const connectDB = async () => {
     try {

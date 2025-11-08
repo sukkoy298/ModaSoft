@@ -23,7 +23,7 @@ const ClienteModel = sequelize.define('cliente', {
         type: DataTypes.STRING(255),
         allowNull: true
     },
-    tipo: { // Tipo de cliente (Natural/Jurídico)
+    tipo: {
         type: DataTypes.STRING(25),
         allowNull: false
     },
@@ -31,10 +31,14 @@ const ClienteModel = sequelize.define('cliente', {
         type: DataTypes.DATEONLY,
         allowNull: false,
         defaultValue: DataTypes.NOW
+    },
+    updated_at: {
+        type: DataTypes.DATE,
+        allowNull: true
     }
 }, {
     tableName: 'cliente',
-    timestamps: false // No usa campos createdAt y updatedAt
+    timestamps: false
 });
 
 export default ClienteModel;

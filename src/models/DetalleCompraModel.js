@@ -1,13 +1,11 @@
-// models/DetalleCompraModel.js
 import { DataTypes } from 'sequelize';
 import { sequelize } from '../../db.js';
 
 const DetalleCompraModel = sequelize.define('detalle_compra', {
-    id_detalle: {
+    id_detallecompra: {
         type: DataTypes.INTEGER,
         primaryKey: true,
-        autoIncrement: true,
-        allowNull: false
+        autoIncrement: true
     },
     id_compra: {
         type: DataTypes.INTEGER,
@@ -24,6 +22,14 @@ const DetalleCompraModel = sequelize.define('detalle_compra', {
     precio_unitario_costo: {
         type: DataTypes.DECIMAL(10, 2),
         allowNull: false
+    },
+    created_at: {
+        type: DataTypes.DATE,
+        allowNull: true
+    },
+    updated_at: {
+        type: DataTypes.DATE,
+        allowNull: true
     }
 }, {
     tableName: 'detalle_compra',

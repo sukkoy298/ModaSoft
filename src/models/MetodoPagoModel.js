@@ -1,22 +1,18 @@
 import { DataTypes } from 'sequelize';
 import { sequelize } from '../../db.js';
 
-const DetalleDevolucionModel = sequelize.define('detalle_devolucion', {
-    id_detalledevolucion: {
+const MetodoPagoModel = sequelize.define('metodo_pago', {
+    id_metodopago: {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true
     },
-    id_devolucion: {
-        type: DataTypes.INTEGER,
+    nombre: {
+        type: DataTypes.STRING(50),
         allowNull: false
     },
-    id_variante: {
-        type: DataTypes.INTEGER,
-        allowNull: false
-    },
-    cantidad: {
-        type: DataTypes.INTEGER,
+    codigo: {
+        type: DataTypes.DECIMAL(10, 2),
         allowNull: false
     },
     created_at: {
@@ -28,8 +24,8 @@ const DetalleDevolucionModel = sequelize.define('detalle_devolucion', {
         allowNull: true
     }
 }, {
-    tableName: 'detalle_devolucion',
+    tableName: 'metodo_pago',
     timestamps: false
 });
 
-export default DetalleDevolucionModel;
+export default MetodoPagoModel;

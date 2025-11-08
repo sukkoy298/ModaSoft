@@ -1,11 +1,11 @@
 import { Router } from 'express';
 import { 
-    obtenerTodosLosClientesDB, 
-    obtenerClientePorCedulaDB, 
-    editarClienteDB, 
-    agregarClienteDB,
-    eliminarClienteDB 
-} from '../../cliente.service.js';
+    obtenerTodosLosClientes, 
+    obtenerClientePorCedula, 
+    actualizarCliente, 
+    registrarCliente,
+    eliminarCliente 
+} from '../services/cliente.service.js';
 
 const router = Router();
 
@@ -14,7 +14,7 @@ const router = Router();
 // =========================================================
 router.get('/', async (req, res) => {
     try {
-        const clientes = await obtenerTodosLosClientesDB(); 
+        const clientes = await obtenerTodosLosClientes(); 
         res.status(200).json(clientes);
     } catch (error) {
         console.error('Error en el listado de la API:', error);
@@ -27,7 +27,7 @@ router.get('/', async (req, res) => {
 // =========================================================
 router.get('/:cedula', async (req, res) => {
     try {
-        const cliente = await obtenerClientePorCedulaDB(req.params.cedula);
+        const cliente = await obtenerClientePorCedula(req.params.cedula);
         
         if (!cliente) {
             return res.status(404).json({ message: 'Cliente no encontrado.' }); 
@@ -46,7 +46,7 @@ router.post('/', async (req, res) => {
     try {
         console.log('📥 Datos recibidos para registro:', req.body);
         
-        const nuevoCliente = await agregarClienteDB(req.body);
+        const nuevoCliente = await registrarCliente(req.body);
         res.status(201).json(nuevoCliente);
     } catch (error) {
         console.error('Error al registrar cliente:', error);
@@ -69,7 +69,7 @@ router.put('/:cedula', async (req, res) => {
         
         console.log('📥 Datos recibidos para actualizar:', { cedula, datosActualizados });
         
-        const resultado = await editarClienteDB(cedula, datosActualizados);
+        const resultado = await actualizarCliente(cedula, datosActualizados);
         res.status(200).json(resultado);
     } catch (error) {
         console.error('Error al actualizar cliente:', error);
@@ -82,7 +82,7 @@ router.put('/:cedula', async (req, res) => {
 // =========================================================
 router.delete('/:cedula', async (req, res) => {
     try {
-        const resultado = await eliminarClienteDB(req.params.cedula);
+        const resultado = await eliminarCliente(req.params.cedula);
         res.status(200).json(resultado);
     } catch (error) {
         console.error('Error al eliminar cliente:', error);

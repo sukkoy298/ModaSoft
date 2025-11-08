@@ -6,21 +6,27 @@ import clienteRoutes from "./src/server/routes/cliente.route.js";
 import productoRoutes from './src/server/routes/producto.route.js';
 import categoriaRoutes from './src/server/routes/categoria.route.js';
 import marcaRoutes from './src/server/routes/marca.route.js';
-/*Rutas del resto de entidades que aun faltan
+
 import proveedorRoutes from './src/server/routes/proveedor.route.js';
 import usuarioRoutes from './src/server/routes/usuario.route.js';
 import compraRoutes from './src/server/routes/compra.route.js';
 import ventaRoutes from './src/server/routes/venta.route.js';
 import devolucionRoutes from './src/server/routes/devolucion.route.js';
-import movimientoInventarioRoutes from './src/server/routes/movimientoInventario.route.js';
-import cuentaPorCobrarRoutes from './src/server/routes/cuentaPorCobrar.route.js';
-import cuentaPorPagarRoutes from './src/server/routes/cuentaPorPagar.route.js';
-*/
+import inventarioRoutes from './src/server/routes/inventario.route.js'; 
+import rolUsuarioRoutes from './src/server/routes/rolUsuario.route.js';
+import metodoPagoRoutes from './src/server/routes/metodoPago.route.js';
+
+import dotenv from 'dotenv';
+
+dotenv.config();
+
 const app = express();
-const PORT = 3000; 
+const PORT = process.env.SERVER_PORT || 3000;
 
 // Middlewares
-app.use(cors()); 
+app.use(cors({
+    origin: process.env.CLIENT_URL || 'http://localhost:5173'
+}));
 app.use(express.json()); 
 
 // Conexión a la BD
@@ -37,16 +43,14 @@ app.use('/api/productos', productoRoutes);
 app.use('/api/categorias', categoriaRoutes);
 app.use('/api/marcas', marcaRoutes);
 
-/*Aun no se realizan
+app.use('/api/roles', rolUsuarioRoutes);
 app.use('/api/proveedores', proveedorRoutes);
 app.use('/api/usuarios', usuarioRoutes);
 app.use('/api/compras', compraRoutes);
 app.use('/api/ventas', ventaRoutes);
 app.use('/api/devoluciones', devolucionRoutes);
-app.use('/api/movimientos-inventario', movimientoInventarioRoutes);
-app.use('/api/cuentas-por-cobrar', cuentaPorCobrarRoutes);
-app.use('/api/cuentas-por-pagar', cuentaPorPagarRoutes);
-*/
+app.use('/api/inventario', inventarioRoutes);
+app.use('/api/metodos-pago', metodoPagoRoutes);
 
 // Ruta para verificar estado del servidor
 app.get('/api/status', (req, res) => {

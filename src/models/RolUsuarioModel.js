@@ -1,22 +1,14 @@
 import { DataTypes } from 'sequelize';
 import { sequelize } from '../../db.js';
 
-const DetalleDevolucionModel = sequelize.define('detalle_devolucion', {
-    id_detalledevolucion: {
+const RolUsuarioModel = sequelize.define('rol_usuario', {
+    id_rol: {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true
     },
-    id_devolucion: {
-        type: DataTypes.INTEGER,
-        allowNull: false
-    },
-    id_variante: {
-        type: DataTypes.INTEGER,
-        allowNull: false
-    },
-    cantidad: {
-        type: DataTypes.INTEGER,
+    rol: {
+        type: DataTypes.STRING(50),
         allowNull: false
     },
     created_at: {
@@ -28,8 +20,8 @@ const DetalleDevolucionModel = sequelize.define('detalle_devolucion', {
         allowNull: true
     }
 }, {
-    tableName: 'detalle_devolucion',
+    tableName: 'rol_usuario',
     timestamps: false
 });
 
-export default DetalleDevolucionModel;
+export default RolUsuarioModel;

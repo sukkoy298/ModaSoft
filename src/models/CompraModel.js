@@ -1,4 +1,3 @@
-// models/CompraModel.js
 import { DataTypes } from 'sequelize';
 import { sequelize } from '../../db.js';
 
@@ -6,8 +5,7 @@ const CompraModel = sequelize.define('compra', {
     id_compra: {
         type: DataTypes.INTEGER,
         primaryKey: true,
-        autoIncrement: true,
-        allowNull: false
+        autoIncrement: true
     },
     cedula_proveedor: {
         type: DataTypes.STRING(30),
@@ -15,23 +13,27 @@ const CompraModel = sequelize.define('compra', {
     },
     fecha: {
         type: DataTypes.DATEONLY,
-        allowNull: false,
-        defaultValue: DataTypes.NOW
+        allowNull: false
+    },
+    nro_factura: {
+        type: DataTypes.DECIMAL(10, 2),
+        allowNull: false
     },
     total: {
         type: DataTypes.DECIMAL(10, 2),
         allowNull: false
     },
-    estado: {
-        type: DataTypes.STRING(15),
-        allowNull: false,
-        validate: {
-            isIn: [['pendiente', 'pagada', 'anulada']]
-        }
-    },
     id_usuario: {
         type: DataTypes.INTEGER,
         allowNull: false
+    },
+    created_at: {
+        type: DataTypes.DATE,
+        allowNull: true
+    },
+    updated_at: {
+        type: DataTypes.DATE,
+        allowNull: true
     }
 }, {
     tableName: 'compra',
