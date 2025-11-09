@@ -1,13 +1,35 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:3000/api';
+const api = axios.create({
+  baseURL: '/api' // llama a /api/productos y Vite lo proxeará a localhost:3000
+});
 
-export const obtenerTodoElInventario = async () => {
-    try {
-        const response = await axios.get(`${API_URL}/productos`);
-        return response.data; 
-    } catch (error) {
-        console.error('Error al obtener el inventario:', error);
-        throw error; 
-    }
-};
+export function getProductos() {
+  return api.get('/productos').then(res => res.data);
+}
+
+// Compatibilidad: exporta obtenerTodoElInventario que usan varios componentes.
+// Intenta delegar en funciones ya definidas (si existen) o consulta endpoints comunes.
+export async function obtenerTodoElInventario() {
+  // Si existen funciones internas con otros nombres, llámalas
+  if (typeof obtenerInventario === 'function') return await obtenerInventario()
+  if (typeof obtenerProductos === 'function') return await obtenerProductos()
+  if (typeof fetchInventario === 'function') return await fetchInventario()
+
+  // FallBack: intentar consultar endpoints usuales
+  try {
+    const res = await fetch('/api/productos')
+    if (res.ok) return await res.json()
+  } catch (e) {
+    // ignore
+  }
+  try {
+    const res = await fetch('/api/inventario')
+    if (res.ok) return await res.json()
+  } catch (e) {
+    // ignore
+  }
+
+  // Si todo falla, devolver array vacío para evitar romper la UI
+  return []
+}

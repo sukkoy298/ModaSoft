@@ -90,4 +90,11 @@ router.delete('/:cedula', async (req, res) => {
     }
 });
 
+// =========================================================
+//  RUTA 6: SALUD DE LA API (GET /health)
+// =========================================================
+router.get('/health', (req, res) => {
+    res.status(200).json({ message: 'API está en funcionamiento' });
+});
+
 export default router;

@@ -1,80 +1,68 @@
-import axios from 'axios';
-import { ref } from 'vue'; 
+import axios from 'axios'
 
-// URL base para el endpoint de la API de Clientes
-const API_URL = 'http://localhost:3000/api/clientes'; 
+const api = axios.create({
+  baseURL: '/api', // Vite proxy -> backend en localhost:3001
+  timeout: 10000
+})
 
-// Estado reactivo para transferir el cliente a editar
-export const clienteAEditar = ref(null);
+export async function verificarServidor() {
+  try {
+    const res = await api.get('/status') // <-- usar /status que expone server.js
+    return res.data
+  } catch (err) {
+    // devuelve null/false para que el frontend muestre el estado de conexión correcto
+    console.error('verificarServidor error:', err.message || err)
+    throw err
+  }
+}
 
-// --- FUNCIONES ASÍNCRONAS (CRUD usando Axios) ---
+export async function verificarBD() {
+  try {
+    // intenta un endpoint sencillo o /status si lo tienes
+    const res = await api.get('/status').catch(() => null)
+    return !!res
+  } catch {
+    return false
+  }
+}
 
-// 1. Obtener todos los clientes (LISTAR)
-export const obtenerTodosLosClientes = async () => {
-    try {
-        const response = await axios.get(API_URL);
-        return response.data; 
-    } catch (error) {
-        console.error('Error al obtener lista de clientes:', error);
-        throw error;
-    }
-};
+export async function obtenerTodosLosClientes() {
+  const res = await api.get('/clientes')
+  return res.data
+}
 
-// 2. Obtener un cliente por Cédula (usando API REST)
-export const obtenerClientePorCedula = async (cedula) => {
-    try {
-        const response = await axios.get(`${API_URL}/${cedula}`);
-        return response.data;
-    } catch (error) {
-        console.error(`Error al obtener cliente ${cedula}:`, error);
-        
-        // Si es error 404, lanzar mensaje específico
-        if (error.response?.status === 404) {
-            throw new Error('Cliente no encontrado');
-        }
-        
-        throw error;
-    }
-};
+export async function obtenerClientePorCedula(cedula) {
+  const res = await api.get(`/clientes/${cedula}`)
+  return res.data
+}
 
-// 3. Actualizar cliente (usando API REST)
-export const editarCliente = async (cedula, datos) => {
-    try {
-        const response = await axios.put(`${API_URL}/${cedula}`, datos);
-        return response.data;
-    } catch (error) {
-        console.error(`Error al actualizar cliente ${cedula}:`, error);
-        throw error;
-    }
-};
+export async function agregarCliente(payload) {
+  const res = await api.post('/clientes', payload)
+  return res.data
+}
 
-// 4. Registrar un nuevo cliente (REGISTRAR)
-export const agregarCliente = async (nuevoCliente) => {
-    try {
-        const response = await axios.post(API_URL, nuevoCliente);
-        return response.data; 
-    } catch (error) {
-        console.error('Error al registrar cliente:', error);
-        throw error;
-    }
-};
+export async function actualizarCliente(cedula, payload) {
+  const res = await api.put(`/clientes/${cedula}`, payload)
+  return res.data
+}
 
-// 5. Eliminar un cliente (ELIMINAR)
-export const eliminarCliente = async (cedula) => {
-    try {
-        const response = await axios.delete(`${API_URL}/${cedula}`);
-        return response.data; 
-    } catch (error) {
-        console.error(`Error al eliminar cliente ${cedula}:`, error);
-        throw error;
-    }
-};
+// alias compatible con imports existentes
+export async function editarCliente(cedula, payload) {
+  return actualizarCliente(cedula, payload)
+}
 
-// --- FUNCIONES AUXILIARES DE ESTADO ---
-export const limpiarClienteAEditar = () => {
-    clienteAEditar.value = null;
-};
+export async function eliminarCliente(cedula) {
+  const res = await api.delete(`/clientes/${cedula}`)
+  return res.data
+}
 
-export const setClienteAEditar = (cliente) => {
-    clienteAEditar.value = { ...cliente }; 
-};
+export function limpiarClienteAEditar() {
+  return {
+    cedula: '',
+    nombre: '',
+    telefono: '',
+    email: '',
+    direccion: '',
+    tipo: ''
+  }
+}

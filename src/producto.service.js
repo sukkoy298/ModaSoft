@@ -1,5 +1,7 @@
 import { ProductoModel, VarianteProductoModel } from './models/VarianteProductoModel.js';
 import MarcaModel from './models/MarcaModel.js';
+import { sequelize } from '../db.js'
+import { QueryTypes } from 'sequelize'
 
 export const actualizarStockVariante = async (codigoBarras, cantidad) => {
     try {
@@ -27,73 +29,47 @@ export const actualizarStockVariante = async (codigoBarras, cantidad) => {
     }
 };
 
-export const obtenerTodoElInventario = async () => {
-    try {
+export async function obtenerTodoElInventario() {
+  // Ajustado para que el 'id' principal sea el de la variante, que es único.
+  const sql = `
+    SELECT
+        v.id_variante AS id,                      -- <-- CAMBIO: El ID principal ahora es el de la variante
+        p.id_producto AS id_producto,             -- <-- CAMBIO: El ID del producto se mantiene con su nombre original
+        p.nombre AS producto,
+        COALESCE(p.descripcion, '') AS descripcion,
+        v.codigo_barras AS sku,
+        v.talla AS talla,
+        v.color AS color,
+        COALESCE(v.precio_unitario_venta, 0) AS precio,
+        COALESCE(inv.stock_actual, 0) AS stock_actual,
+        p.id_categoria AS id_categoria,
+        p.id_marca AS id_marca
+    FROM producto p
+    INNER JOIN variante_producto v ON v.id_producto = p.id_producto
+    LEFT JOIN (
+        SELECT
+            i1.id_variante,
+            i1.stock_actual
+        FROM inventario i1
+        WHERE i1.id_inventario = (
+            SELECT MAX(i2.id_inventario)
+            FROM inventario i2
+            WHERE i2.id_variante = i1.id_variante
+        )
+    ) AS inv ON inv.id_variante = v.id_variante
+    WHERE p.activo = 1
+    ORDER BY p.id_producto, v.id_variante;
+  `;
 
-        const variantes = await VarianteProductoModel.findAll({
-            include: [
-                {
-                    model: ProductoModel,
-                    as: 'ProductoPrincipal',
-                    attributes: ['nombre', 'descripcion'],
-                    include: [
-                        {
-                            model: MarcaModel,
-                            as: 'Marca',
-                            attributes: ['nombre']
-                        },
-                        {
-                            model: CategoriaModel,
-                            as: 'Categoria',
-                            attributes: ['nombre']
-                        }
-                    ]
-                }
-            ],
-            order: [
-                [{ model: ProductoModel, as: 'ProductoPrincipal' }, 'nombre', 'ASC'],
-                ['talla', 'ASC']
-            ]
-        });
-
-        const inventarioDetallado = variantes.map(variante => {
-
-            // Usamos desestructuración para un acceso más seguro al Producto Principal
-            const prod = variante.ProductoPrincipal;
-
-            // Manejamos las relaciones anidadas
-            const marca = prod.Marca ? prod.Marca.nombre : 'N/A';
-            const categoria = prod.Categoria ? prod.Categoria.nombre : 'N/A';
-
-            return {
-                // Propiedades de la Variante (nivel raíz)
-                id_variante: variante.id_variante,
-                //Usar el nombre de columna correcto para el SKU
-                sku: variante.codigo_barras,
-                talla: variante.talla,
-                color: variante.color,
-                stock_actual: variante.stock_actual,
-                //Usar el nombre de columna correcto para el precio
-                precio_venta: parseFloat(variante.precio_unitario_venta),
-                variante: `${variante.talla} / ${variante.color}`,
-                // Propiedades del Producto Principal (Acceso vía el alias 'ProductoPrincipal')
-                producto: prod.nombre,
-                descripcion: prod.descripcion,
-
-                // Propiedades Anidadas (Marca y Categoría)
-                marca: marca,
-                categoria: categoria,
-
-                stock_minimo: 10, // Propiedad estática para la tabla
-            };
-        });
-
-        return inventarioDetallado;
-    } catch (error) {
-        console.error("Error al obtener el inventario detallado:", error);
-        throw new Error("No se pudo obtener la lista de inventario.");
-    }
-};
+  try {
+    const rows = await sequelize.query(sql, { type: QueryTypes.SELECT });
+    return Array.isArray(rows) ? rows : [];
+  } catch (err) {
+    console.error('producto.service.obtenerTodoElInventario ERROR:', err.message);
+    console.error('SQL Error Details:', err.original);
+    throw new Error('No se pudo obtener la lista de inventario desde la base de datos.');
+  }
+}
 
 import CategoriaModel from './models/CategoriaModel.js';
 

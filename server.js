@@ -3,19 +3,11 @@ import cors from 'cors';
 import { connectDB, sequelize } from './db.js';
 import { setupAssociations } from './src/models/asociaciones.js';
 import clienteRoutes from "./src/server/routes/cliente.route.js";
-import productoRoutes from './src/server/routes/producto.route.js';
+import productoRoutes from './src/server/routes/producto.route.js'
 import categoriaRoutes from './src/server/routes/categoria.route.js';
 import marcaRoutes from './src/server/routes/marca.route.js';
-/*Rutas del resto de entidades que aun faltan
-import proveedorRoutes from './src/server/routes/proveedor.route.js';
-import usuarioRoutes from './src/server/routes/usuario.route.js';
-import compraRoutes from './src/server/routes/compra.route.js';
 import ventaRoutes from './src/server/routes/venta.route.js';
-import devolucionRoutes from './src/server/routes/devolucion.route.js';
-import movimientoInventarioRoutes from './src/server/routes/movimientoInventario.route.js';
-import cuentaPorCobrarRoutes from './src/server/routes/cuentaPorCobrar.route.js';
-import cuentaPorPagarRoutes from './src/server/routes/cuentaPorPagar.route.js';
-*/
+
 const app = express();
 const PORT = 3000; 
 
@@ -23,38 +15,77 @@ const PORT = 3000;
 app.use(cors()); 
 app.use(express.json()); 
 
-// Conexión a la BD
-connectDB(); 
+// Variable para trackear estado de la BD
+let dbConnected = false;
+
+// Conexión a la BD con mejor manejo de errores
+async function initializeDatabase() {
+    try {
+        console.log('🔄 Iniciando conexión a la base de datos...');
+        await connectDB();
+        dbConnected = true;
+        console.log('✅ Conexión a BD establecida correctamente');
+        
+        // Sincronizar modelos
+        console.log('🔄 Sincronizando modelos con la BD...');
+        await sequelize.sync({ force: false });
+        console.log("✅ Tablas de Sequelize sincronizadas con la BD.");
+        
+    } catch (error) {
+        console.error('❌ Error crítico durante la inicialización de la BD:', error.message);
+        dbConnected = false;
+    }
+}
 
 // Rutas
 app.get('/', (req, res) => {
     res.send('Bienvenido a ModaSoft - Sistema de Gestión de Moda');
 });
 
-// Rutas
+// ⚠️⚠️⚠️ SOLO UNA VEZ ESTA RUTA - ELIMINA EL DUPLICADO ⚠️⚠️⚠️
+app.get('/api/status', (req, res) => {
+    res.json({ 
+        status: 'Servidor funcionando correctamente',
+        database: dbConnected ? 'Conectada' : 'Desconectada',
+        timestamp: new Date().toISOString(),
+        message: 'API ModaSoft Online'
+    });
+});
+
+// Ruta específica para verificar solo la BD
+app.get('/api/db-status', async (req, res) => {
+    try {
+        await sequelize.authenticate();
+        res.json({ 
+            status: 'BD Conectada',
+            database: sequelize.getDatabaseName(),
+            dialect: sequelize.getDialect()
+        });
+    } catch (error) {
+        res.status(500).json({ 
+            status: 'BD Desconectada',
+            error: error.message 
+        });
+    }
+});
+
+// Rutas de la API
 app.use('/api/clientes', clienteRoutes);
 app.use('/api/productos', productoRoutes);
 app.use('/api/categorias', categoriaRoutes);
 app.use('/api/marcas', marcaRoutes);
-
-/*Aun no se realizan
-app.use('/api/proveedores', proveedorRoutes);
-app.use('/api/usuarios', usuarioRoutes);
-app.use('/api/compras', compraRoutes);
 app.use('/api/ventas', ventaRoutes);
-app.use('/api/devoluciones', devolucionRoutes);
-app.use('/api/movimientos-inventario', movimientoInventarioRoutes);
-app.use('/api/cuentas-por-cobrar', cuentaPorCobrarRoutes);
-app.use('/api/cuentas-por-pagar', cuentaPorPagarRoutes);
-*/
 
-// Ruta para verificar estado del servidor
+// ⚠️⚠️⚠️ ELIMINA ESTE BLOQUE DUPLICADO COMPLETO ⚠️⚠️⚠️
+/*
 app.get('/api/status', (req, res) => {
     res.json({ 
         status: 'Servidor funcionando correctamente',
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        message: 'API ModaSoft Online'
     });
 });
+*/
 
 // Manejo de rutas no encontradas
 app.use((req, res) => {
@@ -76,11 +107,13 @@ app.use((error, req, res, next) => {
 // Iniciar servidor
 app.listen(PORT, async () => {
     console.log(`🚀 Servidor Express escuchando en http://localhost:${PORT}`);
+    console.log('🔄 Inicializando base de datos...');
     
-    try {
-        await sequelize.sync({ force: false }); 
-        console.log("✅ Tablas de Sequelize sincronizadas con la BD.");
-    } catch (error) {
-        console.error("❌ Error al sincronizar modelos:", error.message);
+    await initializeDatabase();
+    
+    if (dbConnected) {
+        console.log('🎉 Servidor y BD listos para recibir peticiones');
+    } else {
+        console.log('⚠️  Servidor iniciado pero BD NO CONECTADA');
     }
 });

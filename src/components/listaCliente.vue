@@ -1,34 +1,43 @@
+
+
 <script setup>
 import Header from '@/components/Header.vue'
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { obtenerTodosLosClientes, eliminarCliente } from '@/cliente.js' 
+import { verificarServidor, obtenerTodosLosClientes, eliminarCliente } from '@/cliente.js' 
 
 const router = useRouter();
 const listaClientes = ref([]); 
-const errorConexion = ref(false); 
+const errorConexion = ref(false);
+const cargando = ref(true);
 
 const cargarClientes = async () => {
     errorConexion.value = false;
+    cargando.value = true;
+    
     try {
+        console.log('🔍 Verificando conexión con el servidor...');
+        
+        // Primero verifica si el servidor está activo
+        await verificarServidor();
+        console.log('✅ Servidor conectado, cargando clientes...');
+        
+        // Luego carga los clientes
         const data = await obtenerTodosLosClientes();
         listaClientes.value = data;
+        console.log('✅ Clientes cargados exitosamente');
+        
     } catch (error) {
-        console.error('Fallo grave al cargar clientes:', error);
+        console.error('❌ Fallo al conectar con el servidor:', error);
         errorConexion.value = true;
-        console.error('❌ Error al conectar con el servidor. Verifique que el backend (Puerto 3000) esté funcionando.');
+    } finally {
+        cargando.value = false;
     }
 };
 
 onMounted(() => {
-    cargarClientes(); // Carga inicial al montar el componente
+    cargarClientes();
 });
-
-// 2. FUNCIÓN PARA NAVEGAR A LA PÁGINA DE EDICIÓN
-const navegarAEdicion = (cedula) => {
-    // Esto funciona perfectamente para ir a la vista EdicionCliente.vue
-    router.push({ name: 'edicion-cliente', params: { cedula: cedula } });
-};
 
 
 // 3. FUNCIÓN QUE GESTIONA LA ELIMINACIÓN Y CONFIRMACIÓN

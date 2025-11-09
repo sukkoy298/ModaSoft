@@ -39,6 +39,13 @@ const buscarCliente = async () => {
     }
 };
 
+const irAFacturarConCliente = () => {
+  if (clienteEncontrado.value) {
+    localStorage.setItem('modasoft_user', JSON.stringify(clienteEncontrado.value))
+    router.push('/facturacion')
+  }
+}
+
 </script>
 
 <template>
@@ -73,9 +80,9 @@ const buscarCliente = async () => {
                 <tr>
                     <th scope="row" class="table-secondary"></th>
                     <td class="text-center">
-                        <router-link to="/facturacion" class="btn btn-success btn-lg w-50">
-                            <i class="bi bi-cash-coin"></i> Realizar Venta con {{ clienteEncontrado.nombre }}
-                        </router-link>
+                        <button @click="irAFacturarConCliente" class="btn btn-success btn-lg w-50">
+                          <i class="bi bi-cash-coin"></i> Realizar Venta con {{ clienteEncontrado.nombre }}
+                        </button>
                     </td>
                 </tr>
             </tbody>
