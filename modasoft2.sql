@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 03-11-2025 a las 23:56:46
+-- Tiempo de generación: 09-11-2025 a las 22:41:35
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -18,7 +18,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Base de datos: `modasoft1`
+-- Base de datos: `modasoft2`
 --
 
 -- --------------------------------------------------------
@@ -30,8 +30,18 @@ SET time_zone = "+00:00";
 CREATE TABLE `categoria` (
   `id_categoria` int(11) NOT NULL,
   `nombre` varchar(50) NOT NULL,
-  `descripcion` varchar(255) DEFAULT NULL
+  `descripcion` varchar(255) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `categoria`
+--
+
+INSERT INTO `categoria` (`id_categoria`, `nombre`, `descripcion`, `created_at`, `updated_at`) VALUES
+(1, 'Camisas', 'Camisas de vestir', '2025-11-08 17:01:50', '2025-11-08 17:01:50'),
+(2, 'Deportes', 'Todo tipo de ropa deportiva', '2025-11-08 17:41:15', '2025-11-08 17:41:15');
 
 -- --------------------------------------------------------
 
@@ -40,14 +50,28 @@ CREATE TABLE `categoria` (
 --
 
 CREATE TABLE `cliente` (
+  `id_cliente` int(11) NOT NULL,
   `cedula` varchar(30) NOT NULL,
   `nombre` varchar(150) NOT NULL,
   `email` varchar(100) DEFAULT NULL,
   `telefono` varchar(20) DEFAULT NULL,
   `direccion` varchar(255) DEFAULT NULL,
   `tipo` varchar(10) NOT NULL COMMENT 'natural, jurídico, genérico',
-  `fecha_registro` date NOT NULL
+  `fecha_registro` date NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `activo` tinyint(1) DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `cliente`
+--
+
+INSERT INTO `cliente` (`id_cliente`, `cedula`, `nombre`, `email`, `telefono`, `direccion`, `tipo`, `fecha_registro`, `created_at`, `updated_at`, `activo`) VALUES
+(2, '23948576', 'Roberto Pérez', 'roberto@gmail.com', '04163847596', 'Barquisimeto Calle 38 carrera 31', 'Genérico', '2025-11-08', '2025-11-08 17:25:04', '2025-11-08 17:25:04', 1),
+(1, '27586745', 'Carla Soto', 'carla@gmail.com', '04142837489', 'Barquisimeto Calle 57 carrera 32', 'Natural', '2025-11-08', '2025-11-08 16:58:26', '2025-11-08 16:58:26', 1),
+(3, '29384758', 'Mario Soto', 'mario@gmail.com', '04241238866', 'Barquisimeto Calle 33 carrera 32', 'Natural', '2025-11-08', '2025-11-08 17:28:24', '2025-11-09 21:23:50', 1),
+(5, '30998746', 'Angela Rodriguez', 'angela@gmail.com', '04241198374', 'Calle 34 carrera 29', 'Genérico', '2025-11-08', '2025-11-09 02:28:53', '2025-11-09 02:28:53', 1);
 
 -- --------------------------------------------------------
 
@@ -59,40 +83,19 @@ CREATE TABLE `compra` (
   `id_compra` int(11) NOT NULL,
   `cedula_proveedor` varchar(30) NOT NULL,
   `fecha` date NOT NULL,
+  `nro_factura` decimal(10,2) NOT NULL,
   `total` decimal(10,2) NOT NULL,
-  `estado` varchar(15) NOT NULL COMMENT 'pendiente, pagada, anulada',
-  `id_usuario` int(11) NOT NULL
+  `id_usuario` int(11) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- --------------------------------------------------------
-
 --
--- Estructura de tabla para la tabla `cuenta_por_cobrar`
+-- Volcado de datos para la tabla `compra`
 --
 
-CREATE TABLE `cuenta_por_cobrar` (
-  `id_cxc` int(11) NOT NULL,
-  `id_venta` int(11) NOT NULL,
-  `monto` decimal(10,2) NOT NULL,
-  `fecha_vencimiento` date NOT NULL,
-  `cobrado` tinyint(1) NOT NULL DEFAULT 0,
-  `fecha_cobro` date DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `cuenta_por_pagar`
---
-
-CREATE TABLE `cuenta_por_pagar` (
-  `id_cxp` int(11) NOT NULL,
-  `id_compra` int(11) NOT NULL,
-  `monto` decimal(10,2) NOT NULL,
-  `fecha_vencimiento` date NOT NULL,
-  `pagado` tinyint(1) NOT NULL DEFAULT 0,
-  `fecha_pago` date DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+INSERT INTO `compra` (`id_compra`, `cedula_proveedor`, `fecha`, `nro_factura`, `total`, `id_usuario`, `created_at`, `updated_at`) VALUES
+(2, '21003948', '2025-11-08', 0.00, 500.00, 1, '2025-11-08 21:01:51', '2025-11-08 21:01:51');
 
 -- --------------------------------------------------------
 
@@ -101,12 +104,21 @@ CREATE TABLE `cuenta_por_pagar` (
 --
 
 CREATE TABLE `detalle_compra` (
-  `id_detalle` int(11) NOT NULL,
+  `id_detallecompra` int(11) NOT NULL,
   `id_compra` int(11) NOT NULL,
   `id_variante` int(11) NOT NULL,
   `cantidad` int(11) NOT NULL,
-  `precio_unitario_costo` decimal(10,2) NOT NULL
+  `precio_unitario_costo` decimal(10,2) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `detalle_compra`
+--
+
+INSERT INTO `detalle_compra` (`id_detallecompra`, `id_compra`, `id_variante`, `cantidad`, `precio_unitario_costo`, `created_at`, `updated_at`) VALUES
+(1, 2, 1, 10, 50.00, '2025-11-08 21:01:51', '2025-11-08 21:01:51');
 
 -- --------------------------------------------------------
 
@@ -115,11 +127,20 @@ CREATE TABLE `detalle_compra` (
 --
 
 CREATE TABLE `detalle_devolucion` (
-  `id_detalle` int(11) NOT NULL,
+  `id_detalledevolucion` int(11) NOT NULL,
   `id_devolucion` int(11) NOT NULL,
   `id_variante` int(11) NOT NULL,
-  `cantidad` int(11) NOT NULL
+  `cantidad` int(11) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `detalle_devolucion`
+--
+
+INSERT INTO `detalle_devolucion` (`id_detalledevolucion`, `id_devolucion`, `id_variante`, `cantidad`, `created_at`, `updated_at`) VALUES
+(1, 2, 1, 1, '2025-11-08 21:02:46', '2025-11-08 21:02:46');
 
 -- --------------------------------------------------------
 
@@ -128,12 +149,23 @@ CREATE TABLE `detalle_devolucion` (
 --
 
 CREATE TABLE `detalle_venta` (
-  `id_detalle` int(11) NOT NULL,
+  `id_detalleventa` int(11) NOT NULL,
   `id_venta` int(11) NOT NULL,
   `id_variante` int(11) NOT NULL,
+  `id_metodo` int(11) NOT NULL,
   `cantidad` int(11) NOT NULL,
-  `precio_unitario_venta` decimal(10,2) NOT NULL
+  `precio_unitario_venta` decimal(10,2) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `detalle_venta`
+--
+
+INSERT INTO `detalle_venta` (`id_detalleventa`, `id_venta`, `id_variante`, `id_metodo`, `cantidad`, `precio_unitario_venta`, `created_at`, `updated_at`) VALUES
+(1, 2, 1, 1, 2, 29.99, '2025-11-08 20:00:32', '2025-11-08 20:00:32'),
+(2, 3, 1, 1, 2, 35.99, '2025-11-09 02:26:24', '2025-11-09 02:26:24');
 
 -- --------------------------------------------------------
 
@@ -146,8 +178,45 @@ CREATE TABLE `devolucion` (
   `id_venta` int(11) NOT NULL,
   `fecha` date NOT NULL,
   `motivo` text DEFAULT NULL,
-  `id_usuario` int(11) NOT NULL
+  `id_usuario` int(11) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `devolucion`
+--
+
+INSERT INTO `devolucion` (`id_devolucion`, `id_venta`, `fecha`, `motivo`, `id_usuario`, `created_at`, `updated_at`) VALUES
+(2, 2, '2025-11-08', 'Producto defectuoso', 1, '2025-11-08 21:02:46', '2025-11-08 21:02:46');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `inventario`
+--
+
+CREATE TABLE `inventario` (
+  `id_inventario` int(11) NOT NULL,
+  `id_variante` int(11) NOT NULL,
+  `tipo` varchar(20) NOT NULL COMMENT 'entrada, salida, ajuste, devolucion',
+  `cantidad` int(11) NOT NULL,
+  `stock_actual` int(11) NOT NULL,
+  `stock_minimo` int(11) NOT NULL,
+  `fecha_ultima_entrada` datetime NOT NULL,
+  `referencia` varchar(100) DEFAULT NULL COMMENT 'ID de Compra/Venta/Devolución',
+  `id_usuario` int(11) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `inventario`
+--
+
+INSERT INTO `inventario` (`id_inventario`, `id_variante`, `tipo`, `cantidad`, `stock_actual`, `stock_minimo`, `fecha_ultima_entrada`, `referencia`, `id_usuario`, `created_at`, `updated_at`) VALUES
+(16, 2, 'entrada', 27, 27, 10, '2025-11-08 15:23:49', 'ajuste_manual', 1, '2025-11-08 19:23:49', '2025-11-08 19:23:49'),
+(17, 1, 'entrada', 10, 9, 10, '2025-11-08 22:26:24', 'compra_2', 1, '2025-11-08 21:01:51', '2025-11-08 21:01:51');
 
 -- --------------------------------------------------------
 
@@ -157,24 +226,42 @@ CREATE TABLE `devolucion` (
 
 CREATE TABLE `marca` (
   `id_marca` int(11) NOT NULL,
-  `nombre` varchar(50) NOT NULL
+  `nombre` varchar(50) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `marca`
+--
+
+INSERT INTO `marca` (`id_marca`, `nombre`, `created_at`, `updated_at`) VALUES
+(1, 'Puma', '2025-11-08 17:01:56', '2025-11-08 17:01:56'),
+(2, 'Adidas', '2025-11-08 17:38:42', '2025-11-08 17:38:42');
 
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `movimiento_inventario`
+-- Estructura de tabla para la tabla `metodo_pago`
 --
 
-CREATE TABLE `movimiento_inventario` (
-  `id_movimiento` int(11) NOT NULL,
-  `id_variante` int(11) NOT NULL,
-  `tipo` varchar(20) NOT NULL COMMENT 'entrada, salida, ajuste, devolucion',
-  `cantidad` int(11) NOT NULL,
-  `fecha` datetime NOT NULL,
-  `referencia` varchar(100) DEFAULT NULL COMMENT 'ID de Compra/Venta/Devolución',
-  `id_usuario` int(11) NOT NULL
+CREATE TABLE `metodo_pago` (
+  `id_metodopago` int(11) NOT NULL,
+  `nombre` varchar(50) NOT NULL,
+  `codigo` decimal(10,2) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `metodo_pago`
+--
+
+INSERT INTO `metodo_pago` (`id_metodopago`, `nombre`, `codigo`, `created_at`, `updated_at`) VALUES
+(1, 'Efectivo', 1.00, '2025-11-08 19:57:22', '2025-11-08 19:57:22'),
+(2, 'Tarjeta Débito', 2.00, '2025-11-08 19:57:35', '2025-11-08 19:57:35'),
+(3, 'Tarjeta Crédito', 3.00, '2025-11-08 19:57:42', '2025-11-08 19:57:42'),
+(4, 'Transferencia', 4.00, '2025-11-08 19:57:47', '2025-11-08 19:57:47');
 
 -- --------------------------------------------------------
 
@@ -188,8 +275,18 @@ CREATE TABLE `producto` (
   `descripcion` text DEFAULT NULL,
   `id_categoria` int(11) NOT NULL,
   `id_marca` int(11) DEFAULT NULL,
-  `activo` tinyint(1) NOT NULL DEFAULT 1
+  `activo` tinyint(1) NOT NULL DEFAULT 1,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `producto`
+--
+
+INSERT INTO `producto` (`id_producto`, `nombre`, `descripcion`, `id_categoria`, `id_marca`, `activo`, `created_at`, `updated_at`) VALUES
+(1, 'Camisa Clásica de Algodón', 'Camisa de vestir Nyke', 1, 1, 1, '2025-11-08 17:02:30', '2025-11-08 17:02:30'),
+(2, 'Zapatos Running', 'Zapatos para correr', 1, 1, 1, '2025-11-08 17:44:57', '2025-11-08 17:44:57');
 
 -- --------------------------------------------------------
 
@@ -198,12 +295,43 @@ CREATE TABLE `producto` (
 --
 
 CREATE TABLE `proveedor` (
-  `cedula` varchar(30) NOT NULL,
+  `doc_identidad` varchar(30) NOT NULL,
   `nombre` varchar(150) NOT NULL,
   `telefono` varchar(20) DEFAULT NULL,
   `email` varchar(100) DEFAULT NULL,
-  `direccion` varchar(255) DEFAULT NULL
+  `direccion` varchar(255) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `proveedor`
+--
+
+INSERT INTO `proveedor` (`doc_identidad`, `nombre`, `telefono`, `email`, `direccion`, `created_at`, `updated_at`) VALUES
+('21003948', 'Distribuidora Moda S.A.', '04248875968', 'contacto@distribuidora.com', 'Av. Principal 456', '2025-11-08 19:08:05', '2025-11-08 19:08:05');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `rol_usuario`
+--
+
+CREATE TABLE `rol_usuario` (
+  `id_rol` int(11) NOT NULL,
+  `rol` varchar(50) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `rol_usuario`
+--
+
+INSERT INTO `rol_usuario` (`id_rol`, `rol`, `created_at`, `updated_at`) VALUES
+(1, 'Administrador', '2025-11-08 19:00:11', '2025-11-08 19:00:11'),
+(2, 'Vendedor', '2025-11-08 19:00:33', '2025-11-08 19:00:33'),
+(3, 'Almacen', '2025-11-08 19:00:41', '2025-11-08 19:00:41');
 
 -- --------------------------------------------------------
 
@@ -215,10 +343,20 @@ CREATE TABLE `usuarios` (
   `id_usuario` int(11) NOT NULL,
   `usuario` varchar(50) NOT NULL,
   `password_hash` varchar(255) NOT NULL,
-  `rol` varchar(15) NOT NULL COMMENT 'admin, vendedor, contador',
-  `estado` varchar(10) NOT NULL DEFAULT 'activo',
-  `fecha_creacion` date NOT NULL
+  `id_rol` int(11) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `usuarios`
+--
+
+INSERT INTO `usuarios` (`id_usuario`, `usuario`, `password_hash`, `id_rol`, `created_at`, `updated_at`) VALUES
+(1, 'admin', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 1, '2025-11-08 19:23:36', '2025-11-08 19:23:36'),
+(2, 'vendedor1', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 2, '2025-11-08 19:00:54', '2025-11-08 19:00:54'),
+(3, 'admin', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 1, '2025-11-08 19:22:28', '2025-11-08 19:22:28'),
+(4, 'Manuel', '$2b$10$xIx08mzUe78GoTk/RcW7au/yfomLc1LN/rFEEVmDj/rsYmoKAEiNS', 1, '2025-11-09 01:33:25', '2025-11-09 01:33:25');
 
 -- --------------------------------------------------------
 
@@ -233,8 +371,18 @@ CREATE TABLE `variante_producto` (
   `color` varchar(50) NOT NULL,
   `codigo_barras` varchar(50) NOT NULL,
   `precio_unitario_venta` decimal(10,2) NOT NULL,
-  `stock_actual` int(11) NOT NULL DEFAULT 0
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `variante_producto`
+--
+
+INSERT INTO `variante_producto` (`id_variante`, `id_producto`, `talla`, `color`, `codigo_barras`, `precio_unitario_venta`, `created_at`, `updated_at`) VALUES
+(1, 1, 'M', 'Blanco', 'C001-BL-M', 35.99, '2025-11-08 17:02:41', '2025-11-08 17:02:41'),
+(2, 1, '42', 'Negro', 'ZAP-RUN-42', 89.99, '2025-11-08 17:45:21', '2025-11-08 17:45:21'),
+(3, 1, '42', 'Negro', 'ZAP-RUN-42', 89.99, '2025-11-08 18:09:52', '2025-11-08 18:09:52');
 
 -- --------------------------------------------------------
 
@@ -248,8 +396,18 @@ CREATE TABLE `venta` (
   `fecha` date NOT NULL,
   `total` decimal(10,2) NOT NULL,
   `estado` varchar(15) NOT NULL COMMENT 'pagada, pendiente, anulada',
-  `id_usuario` int(11) NOT NULL
+  `id_usuario` int(11) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `venta`
+--
+
+INSERT INTO `venta` (`id_venta`, `cedula_cliente`, `fecha`, `total`, `estado`, `id_usuario`, `created_at`, `updated_at`) VALUES
+(2, '29384758', '2025-11-08', 59.98, 'pagada', 1, '2025-11-08 20:00:32', '2025-11-08 20:00:32'),
+(3, '27586745', '2025-11-08', 47.86, 'pagada', 4, '2025-11-09 02:26:24', '2025-11-09 02:26:24');
 
 --
 -- Índices para tablas volcadas
@@ -259,15 +417,14 @@ CREATE TABLE `venta` (
 -- Indices de la tabla `categoria`
 --
 ALTER TABLE `categoria`
-  ADD PRIMARY KEY (`id_categoria`),
-  ADD UNIQUE KEY `nombre` (`nombre`);
+  ADD PRIMARY KEY (`id_categoria`);
 
 --
 -- Indices de la tabla `cliente`
 --
 ALTER TABLE `cliente`
   ADD PRIMARY KEY (`cedula`),
-  ADD UNIQUE KEY `email` (`email`);
+  ADD KEY `id_cliente` (`id_cliente`);
 
 --
 -- Indices de la tabla `compra`
@@ -278,24 +435,10 @@ ALTER TABLE `compra`
   ADD KEY `id_usuario` (`id_usuario`);
 
 --
--- Indices de la tabla `cuenta_por_cobrar`
---
-ALTER TABLE `cuenta_por_cobrar`
-  ADD PRIMARY KEY (`id_cxc`),
-  ADD KEY `id_venta` (`id_venta`);
-
---
--- Indices de la tabla `cuenta_por_pagar`
---
-ALTER TABLE `cuenta_por_pagar`
-  ADD PRIMARY KEY (`id_cxp`),
-  ADD KEY `id_compra` (`id_compra`);
-
---
 -- Indices de la tabla `detalle_compra`
 --
 ALTER TABLE `detalle_compra`
-  ADD PRIMARY KEY (`id_detalle`),
+  ADD PRIMARY KEY (`id_detallecompra`),
   ADD KEY `id_compra` (`id_compra`),
   ADD KEY `id_variante` (`id_variante`);
 
@@ -303,7 +446,7 @@ ALTER TABLE `detalle_compra`
 -- Indices de la tabla `detalle_devolucion`
 --
 ALTER TABLE `detalle_devolucion`
-  ADD PRIMARY KEY (`id_detalle`),
+  ADD PRIMARY KEY (`id_detalledevolucion`),
   ADD KEY `id_devolucion` (`id_devolucion`),
   ADD KEY `id_variante` (`id_variante`);
 
@@ -311,9 +454,10 @@ ALTER TABLE `detalle_devolucion`
 -- Indices de la tabla `detalle_venta`
 --
 ALTER TABLE `detalle_venta`
-  ADD PRIMARY KEY (`id_detalle`),
+  ADD PRIMARY KEY (`id_detalleventa`),
   ADD KEY `id_venta` (`id_venta`),
-  ADD KEY `id_variante` (`id_variante`);
+  ADD KEY `id_variante` (`id_variante`),
+  ADD KEY `id_metodo` (`id_metodo`);
 
 --
 -- Indices de la tabla `devolucion`
@@ -324,19 +468,24 @@ ALTER TABLE `devolucion`
   ADD KEY `id_usuario` (`id_usuario`);
 
 --
+-- Indices de la tabla `inventario`
+--
+ALTER TABLE `inventario`
+  ADD PRIMARY KEY (`id_inventario`),
+  ADD KEY `id_variante` (`id_variante`),
+  ADD KEY `id_usuario` (`id_usuario`);
+
+--
 -- Indices de la tabla `marca`
 --
 ALTER TABLE `marca`
-  ADD PRIMARY KEY (`id_marca`),
-  ADD UNIQUE KEY `nombre` (`nombre`);
+  ADD PRIMARY KEY (`id_marca`);
 
 --
--- Indices de la tabla `movimiento_inventario`
+-- Indices de la tabla `metodo_pago`
 --
-ALTER TABLE `movimiento_inventario`
-  ADD PRIMARY KEY (`id_movimiento`),
-  ADD KEY `id_variante` (`id_variante`),
-  ADD KEY `id_usuario` (`id_usuario`);
+ALTER TABLE `metodo_pago`
+  ADD PRIMARY KEY (`id_metodopago`);
 
 --
 -- Indices de la tabla `producto`
@@ -350,23 +499,27 @@ ALTER TABLE `producto`
 -- Indices de la tabla `proveedor`
 --
 ALTER TABLE `proveedor`
-  ADD PRIMARY KEY (`cedula`),
-  ADD UNIQUE KEY `email` (`email`);
+  ADD PRIMARY KEY (`doc_identidad`);
+
+--
+-- Indices de la tabla `rol_usuario`
+--
+ALTER TABLE `rol_usuario`
+  ADD PRIMARY KEY (`id_rol`);
 
 --
 -- Indices de la tabla `usuarios`
 --
 ALTER TABLE `usuarios`
   ADD PRIMARY KEY (`id_usuario`),
-  ADD UNIQUE KEY `usuario` (`usuario`);
+  ADD KEY `id_rol` (`id_rol`);
 
 --
 -- Indices de la tabla `variante_producto`
 --
 ALTER TABLE `variante_producto`
   ADD PRIMARY KEY (`id_variante`),
-  ADD UNIQUE KEY `codigo_barras` (`codigo_barras`),
-  ADD UNIQUE KEY `uk_producto_variante` (`id_producto`,`talla`,`color`);
+  ADD KEY `id_producto` (`id_producto`);
 
 --
 -- Indices de la tabla `venta`
@@ -384,85 +537,91 @@ ALTER TABLE `venta`
 -- AUTO_INCREMENT de la tabla `categoria`
 --
 ALTER TABLE `categoria`
-  MODIFY `id_categoria` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_categoria` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
+-- AUTO_INCREMENT de la tabla `cliente`
+--
+ALTER TABLE `cliente`
+  MODIFY `id_cliente` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT de la tabla `compra`
 --
 ALTER TABLE `compra`
-  MODIFY `id_compra` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT de la tabla `cuenta_por_cobrar`
---
-ALTER TABLE `cuenta_por_cobrar`
-  MODIFY `id_cxc` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT de la tabla `cuenta_por_pagar`
---
-ALTER TABLE `cuenta_por_pagar`
-  MODIFY `id_cxp` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_compra` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT de la tabla `detalle_compra`
 --
 ALTER TABLE `detalle_compra`
-  MODIFY `id_detalle` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_detallecompra` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT de la tabla `detalle_devolucion`
 --
 ALTER TABLE `detalle_devolucion`
-  MODIFY `id_detalle` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_detalledevolucion` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT de la tabla `detalle_venta`
 --
 ALTER TABLE `detalle_venta`
-  MODIFY `id_detalle` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_detalleventa` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT de la tabla `devolucion`
 --
 ALTER TABLE `devolucion`
-  MODIFY `id_devolucion` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_devolucion` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
+-- AUTO_INCREMENT de la tabla `inventario`
+--
+ALTER TABLE `inventario`
+  MODIFY `id_inventario` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
 
 --
 -- AUTO_INCREMENT de la tabla `marca`
 --
 ALTER TABLE `marca`
-  MODIFY `id_marca` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_marca` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
--- AUTO_INCREMENT de la tabla `movimiento_inventario`
+-- AUTO_INCREMENT de la tabla `metodo_pago`
 --
-ALTER TABLE `movimiento_inventario`
-  MODIFY `id_movimiento` int(11) NOT NULL AUTO_INCREMENT;
+ALTER TABLE `metodo_pago`
+  MODIFY `id_metodopago` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT de la tabla `producto`
 --
 ALTER TABLE `producto`
-  MODIFY `id_producto` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_producto` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
+-- AUTO_INCREMENT de la tabla `rol_usuario`
+--
+ALTER TABLE `rol_usuario`
+  MODIFY `id_rol` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT de la tabla `usuarios`
 --
 ALTER TABLE `usuarios`
-  MODIFY `id_usuario` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_usuario` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT de la tabla `variante_producto`
 --
 ALTER TABLE `variante_producto`
-  MODIFY `id_variante` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_variante` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT de la tabla `venta`
 --
 ALTER TABLE `venta`
-  MODIFY `id_venta` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_venta` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- Restricciones para tablas volcadas
@@ -472,20 +631,8 @@ ALTER TABLE `venta`
 -- Filtros para la tabla `compra`
 --
 ALTER TABLE `compra`
-  ADD CONSTRAINT `compra_ibfk_1` FOREIGN KEY (`cedula_proveedor`) REFERENCES `proveedor` (`cedula`),
+  ADD CONSTRAINT `compra_ibfk_1` FOREIGN KEY (`cedula_proveedor`) REFERENCES `proveedor` (`doc_identidad`),
   ADD CONSTRAINT `compra_ibfk_2` FOREIGN KEY (`id_usuario`) REFERENCES `usuarios` (`id_usuario`);
-
---
--- Filtros para la tabla `cuenta_por_cobrar`
---
-ALTER TABLE `cuenta_por_cobrar`
-  ADD CONSTRAINT `cuenta_por_cobrar_ibfk_1` FOREIGN KEY (`id_venta`) REFERENCES `venta` (`id_venta`);
-
---
--- Filtros para la tabla `cuenta_por_pagar`
---
-ALTER TABLE `cuenta_por_pagar`
-  ADD CONSTRAINT `cuenta_por_pagar_ibfk_1` FOREIGN KEY (`id_compra`) REFERENCES `compra` (`id_compra`);
 
 --
 -- Filtros para la tabla `detalle_compra`
@@ -506,7 +653,8 @@ ALTER TABLE `detalle_devolucion`
 --
 ALTER TABLE `detalle_venta`
   ADD CONSTRAINT `detalle_venta_ibfk_1` FOREIGN KEY (`id_venta`) REFERENCES `venta` (`id_venta`),
-  ADD CONSTRAINT `detalle_venta_ibfk_2` FOREIGN KEY (`id_variante`) REFERENCES `variante_producto` (`id_variante`);
+  ADD CONSTRAINT `detalle_venta_ibfk_2` FOREIGN KEY (`id_variante`) REFERENCES `variante_producto` (`id_variante`),
+  ADD CONSTRAINT `detalle_venta_ibfk_3` FOREIGN KEY (`id_metodo`) REFERENCES `metodo_pago` (`id_metodopago`);
 
 --
 -- Filtros para la tabla `devolucion`
@@ -516,11 +664,11 @@ ALTER TABLE `devolucion`
   ADD CONSTRAINT `devolucion_ibfk_2` FOREIGN KEY (`id_usuario`) REFERENCES `usuarios` (`id_usuario`);
 
 --
--- Filtros para la tabla `movimiento_inventario`
+-- Filtros para la tabla `inventario`
 --
-ALTER TABLE `movimiento_inventario`
-  ADD CONSTRAINT `movimiento_inventario_ibfk_1` FOREIGN KEY (`id_variante`) REFERENCES `variante_producto` (`id_variante`),
-  ADD CONSTRAINT `movimiento_inventario_ibfk_2` FOREIGN KEY (`id_usuario`) REFERENCES `usuarios` (`id_usuario`);
+ALTER TABLE `inventario`
+  ADD CONSTRAINT `inventario_ibfk_1` FOREIGN KEY (`id_variante`) REFERENCES `variante_producto` (`id_variante`),
+  ADD CONSTRAINT `inventario_ibfk_2` FOREIGN KEY (`id_usuario`) REFERENCES `usuarios` (`id_usuario`);
 
 --
 -- Filtros para la tabla `producto`
@@ -528,6 +676,12 @@ ALTER TABLE `movimiento_inventario`
 ALTER TABLE `producto`
   ADD CONSTRAINT `producto_ibfk_1` FOREIGN KEY (`id_categoria`) REFERENCES `categoria` (`id_categoria`),
   ADD CONSTRAINT `producto_ibfk_2` FOREIGN KEY (`id_marca`) REFERENCES `marca` (`id_marca`);
+
+--
+-- Filtros para la tabla `usuarios`
+--
+ALTER TABLE `usuarios`
+  ADD CONSTRAINT `usuarios_ibfk_1` FOREIGN KEY (`id_rol`) REFERENCES `rol_usuario` (`id_rol`);
 
 --
 -- Filtros para la tabla `variante_producto`
