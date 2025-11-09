@@ -28,6 +28,7 @@ async function initializeDatabase() {
         
         // Sincronizar modelos
         console.log('🔄 Sincronizando modelos con la BD...');
+        setupAssociations(); // <-- Llama a las asociaciones aquí
         await sequelize.sync({ force: false });
         console.log("✅ Tablas de Sequelize sincronizadas con la BD.");
         

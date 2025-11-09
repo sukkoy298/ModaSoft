@@ -1,5 +1,3 @@
-import { ProductoModel, VarianteProductoModel } from './models/VarianteProductoModel.js';
-import MarcaModel from './models/MarcaModel.js';
 import { sequelize } from '../db.js'
 import { QueryTypes } from 'sequelize'
 
@@ -30,40 +28,60 @@ export const actualizarStockVariante = async (codigoBarras, cantidad) => {
 };
 
 export async function obtenerTodoElInventario() {
-  // Ajustado para que el 'id' principal sea el de la variante, que es único.
+  // Consulta corregida para coincidir con el schema de modasoft2.sql (sin imagen_url)
   const sql = `
     SELECT
-        v.id_variante AS id,                      -- <-- CAMBIO: El ID principal ahora es el de la variante
-        p.id_producto AS id_producto,             -- <-- CAMBIO: El ID del producto se mantiene con su nombre original
-        p.nombre AS producto,
-        COALESCE(p.descripcion, '') AS descripcion,
+        p.id_producto,
+        p.nombre AS nombre_producto,
+        p.descripcion,
+        v.id_variante,
         v.codigo_barras AS sku,
-        v.talla AS talla,
-        v.color AS color,
+        v.talla,
+        v.color,
         COALESCE(v.precio_unitario_venta, 0) AS precio,
-        COALESCE(inv.stock_actual, 0) AS stock_actual,
-        p.id_categoria AS id_categoria,
-        p.id_marca AS id_marca
+        COALESCE(latest_inventory.stock_actual, 0) AS stock_actual
     FROM producto p
     INNER JOIN variante_producto v ON v.id_producto = p.id_producto
     LEFT JOIN (
-        SELECT
-            i1.id_variante,
-            i1.stock_actual
-        FROM inventario i1
-        WHERE i1.id_inventario = (
-            SELECT MAX(i2.id_inventario)
-            FROM inventario i2
-            WHERE i2.id_variante = i1.id_variante
-        )
-    ) AS inv ON inv.id_variante = v.id_variante
+        -- Subconsulta para obtener solo el registro de inventario más reciente para cada variante
+        SELECT i.id_variante, i.stock_actual
+        FROM inventario i
+        INNER JOIN (
+            SELECT id_variante, MAX(id_inventario) AS max_id
+            FROM inventario
+            GROUP BY id_variante
+        ) AS latest ON i.id_variante = latest.id_variante AND i.id_inventario = latest.max_id
+    ) AS latest_inventory ON v.id_variante = latest_inventory.id_variante
     WHERE p.activo = 1
     ORDER BY p.id_producto, v.id_variante;
   `;
 
   try {
-    const rows = await sequelize.query(sql, { type: QueryTypes.SELECT });
-    return Array.isArray(rows) ? rows : [];
+    const flatResults = await sequelize.query(sql, { type: QueryTypes.SELECT });
+
+    // Lógica para agrupar los productos (ahora sin imagen_url)
+    const groupedProducts = {};
+    for (const row of flatResults) {
+      if (!groupedProducts[row.id_producto]) {
+        groupedProducts[row.id_producto] = {
+          id: row.id_producto,
+          nombre: row.nombre_producto,
+          descripcion: row.descripcion,
+          variantes: []
+        };
+      }
+      groupedProducts[row.id_producto].variantes.push({
+        id: row.id_variante,
+        sku: row.sku,
+        talla: row.talla,
+        color: row.color,
+        precio: row.precio,
+        stock: row.stock_actual
+      });
+    }
+
+    return Object.values(groupedProducts);
+
   } catch (err) {
     console.error('producto.service.obtenerTodoElInventario ERROR:', err.message);
     console.error('SQL Error Details:', err.original);

@@ -1,82 +1,65 @@
 import { Router } from 'express';
+import { registrarVenta } from '../../venta.service.js';
+import { Sequelize } from 'sequelize'; // <-- Importa la clase Sequelize
 
-// /src/server/routes/facturacion.route.js
 const router = Router();
 
-// Almacenamiento en memoria (puede reemplazarse por DB/Controller)
-let facturas = [];
-let nextId = 1;
+// Ruta para registrar una nueva venta
+router.post('/', async (req, res) => {
+  try {
+    console.log('[API] POST /api/ventas - inicio');
+    const ventaData = req.body;
 
-// Helpers
-const generarId = () => String(nextId++);
-const findIndex = id => facturas.findIndex(f => f.id === id);
+    // --- Validación básica del payload ---
+    if (!ventaData.lines || ventaData.lines.length === 0) {
+      return res.status(400).json({ message: 'El carrito está vacío o no se enviaron líneas de venta.' });
+    }
+    if (ventaData.total === undefined || ventaData.total === null) {
+      return res.status(400).json({ message: 'El total de la venta es requerido.' });
+    }
+    if (!ventaData.cliente || !ventaData.cliente.cedula) {
+      // Si no hay cliente, se usará el fallback en el servicio, pero es bueno validar aquí también
+      console.warn('[API] POST /api/ventas - Venta sin cliente específico. Se usará cliente genérico.');
+    }
+    // --- Fin Validación básica ---
 
-// Validación mínima
-function validarFactura(body) {
-    const errors = [];
-    if (!body.cliente || typeof body.cliente !== 'string') errors.push('cliente (string) requerido');
-    if (!Array.isArray(body.items) || body.items.length === 0) errors.push('items (array) requerido');
-    if (typeof body.total !== 'number' || isNaN(body.total)) errors.push('total (number) requerido');
-    return errors;
-}
+    const nuevaVenta = await registrarVenta(ventaData);
+    console.log(`[API] POST /api/ventas - Venta registrada con ID: ${nuevaVenta.id_venta}`);
+    return res.status(201).json({
+      message: 'Venta registrada correctamente',
+      venta: nuevaVenta
+    });
+  } catch (err) {
+    console.error('[API] POST /api/ventas - ERROR:', err && err.stack ? err.stack : err);
+    if (err.original) {
+      console.error('[API] POST /api/ventas - DB Original Error:', err.original);
+    }
 
-// Listar todas las facturas
-router.get('/', (req, res) => {
-    res.json(facturas);
-});
+    // Manejo específico de errores de Sequelize
+    if (err instanceof Sequelize.ValidationError) { // <-- Accede a ValidationError desde Sequelize
+      return res.status(400).json({
+        message: 'Error de validación en los datos de la venta.',
+        error: err.message,
+        details: err.errors ? err.errors.map(e => e.message) : undefined
+      });
+    } else if (err instanceof Sequelize.ForeignKeyConstraintError) { // <-- Accede a ForeignKeyConstraintError desde Sequelize
+      return res.status(400).json({
+        message: 'Error de datos: una clave foránea no existe (ej. cliente, usuario, método de pago, variante).',
+        error: err.message,
+        details: err.original ? err.original.message : undefined
+      });
+    } else if (err.message.includes('Stock insuficiente')) {
+      return res.status(400).json({
+        message: 'Error de stock: ' + err.message,
+        error: err.message
+      });
+    }
 
-// Obtener una factura por id
-router.get('/:id', (req, res) => {
-    const { id } = req.params;
-    const factura = facturas.find(f => f.id === id);
-    if (!factura) return res.status(404).json({ error: 'Factura no encontrada' });
-    res.json(factura);
-});
-
-// Crear nueva factura
-router.post('/', (req, res) => {
-    const body = req.body || {};
-    const errors = validarFactura(body);
-    if (errors.length) return res.status(400).json({ errors });
-
-    const nueva = {
-        id: generarId(),
-        cliente: body.cliente,
-        items: body.items,
-        total: body.total,
-        fecha: body.fecha || new Date().toISOString(),
-        estado: body.estado || 'pendiente',
-        notas: body.notas || ''
-    };
-    facturas.push(nueva);
-    res.status(201).json(nueva);
-});
-
-// Actualizar factura (parcial o completo)
-router.put('/:id', (req, res) => {
-    const { id } = req.params;
-    const idx = findIndex(id);
-    if (idx === -1) return res.status(404).json({ error: 'Factura no encontrada' });
-
-    const body = req.body || {};
-    // Si vienen campos, los aplicamos; validación mínima opcional
-    if (body.cliente !== undefined) facturas[idx].cliente = body.cliente;
-    if (body.items !== undefined) facturas[idx].items = body.items;
-    if (body.total !== undefined) facturas[idx].total = body.total;
-    if (body.fecha !== undefined) facturas[idx].fecha = body.fecha;
-    if (body.estado !== undefined) facturas[idx].estado = body.estado;
-    if (body.notas !== undefined) facturas[idx].notas = body.notas;
-
-    res.json(facturas[idx]);
-});
-
-// Eliminar factura
-router.delete('/:id', (req, res) => {
-    const { id } = req.params;
-    const idx = findIndex(id);
-    if (idx === -1) return res.status(404).json({ error: 'Factura no encontrada' });
-    const eliminado = facturas.splice(idx, 1)[0];
-    res.json({ deleted: eliminado });
+    return res.status(500).json({
+      message: 'Error interno del servidor al registrar la venta',
+      error: err.message || 'No se pudo registrar la venta.'
+    });
+  }
 });
 
 export default router;

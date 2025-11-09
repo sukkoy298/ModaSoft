@@ -1,64 +1,60 @@
-import { ProductoModel, VarianteProductoModel } from './VarianteProductoModel.js';
-import MarcaModel from './MarcaModel.js';
-import CategoriaModel from './CategoriaModel.js';
-import VentaModel from './VentaModel.js';
-import DetalleVentaModel from './DetalleVentaModel.js';
-import ClienteModel from './ClienteModel.js';
+// Importa todos tus modelos aquí
+import Categoria from './CategoriaModel.js';
+import Marca from './MarcaModel.js';
+import Producto from './ProductoModel.js';
+import Cliente from './ClienteModel.js';
+import Usuario from './UsuarioModel.js';
+import RolUsuario from './RolUsuarioModel.js';
+import MetodoPago from './MetodoPagoModel.js';
+import Venta from './VentaModel.js';
+import DetalleVenta from './DetalleVentaModel.js';
+import Inventario from './InventarioModel.js';
+import VarianteProducto from './VarianteProductoModel.js';
 
-// 1. Producto (id_marca) <--> Marca
-ProductoModel.belongsTo(MarcaModel, {
-    foreignKey: 'id_marca', 
-    as: 'Marca' // Alias usado en el frontend: p.Marca.nombre
-});
-MarcaModel.hasMany(ProductoModel, {
-    foreignKey: 'id_marca',
-    as: 'Productos'
-});
+export function setupAssociations() {
+  // Producto - Categoria
+  Producto.belongsTo(Categoria, { foreignKey: 'id_categoria' });
+  Categoria.hasMany(Producto, { foreignKey: 'id_categoria' });
 
-// 2. Producto (id_categoria) <--> Categoria
-ProductoModel.belongsTo(CategoriaModel, {
-    foreignKey: 'id_categoria',
-    as: 'Categoria'
-});
-CategoriaModel.hasMany(ProductoModel, {
-    foreignKey: 'id_categoria',
-    as: 'Productos'
-});
+  // Producto - Marca
+  Producto.belongsTo(Marca, { foreignKey: 'id_marca' });
+  Marca.hasMany(Producto, { foreignKey: 'id_marca' });
 
+  // VarianteProducto - Producto
+  VarianteProducto.belongsTo(Producto, { foreignKey: 'id_producto' });
+  Producto.hasMany(VarianteProducto, { foreignKey: 'id_producto' });
 
-// 3. VarianteProducto (id_producto) <--> Producto
-VarianteProductoModel.belongsTo(ProductoModel, {
-    foreignKey: 'id_producto',
-    as: 'ProductoPrincipal' // Nombre que usaste en obtenerTodoElInventario
-});
-ProductoModel.hasMany(VarianteProductoModel, {
-    foreignKey: 'id_producto',
-    as: 'Variantes'
-});
+  // Venta - Cliente
+  Venta.belongsTo(Cliente, { foreignKey: 'cedula_cliente', targetKey: 'cedula' });
+  Cliente.hasMany(Venta, { foreignKey: 'cedula_cliente', sourceKey: 'cedula' });
 
-export const setupAssociations = () => {
-    console.log("✅ Asociaciones de Sequelize cargadas.");
-    // Esto asegura que el archivo se ejecute
-};
+  // Venta - Usuario
+  Venta.belongsTo(Usuario, { foreignKey: 'id_usuario' });
+  Usuario.hasMany(Venta, { foreignKey: 'id_usuario' });
 
-// Venta (Cabecera) <--> Cliente
-VentaModel.belongsTo(ClienteModel, {
-    foreignKey: 'id_cliente',
-    as: 'Cliente'
-});
+  // DetalleVenta - Venta
+  DetalleVenta.belongsTo(Venta, { foreignKey: 'id_venta' });
+  Venta.hasMany(DetalleVenta, { foreignKey: 'id_venta' });
 
-// Venta (Cabecera) <--> DetalleVenta (Items)
-VentaModel.hasMany(DetalleVentaModel, {
-    foreignKey: 'id_venta',
-    as: 'Detalles'
-});
-DetalleVentaModel.belongsTo(VentaModel, {
-    foreignKey: 'id_venta',
-    as: 'VentaPrincipal'
-});
+  // DetalleVenta - VarianteProducto
+  DetalleVenta.belongsTo(VarianteProducto, { foreignKey: 'id_variante' });
+  VarianteProducto.hasMany(DetalleVenta, { foreignKey: 'id_variante' });
 
-// DetalleVenta <--> VarianteProducto
-DetalleVentaModel.belongsTo(VarianteProductoModel, {
-    foreignKey: 'id_variante',
-    as: 'VarianteProducto' // Para saber qué producto se vendió
-});
+  // DetalleVenta - MetodoPago
+  DetalleVenta.belongsTo(MetodoPago, { foreignKey: 'id_metodo' });
+  MetodoPago.hasMany(DetalleVenta, { foreignKey: 'id_metodo' });
+
+  // Inventario - VarianteProducto
+  Inventario.belongsTo(VarianteProducto, { foreignKey: 'id_variante' });
+  VarianteProducto.hasMany(Inventario, { foreignKey: 'id_variante' });
+
+  // Inventario - Usuario
+  Inventario.belongsTo(Usuario, { foreignKey: 'id_usuario' });
+  Usuario.hasMany(Inventario, { foreignKey: 'id_usuario' });
+
+  // Usuario - RolUsuario
+  Usuario.belongsTo(RolUsuario, { foreignKey: 'id_rol' });
+  RolUsuario.hasMany(Usuario, { foreignKey: 'id_rol' });
+
+  console.log('✅ Asociaciones de modelos configuradas.');
+}
