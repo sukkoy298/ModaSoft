@@ -12,8 +12,10 @@ const nombre = ref('');
 const telefono = ref('');
 const email = ref('');
 const direccion = ref('');
-const tipo = ref('');
+const tipo = ref('Natural');
 const formularioEnviado = ref(false);
+const mensaje = ref('');
+const esError = ref(false);
 
 const tituloFormulario = computed(() => {
     return 'Registrar Nuevo Cliente';
@@ -40,22 +42,25 @@ const handleSubmit = async (event) => {
         tipo: tipo.value,
     };
     
-    let mensaje = '';
-    let exito = false;
-
     try {
-        await agregarCliente(datosCliente);
-        mensaje = `✅ Cliente ${nombre.value} registrado con éxito.`;
-        exito = true;
+        const resultado = await agregarCliente(datosCliente);
+        
+        if (resultado.accion === 'reactivado') {
+            mensaje.value = `✅ Cliente reactivado y actualizado exitosamente.`;
+        } else {
+            mensaje.value = `✅ Cliente ${nombre.value} registrado con éxito.`;
+        }
+        
+        esError.value = false;
+        
+        setTimeout(() => {
+            router.push('/listaCliente');
+        }, 1500);
 
     } catch (error) {
-        const errorMsg = error.response?.data?.message || 'Error de conexión con el servidor o datos inválidos.';
-        mensaje = `❌ Error: ${errorMsg}`;
-    }
-    
-    alert(mensaje);
-    if (exito) {
-        router.push('/listaCliente');
+        const errorMsg = error.response?.data?.message || 'Error de conexión con el servidor.';
+        mensaje.value = `❌ Error: ${errorMsg}`;
+        esError.value = true;
     }
 };
 
@@ -65,8 +70,10 @@ const limpiarFormulario = () => {
     telefono.value = '';
     email.value = '';
     direccion.value = '';
-    tipo.value = '';
+    tipo.value = 'Natural';
     formularioEnviado.value = false;
+    mensaje.value = '';
+    esError.value = false;
 };
 
 const volverALista = () => {
@@ -81,6 +88,11 @@ const volverALista = () => {
             <h1>{{ tituloFormulario }}</h1>
         </header>
         
+        <!-- Mensaje de resultado -->
+        <div v-if="mensaje" :class="['alert', esError ? 'alert-danger' : 'alert-success']" role="alert">
+            {{ mensaje }}
+        </div>
+        
         <form 
             :class="['row g-3 border border-secondary-emphasis bg-light rounded p-4', { 'was-validated': formularioEnviado }]" 
             @submit.prevent="handleSubmit"
@@ -92,30 +104,30 @@ const volverALista = () => {
                     type="text" 
                     v-model="cedula" 
                     required 
-                    maxlength="30" 
+                    maxlength="20" 
                     minlength="5" 
                     class="form-control"
                     placeholder="Cédula" 
                     id="floatingCedula">
-                <label for="floatingCedula" class="form-label">Cédula</label>
+                <label for="floatingCedula" class="form-label">Cédula *</label>
                 <div class="invalid-feedback">
                     La cédula es requerida (mínimo 5 caracteres).
                 </div>
             </div>
             
             <div class="form-floating col-md-6">
-                <input type="text" v-model="nombre" required maxlength="150" minlength="3" class="form-control"
+                <input type="text" v-model="nombre" required maxlength="100" minlength="3" class="form-control"
                     placeholder="Ingrese su nombre" id="floatingName">
-                <label for="floatingName" class="form-label">Nombre completo</label>
+                <label for="floatingName" class="form-label">Nombre completo *</label>
                 <div class="invalid-feedback">
                     El nombre es requerido (mínimo 3 caracteres).
                 </div>
             </div>
             
             <div class="col-md-6 form-floating">
-                <input type="tel" v-model="telefono" required minlength="7" maxlength="20" class="form-control" id="floatingTel"
+                <input type="tel" v-model="telefono" required minlength="7" maxlength="15" class="form-control" id="floatingTel"
                     placeholder="Digite su número de teléfono">
-                <label for="floatingTel" class="form-label">Teléfono</label>
+                <label for="floatingTel" class="form-label">Teléfono *</label>
                 <div class="invalid-feedback">
                     El teléfono es requerido (mínimo 7 dígitos).
                 </div>
@@ -124,25 +136,24 @@ const volverALista = () => {
             <div class="form-floating col-md-6">
                 <input type="email" v-model="email" required maxlength="100" class="form-control" id="floatingEmail"
                     placeholder="Coloque su Email">
-                <label for="floatingEmail" class="form-label">Email</label>
+                <label for="floatingEmail" class="form-label">Email *</label>
                 <div class="invalid-feedback">
                     El email es requerido y debe ser válido.
                 </div>
             </div>
             
             <div class="form-floating col-12">
-                <input type="text" v-model="direccion" required maxlength="255" class="form-control" id="floatingDireccion"
-                    placeholder="Escriba su dirección">
-                <label for="floatingDireccion" class="form-label">Dirección</label>
+                <textarea v-model="direccion" required maxlength="255" class="form-control" id="floatingDireccion"
+                    placeholder="Escriba su dirección" style="height: 80px;"></textarea>
+                <label for="floatingDireccion" class="form-label">Dirección *</label>
                 <div class="invalid-feedback">
                     La dirección es requerida.
                 </div>
             </div>
             
             <div class="col-md-4">
-                <label for="inputState" class="form-label">Tipo de Cliente</label>
+                <label for="inputState" class="form-label">Tipo de Cliente *</label>
                 <select id="inputState" v-model="tipo" required class="form-select">
-                    <option value="" disabled selected>Seleccione el tipo</option> 
                     <option value="Natural">Natural</option>
                     <option value="Jurídico">Jurídico</option>
                     <option value="Genérico">Genérico</option>
@@ -150,6 +161,10 @@ const volverALista = () => {
                 <div class="invalid-feedback">
                     Debe seleccionar un tipo de cliente.
                 </div>
+            </div>
+            
+            <div class="col-12">
+                <small class="text-muted">* Campos obligatorios</small>
             </div>
             
             <div class="col-12 d-flex gap-2">

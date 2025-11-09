@@ -2,35 +2,53 @@ import { DataTypes } from 'sequelize';
 import { sequelize } from '../../db.js';
 
 const ClienteModel = sequelize.define('cliente', {
-    cedula: {
-        type: DataTypes.STRING(30),
+    id_cliente: {
+        type: DataTypes.INTEGER,
         primaryKey: true,
-        allowNull: false
+        autoIncrement: true
+    },
+    cedula: {
+        type: DataTypes.STRING(20),
+        allowNull: false,
+        unique: true
     },
     nombre: {
         type: DataTypes.STRING(100),
         allowNull: false
     },
     telefono: {
-        type: DataTypes.STRING(20),
+        type: DataTypes.STRING(15),
+        allowNull: false
+    },
+    direccion: {
+        type: DataTypes.TEXT,
         allowNull: false
     },
     email: {
         type: DataTypes.STRING(100),
-        allowNull: true
-    },
-    direccion: {
-        type: DataTypes.STRING(255),
-        allowNull: true
+        allowNull: false,
+        validate: {
+            isEmail: true
+        }
     },
     tipo: {
-        type: DataTypes.STRING(25),
-        allowNull: false
+        type: DataTypes.ENUM('Natural', 'Jurídico', 'Genérico'),
+        allowNull: false,
+        defaultValue: 'Natural'
     },
     fecha_registro: {
-        type: DataTypes.DATEONLY,
-        allowNull: false,
+        type: DataTypes.DATE,
+        allowNull: true,
         defaultValue: DataTypes.NOW
+    },
+    activo: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true,
+        allowNull: false
+    },
+    created_at: {
+        type: DataTypes.DATE,
+        allowNull: true
     },
     updated_at: {
         type: DataTypes.DATE,
@@ -38,7 +56,12 @@ const ClienteModel = sequelize.define('cliente', {
     }
 }, {
     tableName: 'cliente',
-    timestamps: false
+    timestamps: true,
+    createdAt: 'fecha_registro',
+    updatedAt: 'updated_at',
+    defaultScope: {
+        where: { activo: true }
+    }
 });
 
 export default ClienteModel;
