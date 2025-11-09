@@ -1,5 +1,6 @@
 import UsuariosModel from '../../models/UsuarioModel.js';
 import RolUsuarioModel from '../../models/RolUsuarioModel.js';
+import bcrypt from 'bcryptjs';
 
 export const obtenerTodosLosUsuarios = async () => {
     try {
@@ -37,37 +38,66 @@ export const obtenerUsuarioPorId = async (id_usuario) => {
 
 export const registrarUsuario = async (data) => {
     try {
-        if (!data.usuario || !data.password_hash || !data.id_rol) {
+        if (!data.usuario || !data.password || !data.id_rol) {
             throw new Error("Usuario, contraseña y rol son obligatorios.");
         }
 
-        const nuevoUsuario = await UsuariosModel.create(data);
-        return nuevoUsuario;
+        const password_hash = await bcrypt.hash(data.password, 10);
+
+        const nuevoUsuario = await UsuariosModel.create({
+            usuario: data.usuario,
+            password_hash: password_hash,
+            id_rol: data.id_rol
+        });
+
+        const usuarioSinPassword = { ...nuevoUsuario.toJSON() };
+        delete usuarioSinPassword.password_hash;
+
+        return { 
+            message: 'Registro exitoso', 
+            usuario: usuarioSinPassword
+        };
     } catch (error) {
         console.error("Error al registrar usuario:", error);
         if (error.name === 'SequelizeUniqueConstraintError') {
             throw new Error(`El usuario '${data.usuario}' ya existe.`);
         }
-        throw error;
+        throw new Error("Error al registrar el usuario.");
     }
 };
 
 export const actualizarUsuario = async (id_usuario, datos) => {
     try {
+        // Verificar PRIMERO si el usuario existe
+        const usuarioExistente = await UsuariosModel.findByPk(id_usuario);
+        if (!usuarioExistente) {
+            throw new Error(`Usuario no encontrado.`);
+        }
+
+        // Si viene password, hashearlo antes de actualizar
+        if (datos.password) {
+            datos.password_hash = await bcrypt.hash(datos.password, 10);
+            delete datos.password;
+        }
+
         const [filasActualizadas] = await UsuariosModel.update(datos, {
             where: { id_usuario },
         });
 
+        // Si no hubo cambios, retornar mensaje informativo
         if (filasActualizadas === 0) {
-            const usuario = await UsuariosModel.findByPk(id_usuario);
-            if (!usuario) {
-                throw new Error(`Usuario no encontrado.`);
-            }
-            return { message: "Datos del usuario sin cambios." };
+            return { message: "No se realizaron cambios en los datos del usuario." };
         }
 
-        const usuarioActualizado = await UsuariosModel.findByPk(id_usuario);
-        return usuarioActualizado;
+        const usuarioActualizado = await UsuariosModel.findByPk(id_usuario, {
+            attributes: ['id_usuario', 'usuario', 'id_rol', 'created_at']
+        });
+        
+        return {
+            message: "Actualizacion exitosa",
+            usuario: usuarioActualizado
+        };
+
     } catch (error) {
         console.error("Error al actualizar usuario:", error);
         throw error;
@@ -86,15 +116,18 @@ export const eliminarUsuario = async (id_usuario) => {
         return { message: `Usuario eliminado con éxito.` };
     } catch (error) {
         console.error("Error al eliminar usuario:", error);
-        throw error;
+        throw new Error("Error al eliminar el usuario.");
     }
 };
 
 export const loginUsuario = async (usuario, password) => {
     try {
-        // Implementación básica de login - ajusta según tu lógica
+        if (!usuario || !password) {
+            throw new Error('Usuario y contraseña son obligatorios');
+        }
+
         const usuarioEncontrado = await UsuariosModel.findOne({
-            where: { usuario, password_hash: password }, // En realidad deberías usar bcrypt
+            where: { usuario },
             include: [{
                 model: RolUsuarioModel,
                 as: 'RolUsuario',
@@ -106,10 +139,20 @@ export const loginUsuario = async (usuario, password) => {
             throw new Error('Credenciales incorrectas');
         }
 
+        const passwordValido = await bcrypt.compare(password, usuarioEncontrado.password_hash);
+        
+        if (!passwordValido) {
+            throw new Error('Credenciales incorrectas');
+        }
+
+        const usuarioSinPassword = { ...usuarioEncontrado.toJSON() };
+        delete usuarioSinPassword.password_hash;
+
         return { 
             message: 'Login exitoso', 
-            usuario: usuarioEncontrado 
+            usuario: usuarioSinPassword
         };
+
     } catch (error) {
         console.error("Error en login:", error);
         throw error;

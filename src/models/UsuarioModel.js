@@ -9,7 +9,8 @@ const UsuariosModel = sequelize.define('usuarios', {
     },
     usuario: {
         type: DataTypes.STRING(50),
-        allowNull: false
+        allowNull: false,
+        unique: true
     },
     password_hash: {
         type: DataTypes.STRING(255),
@@ -21,15 +22,19 @@ const UsuariosModel = sequelize.define('usuarios', {
     },
     created_at: {
         type: DataTypes.DATE,
-        allowNull: true
+        allowNull: true,
+        defaultValue: DataTypes.NOW
     },
     updated_at: {
         type: DataTypes.DATE,
-        allowNull: true
+        allowNull: true,
+        defaultValue: DataTypes.NOW
     }
 }, {
     tableName: 'usuarios',
-    timestamps: false
+    timestamps: true, // 
+    createdAt: 'created_at',
+    updatedAt: 'updated_at'
 });
 
 export default UsuariosModel;

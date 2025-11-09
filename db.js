@@ -12,8 +12,13 @@ const sequelize = new Sequelize(
         dialect: process.env.DB_DIALECT || 'mysql',
         timezone: process.env.TIMEZONE || '-04:00',
         dialectOptions: {
+            charset: 'utf8mb4',
             dateStrings: true,
             typeCast: true
+        },
+        define: {
+            charset: 'utf8mb4',
+            collate: 'utf8mb4_unicode_ci',
         },
         logging: false,
     }
