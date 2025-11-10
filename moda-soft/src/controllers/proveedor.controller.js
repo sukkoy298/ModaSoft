@@ -1,0 +1,1 @@
+import ProveedorModel from '../models/proveedor.model.js';

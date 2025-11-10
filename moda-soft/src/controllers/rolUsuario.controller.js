@@ -1,0 +1,1 @@
+import RolUsuarioModel from '../models/rolUsuario.model.js';

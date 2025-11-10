@@ -1,0 +1,1 @@
+import UsuariosModel from '../models/usuario.model.js';
