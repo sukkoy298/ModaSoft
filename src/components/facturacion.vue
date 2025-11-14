@@ -3,6 +3,7 @@ import { ref, computed, onMounted } from 'vue'
 import ProductCard from '@/components/ProductCard.vue'
 import { obtenerClientePorCedula } from '@/cliente.js'
 import { obtenerTodoElInventario } from '@/producto.js'
+import { registrarVenta } from '@/venta.js' // <-- Importa desde el nuevo archivo venta.js
 import axios from 'axios'
 
 // Cliente
@@ -66,31 +67,41 @@ function clearCart() {
 }
 
 const processing = ref(false)
+
 async function facturar() {
   if (!cart.value.length) {
-    alert('El carrito está vacío.')
-    return
+    alert('El carrito está vacío.');
+    return;
   }
-  processing.value = true
+  
+  processing.value = true;
   try {
+    // ✅ PREPARAR DATOS CON VALORES GARANTIZADOS
     const payload = {
-      cliente: cliente.value || null, // Envía el objeto cliente o null
+      cliente: cliente.value ? {
+        cedula: cliente.value.cedula, // ✅ Asegurar que tenemos cédula
+        nombre: cliente.value.nombre
+      } : { cedula: '23948576', nombre: 'Cliente General' }, // ✅ Cliente por defecto
       lines: cart.value.map(i => ({
-        id_variante: i.product.id, // ID de la variante
-        qty: i.qty,
-        price: i.product.price
+        id_variante: i.product.id, // ✅ Esto debe ser el ID de variante, no SKU
+        qty: i.qty || 1,
+        price: i.product.price || 0
       })),
       total: total.value,
       fecha: new Date().toISOString()
-    }
-    await axios.post('/api/ventas', payload)
-    alert('Factura registrada correctamente.')
-    clearCart()
+    };
+
+    console.log('📤 Enviando payload:', payload);
+    
+    await registrarVenta(payload);
+    alert('✅ Factura registrada correctamente.');
+    clearCart();
+    
   } catch (err) {
-    console.error('Error al facturar:', err)
-    alert('No se pudo registrar la factura. Revise la conexión con el servidor o el stock disponible.')
+    console.error('❌ Error al facturar:', err);
+    alert('Error: ' + (err.response?.data?.message || err.message));
   } finally {
-    processing.value = false
+    processing.value = false;
   }
 }
 

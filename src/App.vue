@@ -1,5 +1,5 @@
 <script setup>
-import Header from '@/components/Header.vue' // añade un Header simple si no existe
+
 </script>
 
 <template>

@@ -28,6 +28,21 @@ import Footer from '@/components/Footer.vue';
                 </div>
 
                 <div class="col">
+                <div class="card h-100 shadow-sm border-3 border-success">
+                    <div class="card-body text-center d-flex flex-column justify-content-between">
+                    <div>
+                        <h5 class="card-title fw-bold text-success">Historial de Ventas</h5>
+                        <h6 class="card-subtitle mb-4 text-dark">Consultar Ventas Realizadas</h6>
+                        <i class="bi bi-receipt fs-1 text-success d-block mb-4"></i>
+                    </div>
+                    <router-link to="/listaVentas" class="btn btn-outline-success w-50 mx-auto p-2">
+                        <i class="bi bi-clock-history"></i> Ver Ventas
+                    </router-link>
+                    </div>
+                </div>
+                </div>
+
+                <div class="col">
                     <div class="card h-100 shadow-sm border-danger">
                         <div class="card-body text-center d-flex flex-column justify-content-between">
                             <div>

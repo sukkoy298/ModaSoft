@@ -2,9 +2,9 @@
   "name": "modasoft-1",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "server.js", 
   "scripts": {
-    "start": "node index.js",
+    "start": "node server.js", 
     "dev:server": "nodemon --delay 2.5 server.js",
     "dev:client": "vite",
     "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",

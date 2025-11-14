@@ -77,17 +77,6 @@ app.use('/api/categorias', categoriaRoutes);
 app.use('/api/marcas', marcaRoutes);
 app.use('/api/ventas', ventaRoutes);
 
-// ⚠️⚠️⚠️ ELIMINA ESTE BLOQUE DUPLICADO COMPLETO ⚠️⚠️⚠️
-/*
-app.get('/api/status', (req, res) => {
-    res.json({ 
-        status: 'Servidor funcionando correctamente',
-        timestamp: new Date().toISOString(),
-        message: 'API ModaSoft Online'
-    });
-});
-*/
-
 // Manejo de rutas no encontradas
 app.use((req, res) => {
     res.status(404).json({ 
