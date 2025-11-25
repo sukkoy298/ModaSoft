@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 09-11-2025 a las 22:41:35
+-- Tiempo de generación: 26-11-2025 a las 00:02:04
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -20,6 +20,34 @@ SET time_zone = "+00:00";
 --
 -- Base de datos: `modasoft2`
 --
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `catalogo_cuentas`
+--
+
+CREATE TABLE `catalogo_cuentas` (
+  `id_cuenta` int(11) NOT NULL,
+  `codigo` varchar(10) NOT NULL,
+  `nombre` varchar(100) NOT NULL,
+  `tipo` enum('DEBE','HABER') NOT NULL,
+  `activa` tinyint(1) DEFAULT 1
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `catalogo_cuentas`
+--
+
+INSERT INTO `catalogo_cuentas` (`id_cuenta`, `codigo`, `nombre`, `tipo`, `activa`) VALUES
+(1, '1.1.1', 'Caja', 'DEBE', 1),
+(2, '1.1.2', 'Bancos', 'DEBE', 1),
+(3, '1.1.3', 'Inventario', 'DEBE', 1),
+(4, '1.1.4', 'Clientes', 'DEBE', 1),
+(5, '2.1.1', 'Proveedores', 'HABER', 1),
+(6, '2.1.2', 'IVA por Pagar', 'HABER', 1),
+(7, '4.1.1', 'Ventas Ropa', 'HABER', 1),
+(8, '5.1.1', 'Costo Ventas', 'DEBE', 1);
 
 -- --------------------------------------------------------
 
@@ -70,7 +98,7 @@ CREATE TABLE `cliente` (
 INSERT INTO `cliente` (`id_cliente`, `cedula`, `nombre`, `email`, `telefono`, `direccion`, `tipo`, `fecha_registro`, `created_at`, `updated_at`, `activo`) VALUES
 (2, '23948576', 'Roberto Pérez', 'roberto@gmail.com', '04163847596', 'Barquisimeto Calle 38 carrera 31', 'Genérico', '2025-11-08', '2025-11-08 17:25:04', '2025-11-08 17:25:04', 1),
 (1, '27586745', 'Carla Soto', 'carla@gmail.com', '04142837489', 'Barquisimeto Calle 57 carrera 32', 'Natural', '2025-11-08', '2025-11-08 16:58:26', '2025-11-08 16:58:26', 1),
-(3, '29384758', 'Mario Soto', 'mario@gmail.com', '04241238866', 'Barquisimeto Calle 33 carrera 32', 'Natural', '2025-11-08', '2025-11-08 17:28:24', '2025-11-09 21:23:50', 1),
+(3, '29384758', 'Mario Soto', 'mario@gmail.com', '04241238866', 'Barquisimeto Calle 33 carrera 32', 'Natural', '2025-11-08', '2025-11-08 17:28:24', '2025-11-13 21:49:26', 1),
 (5, '30998746', 'Angela Rodriguez', 'angela@gmail.com', '04241198374', 'Calle 34 carrera 29', 'Genérico', '2025-11-08', '2025-11-09 02:28:53', '2025-11-09 02:28:53', 1);
 
 -- --------------------------------------------------------
@@ -87,15 +115,38 @@ CREATE TABLE `compra` (
   `total` decimal(10,2) NOT NULL,
   `id_usuario` int(11) NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NOT NULL DEFAULT current_timestamp()
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `subtotal` decimal(10,2) DEFAULT 0.00,
+  `iva` decimal(10,2) DEFAULT 0.00
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Volcado de datos para la tabla `compra`
 --
 
-INSERT INTO `compra` (`id_compra`, `cedula_proveedor`, `fecha`, `nro_factura`, `total`, `id_usuario`, `created_at`, `updated_at`) VALUES
-(2, '21003948', '2025-11-08', 0.00, 500.00, 1, '2025-11-08 21:01:51', '2025-11-08 21:01:51');
+INSERT INTO `compra` (`id_compra`, `cedula_proveedor`, `fecha`, `nro_factura`, `total`, `id_usuario`, `created_at`, `updated_at`, `subtotal`, `iva`) VALUES
+(2, '21003948', '2025-11-08', 0.00, 500.00, 1, '2025-11-08 21:01:51', '2025-11-08 21:01:51', 431.03, 68.97),
+(3, '21003948', '2025-11-09', 0.00, 232.00, 1, '2025-11-25 21:36:03', '2025-11-25 21:36:03', 200.00, 32.00);
+
+--
+-- Disparadores `compra`
+--
+DELIMITER $$
+CREATE TRIGGER `after_compra_insert` AFTER INSERT ON `compra` FOR EACH ROW BEGIN
+    -- 1. Débito a Inventario
+    INSERT INTO movimientos_contables (fecha_movimiento, codigo_cuenta, descripcion, debe, haber, id_compra, id_usuario)
+    VALUES (NEW.fecha, '1.1.3', CONCAT('Compra #', NEW.id_compra, ' - Mercancía'), NEW.subtotal, 0.00, NEW.id_compra, NEW.id_usuario);
+    
+    -- 2. Débito a IVA Crédito Fiscal
+    INSERT INTO movimientos_contables (fecha_movimiento, codigo_cuenta, descripcion, debe, haber, id_compra, id_usuario)
+    VALUES (NEW.fecha, '2.1.2', CONCAT('IVA compra #', NEW.id_compra), NEW.iva, 0.00, NEW.id_compra, NEW.id_usuario);
+    
+    -- 3. Crédito a Proveedores
+    INSERT INTO movimientos_contables (fecha_movimiento, codigo_cuenta, descripcion, debe, haber, id_compra, id_usuario)
+    VALUES (NEW.fecha, '2.1.1', CONCAT('Compra #', NEW.id_compra, ' - Proveedor'), 0.00, NEW.total, NEW.id_compra, NEW.id_usuario);
+END
+$$
+DELIMITER ;
 
 -- --------------------------------------------------------
 
@@ -166,6 +217,33 @@ CREATE TABLE `detalle_venta` (
 INSERT INTO `detalle_venta` (`id_detalleventa`, `id_venta`, `id_variante`, `id_metodo`, `cantidad`, `precio_unitario_venta`, `created_at`, `updated_at`) VALUES
 (1, 2, 1, 1, 2, 29.99, '2025-11-08 20:00:32', '2025-11-08 20:00:32'),
 (2, 3, 1, 1, 2, 35.99, '2025-11-09 02:26:24', '2025-11-09 02:26:24');
+
+--
+-- Disparadores `detalle_venta`
+--
+DELIMITER $$
+CREATE TRIGGER `after_detalle_venta_insert` AFTER INSERT ON `detalle_venta` FOR EACH ROW BEGIN
+    DECLARE costo_total DECIMAL(12,2);
+    DECLARE id_usuario_venta INT;
+    DECLARE costo_unitario_producto DECIMAL(10,2);
+    
+    -- Obtener usuario y costo
+    SELECT v.id_usuario INTO id_usuario_venta FROM venta v WHERE v.id_venta = NEW.id_venta;
+    SELECT vp.costo_unitario INTO costo_unitario_producto FROM variante_producto vp WHERE vp.id_variante = NEW.id_variante;
+    
+    -- Calcular costo total
+    SET costo_total = NEW.cantidad * costo_unitario_producto;
+    
+    -- 4. Débito a Costo de Ventas
+    INSERT INTO movimientos_contables (fecha_movimiento, codigo_cuenta, descripcion, debe, haber, id_venta, id_usuario)
+    VALUES (CURDATE(), '5.1.1', CONCAT('Costo venta #', NEW.id_venta), costo_total, 0.00, NEW.id_venta, id_usuario_venta);
+    
+    -- 5. Crédito a Inventario
+    INSERT INTO movimientos_contables (fecha_movimiento, codigo_cuenta, descripcion, debe, haber, id_venta, id_usuario)
+    VALUES (CURDATE(), '1.1.3', CONCAT('Salida inventario venta #', NEW.id_venta), 0.00, costo_total, NEW.id_venta, id_usuario_venta);
+END
+$$
+DELIMITER ;
 
 -- --------------------------------------------------------
 
@@ -266,6 +344,47 @@ INSERT INTO `metodo_pago` (`id_metodopago`, `nombre`, `codigo`, `created_at`, `u
 -- --------------------------------------------------------
 
 --
+-- Estructura de tabla para la tabla `movimientos_contables`
+--
+
+CREATE TABLE `movimientos_contables` (
+  `id_movimiento` int(11) NOT NULL,
+  `fecha_movimiento` date NOT NULL,
+  `codigo_cuenta` varchar(10) NOT NULL,
+  `descripcion` varchar(255) NOT NULL,
+  `debe` decimal(12,2) DEFAULT 0.00,
+  `haber` decimal(12,2) DEFAULT 0.00,
+  `id_venta` int(11) DEFAULT NULL,
+  `id_compra` int(11) DEFAULT NULL,
+  `id_devolucion` int(11) DEFAULT NULL,
+  `id_usuario` int(11) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `movimientos_contables`
+--
+
+INSERT INTO `movimientos_contables` (`id_movimiento`, `fecha_movimiento`, `codigo_cuenta`, `descripcion`, `debe`, `haber`, `id_venta`, `id_compra`, `id_devolucion`, `id_usuario`, `created_at`) VALUES
+(1, '2025-11-08', '1.1.1', 'Venta ID 3 - Cliente Carla Soto', 47.86, 0.00, 3, NULL, NULL, 4, '2025-11-25 21:17:11'),
+(2, '2025-11-08', '4.1.1', 'Venta ID 3 - Base imponible', 0.00, 41.26, 3, NULL, NULL, 4, '2025-11-25 21:17:11'),
+(3, '2025-11-08', '2.1.2', 'IVA Venta ID 3', 0.00, 6.60, 3, NULL, NULL, 4, '2025-11-25 21:17:11'),
+(4, '2025-11-09', '1.1.1', 'Venta de productos', 100.00, 0.00, 4, NULL, NULL, 1, '2025-11-25 21:38:23'),
+(5, '2025-11-09', '4.1.1', 'Ingreso por venta', 0.00, 86.21, 4, NULL, NULL, 1, '2025-11-25 21:38:23'),
+(6, '2025-11-09', '2.1.2', 'IVA venta', 0.00, 13.79, 4, NULL, NULL, 1, '2025-11-25 21:38:23'),
+(7, '2025-11-08', '1.1.1', 'Venta #2 - Cliente Mario Soto', 59.98, 0.00, 2, NULL, NULL, 1, '2025-11-25 23:01:02'),
+(8, '2025-11-08', '4.1.1', 'Ingreso por venta #2', 0.00, 51.71, 2, NULL, NULL, 1, '2025-11-25 23:01:02'),
+(9, '2025-11-08', '2.1.2', 'IVA venta #2', 0.00, 8.27, 2, NULL, NULL, 1, '2025-11-25 23:01:02'),
+(10, '2025-11-08', '1.1.3', 'Compra #2 - Mercancía', 431.03, 0.00, NULL, 2, NULL, 1, '2025-11-25 23:01:02'),
+(11, '2025-11-08', '2.1.2', 'IVA compra #2', 68.97, 0.00, NULL, 2, NULL, 1, '2025-11-25 23:01:02'),
+(12, '2025-11-08', '2.1.1', 'Compra #2 - Proveedor', 0.00, 500.00, NULL, 2, NULL, 1, '2025-11-25 23:01:02'),
+(13, '2025-11-09', '1.1.3', 'Compra #3 - Mercancía', 200.00, 0.00, NULL, 3, NULL, 1, '2025-11-25 23:01:03'),
+(14, '2025-11-09', '2.1.2', 'IVA compra #3', 32.00, 0.00, NULL, 3, NULL, 1, '2025-11-25 23:01:03'),
+(15, '2025-11-09', '2.1.1', 'Compra #3 - Proveedor', 0.00, 232.00, NULL, 3, NULL, 1, '2025-11-25 23:01:03');
+
+-- --------------------------------------------------------
+
+--
 -- Estructura de tabla para la tabla `producto`
 --
 
@@ -309,7 +428,8 @@ CREATE TABLE `proveedor` (
 --
 
 INSERT INTO `proveedor` (`doc_identidad`, `nombre`, `telefono`, `email`, `direccion`, `created_at`, `updated_at`) VALUES
-('21003948', 'Distribuidora Moda S.A.', '04248875968', 'contacto@distribuidora.com', 'Av. Principal 456', '2025-11-08 19:08:05', '2025-11-08 19:08:05');
+('21003948', 'Distribuidora Moda S.A.', '04248875968', 'contacto@distribuidora.com', 'Av. Principal 456', '2025-11-08 19:08:05', '2025-11-08 19:08:05'),
+('22003948', 'Distribuidora Moda S.A.', '04248875968', 'contacto@distribuidora.com', 'Av. Principal 456', '2025-11-10 02:55:25', '2025-11-10 02:55:25');
 
 -- --------------------------------------------------------
 
@@ -356,7 +476,7 @@ INSERT INTO `usuarios` (`id_usuario`, `usuario`, `password_hash`, `id_rol`, `cre
 (1, 'admin', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 1, '2025-11-08 19:23:36', '2025-11-08 19:23:36'),
 (2, 'vendedor1', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 2, '2025-11-08 19:00:54', '2025-11-08 19:00:54'),
 (3, 'admin', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 1, '2025-11-08 19:22:28', '2025-11-08 19:22:28'),
-(4, 'Manuel', '$2b$10$xIx08mzUe78GoTk/RcW7au/yfomLc1LN/rFEEVmDj/rsYmoKAEiNS', 1, '2025-11-09 01:33:25', '2025-11-09 01:33:25');
+(4, 'Manuel', '$2b$10$xIx08mzUe78GoTk/RcW7au/yfomLc1LN/rFEEVmDj/rsYmoKAEiNS', 2, '2025-11-09 01:33:25', '2025-11-09 22:53:47');
 
 -- --------------------------------------------------------
 
@@ -372,17 +492,18 @@ CREATE TABLE `variante_producto` (
   `codigo_barras` varchar(50) NOT NULL,
   `precio_unitario_venta` decimal(10,2) NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NOT NULL DEFAULT current_timestamp()
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `costo_unitario` decimal(10,2) DEFAULT 0.00
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Volcado de datos para la tabla `variante_producto`
 --
 
-INSERT INTO `variante_producto` (`id_variante`, `id_producto`, `talla`, `color`, `codigo_barras`, `precio_unitario_venta`, `created_at`, `updated_at`) VALUES
-(1, 1, 'M', 'Blanco', 'C001-BL-M', 35.99, '2025-11-08 17:02:41', '2025-11-08 17:02:41'),
-(2, 1, '42', 'Negro', 'ZAP-RUN-42', 89.99, '2025-11-08 17:45:21', '2025-11-08 17:45:21'),
-(3, 1, '42', 'Negro', 'ZAP-RUN-42', 89.99, '2025-11-08 18:09:52', '2025-11-08 18:09:52');
+INSERT INTO `variante_producto` (`id_variante`, `id_producto`, `talla`, `color`, `codigo_barras`, `precio_unitario_venta`, `created_at`, `updated_at`, `costo_unitario`) VALUES
+(1, 1, 'M', 'Blanco', 'C001-BL-M', 35.99, '2025-11-08 17:02:41', '2025-11-08 17:02:41', 25.00),
+(2, 1, '42', 'Negro', 'ZAP-RUN-42', 89.99, '2025-11-08 17:45:21', '2025-11-08 17:45:21', 45.00),
+(3, 1, '42', 'Negro', 'ZAP-RUN-42', 89.99, '2025-11-08 18:09:52', '2025-11-08 18:09:52', 45.00);
 
 -- --------------------------------------------------------
 
@@ -398,20 +519,50 @@ CREATE TABLE `venta` (
   `estado` varchar(15) NOT NULL COMMENT 'pagada, pendiente, anulada',
   `id_usuario` int(11) NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NOT NULL DEFAULT current_timestamp()
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `subtotal` decimal(10,2) DEFAULT 0.00,
+  `iva` decimal(10,2) DEFAULT 0.00
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Volcado de datos para la tabla `venta`
 --
 
-INSERT INTO `venta` (`id_venta`, `cedula_cliente`, `fecha`, `total`, `estado`, `id_usuario`, `created_at`, `updated_at`) VALUES
-(2, '29384758', '2025-11-08', 59.98, 'pagada', 1, '2025-11-08 20:00:32', '2025-11-08 20:00:32'),
-(3, '27586745', '2025-11-08', 47.86, 'pagada', 4, '2025-11-09 02:26:24', '2025-11-09 02:26:24');
+INSERT INTO `venta` (`id_venta`, `cedula_cliente`, `fecha`, `total`, `estado`, `id_usuario`, `created_at`, `updated_at`, `subtotal`, `iva`) VALUES
+(2, '29384758', '2025-11-08', 59.98, 'pagada', 1, '2025-11-08 20:00:32', '2025-11-08 20:00:32', 51.71, 8.27),
+(3, '27586745', '2025-11-08', 47.86, 'pagada', 4, '2025-11-09 02:26:24', '2025-11-09 02:26:24', 41.26, 6.60),
+(4, '27586745', '2025-11-09', 116.00, 'pagada', 1, '2025-11-25 21:36:03', '2025-11-25 21:36:03', 100.00, 16.00);
+
+--
+-- Disparadores `venta`
+--
+DELIMITER $$
+CREATE TRIGGER `after_venta_insert` AFTER INSERT ON `venta` FOR EACH ROW BEGIN
+    -- 1. Débito a Caja
+    INSERT INTO movimientos_contables (fecha_movimiento, codigo_cuenta, descripcion, debe, haber, id_venta, id_usuario)
+    VALUES (NEW.fecha, '1.1.1', CONCAT('Venta #', NEW.id_venta, ' - Cliente'), NEW.total, 0.00, NEW.id_venta, NEW.id_usuario);
+    
+    -- 2. Crédito a Ventas
+    INSERT INTO movimientos_contables (fecha_movimiento, codigo_cuenta, descripcion, debe, haber, id_venta, id_usuario)
+    VALUES (NEW.fecha, '4.1.1', CONCAT('Ingreso por venta #', NEW.id_venta), 0.00, NEW.subtotal, NEW.id_venta, NEW.id_usuario);
+    
+    -- 3. Crédito a IVA por Pagar
+    INSERT INTO movimientos_contables (fecha_movimiento, codigo_cuenta, descripcion, debe, haber, id_venta, id_usuario)
+    VALUES (NEW.fecha, '2.1.2', CONCAT('IVA venta #', NEW.id_venta), 0.00, NEW.iva, NEW.id_venta, NEW.id_usuario);
+END
+$$
+DELIMITER ;
 
 --
 -- Índices para tablas volcadas
 --
+
+--
+-- Indices de la tabla `catalogo_cuentas`
+--
+ALTER TABLE `catalogo_cuentas`
+  ADD PRIMARY KEY (`id_cuenta`),
+  ADD UNIQUE KEY `codigo` (`codigo`);
 
 --
 -- Indices de la tabla `categoria`
@@ -488,6 +639,17 @@ ALTER TABLE `metodo_pago`
   ADD PRIMARY KEY (`id_metodopago`);
 
 --
+-- Indices de la tabla `movimientos_contables`
+--
+ALTER TABLE `movimientos_contables`
+  ADD PRIMARY KEY (`id_movimiento`),
+  ADD KEY `codigo_cuenta` (`codigo_cuenta`),
+  ADD KEY `id_venta` (`id_venta`),
+  ADD KEY `id_compra` (`id_compra`),
+  ADD KEY `id_devolucion` (`id_devolucion`),
+  ADD KEY `id_usuario` (`id_usuario`);
+
+--
 -- Indices de la tabla `producto`
 --
 ALTER TABLE `producto`
@@ -534,6 +696,12 @@ ALTER TABLE `venta`
 --
 
 --
+-- AUTO_INCREMENT de la tabla `catalogo_cuentas`
+--
+ALTER TABLE `catalogo_cuentas`
+  MODIFY `id_cuenta` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+
+--
 -- AUTO_INCREMENT de la tabla `categoria`
 --
 ALTER TABLE `categoria`
@@ -543,13 +711,13 @@ ALTER TABLE `categoria`
 -- AUTO_INCREMENT de la tabla `cliente`
 --
 ALTER TABLE `cliente`
-  MODIFY `id_cliente` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id_cliente` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT de la tabla `compra`
 --
 ALTER TABLE `compra`
-  MODIFY `id_compra` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id_compra` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT de la tabla `detalle_compra`
@@ -594,6 +762,12 @@ ALTER TABLE `metodo_pago`
   MODIFY `id_metodopago` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
+-- AUTO_INCREMENT de la tabla `movimientos_contables`
+--
+ALTER TABLE `movimientos_contables`
+  MODIFY `id_movimiento` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+
+--
 -- AUTO_INCREMENT de la tabla `producto`
 --
 ALTER TABLE `producto`
@@ -609,7 +783,7 @@ ALTER TABLE `rol_usuario`
 -- AUTO_INCREMENT de la tabla `usuarios`
 --
 ALTER TABLE `usuarios`
-  MODIFY `id_usuario` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id_usuario` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT de la tabla `variante_producto`
@@ -621,7 +795,7 @@ ALTER TABLE `variante_producto`
 -- AUTO_INCREMENT de la tabla `venta`
 --
 ALTER TABLE `venta`
-  MODIFY `id_venta` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id_venta` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- Restricciones para tablas volcadas
@@ -669,6 +843,16 @@ ALTER TABLE `devolucion`
 ALTER TABLE `inventario`
   ADD CONSTRAINT `inventario_ibfk_1` FOREIGN KEY (`id_variante`) REFERENCES `variante_producto` (`id_variante`),
   ADD CONSTRAINT `inventario_ibfk_2` FOREIGN KEY (`id_usuario`) REFERENCES `usuarios` (`id_usuario`);
+
+--
+-- Filtros para la tabla `movimientos_contables`
+--
+ALTER TABLE `movimientos_contables`
+  ADD CONSTRAINT `movimientos_contables_ibfk_1` FOREIGN KEY (`codigo_cuenta`) REFERENCES `catalogo_cuentas` (`codigo`),
+  ADD CONSTRAINT `movimientos_contables_ibfk_2` FOREIGN KEY (`id_venta`) REFERENCES `venta` (`id_venta`),
+  ADD CONSTRAINT `movimientos_contables_ibfk_3` FOREIGN KEY (`id_compra`) REFERENCES `compra` (`id_compra`),
+  ADD CONSTRAINT `movimientos_contables_ibfk_4` FOREIGN KEY (`id_devolucion`) REFERENCES `devolucion` (`id_devolucion`),
+  ADD CONSTRAINT `movimientos_contables_ibfk_5` FOREIGN KEY (`id_usuario`) REFERENCES `usuarios` (`id_usuario`);
 
 --
 -- Filtros para la tabla `producto`
