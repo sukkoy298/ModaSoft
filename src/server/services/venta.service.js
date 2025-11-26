@@ -6,7 +6,7 @@ import InventarioModel from '../../models/InventarioModel.js';
 
 export const registrarVenta = async (ventaData) => {
     const transaction = await VentaModel.sequelize.transaction();
-    
+
     try {
         // 1. Crear la venta principal
         const nuevaVenta = await VentaModel.create({
@@ -53,6 +53,25 @@ export const registrarVenta = async (ventaData) => {
         await transaction.commit();
         return nuevaVenta;
 
+
+        /*
+            Estructura para registrar una venta
+
+            {
+                "cedula_cliente": "27586745",
+                "total": "287.00",
+                "estado": "pagada",
+                "id_usuario": 1,
+                "detalles": [
+                    {
+                    "id_variante": 1,
+                    "id_metodo": 1,
+                    "cantidad": 1,
+                    "precio_unitario_venta": 89.99
+                    }
+                ]
+            }
+        */
     } catch (error) {
         await transaction.rollback();
         console.error("Error al registrar venta:", error);
@@ -138,7 +157,7 @@ export const obtenerDetalleVenta = async (id_venta) => {
 
 export const anularVenta = async (id_venta) => {
     const transaction = await VentaModel.sequelize.transaction();
-    
+
     try {
         const venta = await VentaModel.findByPk(id_venta);
         if (!venta) {
