@@ -1,77 +1,110 @@
-<script setup>
-import Footer from '@/components/Footer.vue'; 
-import { ref } from 'vue';
-import { useRouter } from 'vue-router';
+<template>
 
-const router = useRouter();
-const username = ref('');
-const password = ref('');
-const errorMessage = ref('');
+  <div class="moda-login-container d-flex justify-content-center align-items-center">
+    <div class="moda-login-box shadow p-4 rounded">
 
-const login = () => {
-  if (username.value === '' || password.value === '') {
-    errorMessage.value = 'Por favor, completa todos los campos';
-    return;
-  }
+      <img src="../images/Logo1.png" alt="Logo" class="logo align-items-center">
 
-  fetch('http://localhost/api/login.php', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      username: username.value,
-      password: password.value
-    })
-  })
-  .then(res => res.json())
-  .then(data => {
-    if (data.success) {
-      router.push('/dashboard'); // Redirige al módulo principal
-    } else {
-      errorMessage.value = 'Usuario o contraseña incorrectos';
+      <form @submit.prevent="login">
+        <div class="mb-3">
+          <label class="form-label">Nombre de usuario</label>
+          <input v-model="username" type="text" class="form-control moda-input-custom" placeholder="Ingresa tu usuario">
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Contraseña</label>
+          <input v-model="password" type="password" class="form-control moda-input-custom"
+            placeholder="Ingresa tu contraseña">
+        </div>
+
+        <button class="btn btn-dark w-100 mb-3 moda-btn-login">
+          Iniciar sesión
+        </button>
+
+        <div class="text-center">
+          <a href="#" class="forgot-link">¿Olvidaste tu contraseña?</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</template>
+
+<script>
+export default {
+  data() {
+    return {
+      username: "",
+      password: ""
+    };
+  },
+  methods: {
+    login() {
+      console.log("Usuario:", this.username);
+      console.log("Contraseña:", this.password);
     }
-  })
-  .catch(() => {
-    errorMessage.value = 'Error de conexión con el servidor';
-  });
+  }
 };
 </script>
 
-<template>
-  <div class="container mt-5 bg-body-tertiary">
-    <div class="container py-4">
-      <div class="row justify-content-center">
-        <div class="col-md-6">
-          <div class="card shadow-sm border-3 border-primary">
-            <div class="card-body text-center d-flex flex-column justify-content-between">
-              <div>
-                <h5 class="card-title fw-bold text-primary">Iniciar Sesión</h5>
-                <h6 class="card-subtitle mb-4 text-dark">Accede a tu cuenta</h6>
-                <i class="bi bi-lock-fill fs-1 text-primary d-block mb-4"></i>
-              </div>
+<style scoped>
+/* :root {
+  --box-color: #FFFDFB;
 
-              <form @submit.prevent="login" class="text-start">
-                <div class="mb-3">
-                  <label for="username" class="form-label fw-bold">Usuario</label>
-                  <input type="text" id="username" v-model="username" class="form-control border-primary" placeholder="Ingresa tu usuario" />
-                </div>
-                <div class="mb-3">
-                  <label for="password" class="form-label fw-bold">Contraseña</label>
-                  <input type="password" id="password" v-model="password" class="form-control border-primary" placeholder="Ingresa tu contraseña" />
-                </div>
+  --text-dark: #3A2E2A;
 
-                <div v-if="errorMessage" class="alert alert-danger p-2 text-center">
-                  {{ errorMessage }}
-                </div>
+  --button-dark: #4A3B34;
 
-                <button type="submit" class="btn btn-outline-primary w-100 p-2 mt-3">
-                  <i class="bi bi-box-arrow-in-right"></i> Entrar
-                </button>
-              </form>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-  <Footer />
-</template>
+  --border-soft: #D6CFC8;
+} */
+
+
+
+.moda-login-container {
+  background: radial-gradient(circle at center, #d1c5b9, #8B7355, #5D4A3A);
+  height: 100vh;
+}
+
+.moda-login-box {
+  background-color: #FFFDFB;
+  width: 380px;
+  border: 1px solid #D6CFC8;
+  border-radius: 14px;
+}
+
+.logo {
+  height: 150px;
+  width: auto;
+  margin-left: 80px;
+}
+
+.modaa-title {
+  color: #3A2E2A;
+  font-weight: 700;
+}
+
+.moda-input-custom {
+  border-radius: 10px;
+  border: 1px solid #D6CFC8;
+  background-color: #fff;
+}
+
+.moda-btn-login {
+  color: #fff !important;
+  background-color: #4A3B34;
+  border-radius: 10px;
+}
+
+.moda-btn-login:hover {
+  background-color: #352822;
+}
+
+.forgot-link {
+  color: #4A3B34;
+  text-decoration: none;
+  font-size: 15px;
+}
+
+.forgot-link:hover {
+  text-decoration: underline;
+}
+</style>
