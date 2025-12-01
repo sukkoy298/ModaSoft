@@ -1,28 +1,50 @@
 import express from 'express';
 import {
+  obtenerTodosLosProductos,
+  obtenerProductoPorId,
   registrarProducto,
-  registrarVarianteProducto,
-  obtenerProductosPrincipales,
-  obtenerTodasLasVariantes,
-  actualizarStockVariante
+  actualizarProducto,
+  eliminarProducto,
+  obtenerInventarioCompleto
 } from '../services/producto.service.js';
-import { obtenerTodasLasCategorias } from '../services/categoria.service.js';
 
 const router = express.Router();
 
-// PRODUCTOS PRINCIPALES
-// GET /api/productos/principales - Obtener productos principales
-router.get('/principales', async (req, res) => {
+// GET /api/productos - Obtener todos los productos
+router.get('/', async (req, res) => {
   try {
-    const productos = await obtenerProductosPrincipales();
+    const productos = await obtenerTodosLosProductos();
     res.json(productos);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
 
-// POST /api/productos/principales - Registrar producto principal
-router.post('/principales', async (req, res) => {
+// GET /api/productos/inventario - Obtener inventario completo
+router.get('/inventario', async (req, res) => {
+  try {
+    const inventario = await obtenerInventarioCompleto();
+    res.json(inventario);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// GET /api/productos/:id - Obtener producto por ID
+router.get('/:id', async (req, res) => {
+  try {
+    const producto = await obtenerProductoPorId(req.params.id);
+    if (!producto) {
+      return res.status(404).json({ message: 'Producto no encontrado' });
+    }
+    res.json(producto);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// POST /api/productos - Registrar nuevo producto
+router.post('/', async (req, res) => {
   try {
     const nuevoProducto = await registrarProducto(req.body);
     res.status(201).json(nuevoProducto);
@@ -31,60 +53,23 @@ router.post('/principales', async (req, res) => {
   }
 });
 
-// GET para obtener variantes
-router.get('/variantes', async (req, res) => {
+// PUT /api/productos/:id - Actualizar producto
+router.put('/:id', async (req, res) => {
   try {
-    const variantes = await obtenerTodasLasVariantes();
-    res.json(variantes);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
-
-// GET /api/productos/variantes/:id - Obtener variante por ID
-router.get('/variantes/:id', async (req, res) => {
-  try {
-    const variante = await obtenerVariantePorId(req.params.id);
-    if (!variante) {
-      return res.status(404).json({ message: 'Variante no encontrada' });
-    }
-    res.json(variante);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
-
-// VARIANTES DE PRODUCTO
-// POST /api/productos/variantes - Registrar variante de producto
-router.post('/variantes', async (req, res) => {
-  try {
-    const nuevaVariante = await registrarVarianteProducto(req.body);
-    res.status(201).json(nuevaVariante);
+    const productoActualizado = await actualizarProducto(req.params.id, req.body);
+    res.json(productoActualizado);
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
 });
 
-// STOCK
-// PUT /api/productos/stock/:codigoBarras - Actualizar stock
-router.put('/stock/:codigoBarras', async (req, res) => {
+// DELETE /api/productos/:id - Eliminar producto
+router.delete('/:id', async (req, res) => {
   try {
-    const { cantidad } = req.body;
-    const resultado = await actualizarStockVariante(req.params.codigoBarras, cantidad);
+    const resultado = await eliminarProducto(req.params.id);
     res.json(resultado);
   } catch (error) {
     res.status(400).json({ message: error.message });
-  }
-});
-
-// CATEGORÍAS
-// GET /api/productos/categorias - Obtener todas las categorías
-router.get('/categorias', async (req, res) => {
-  try {
-    const categorias = await obtenerTodasLasCategorias();
-    res.json(categorias);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
   }
 });
 

@@ -3,6 +3,8 @@ import { ref, computed, onMounted } from 'vue'
 import ProductCard from '@/components/ProductCard.vue'
 import { obtenerClientePorCedula } from '@/cliente.js'
 import { obtenerTodoElInventario } from '@/producto.js'
+import Header from '@/components/Header.vue'; 
+import Footer from '@/components/Footer.vue'; 
 import axios from 'axios'
 
 // Estado del componente
@@ -258,10 +260,9 @@ async function loadProducts() {
 
 // Cargar datos al montar el componente
 onMounted(async () => {
-  await Promise.all([
-    loadProducts(),
-    cargarMetodosPago()
-  ])
+    await loadProducts()
+    await cargarMetodosPago()
+
   
   // Cargar cliente desde localStorage si existe
   const clienteGuardado = localStorage.getItem('modasoft_user')
@@ -277,9 +278,13 @@ onMounted(async () => {
 </script>
 
 <template>
+    <Header />
   <div class="container py-4">
     <header class="d-flex justify-content-between align-items-center mb-4">
-      <h1 class="h3 mb-0 text-primary">Facturación - ModaSoft</h1>
+        <h2 class="mb-0">
+            <i class="bi bi-bag-check me-2"></i>
+            Módulo de Facturación
+      </h2>
       <div class="text-muted small">Usuario ID: {{ idUsuario }}</div>
     </header>
 
@@ -544,6 +549,7 @@ onMounted(async () => {
       </aside>
     </div>
   </div>
+    <Footer />
 </template>
 
 <style scoped>
