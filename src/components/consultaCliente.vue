@@ -24,6 +24,7 @@ const buscarCliente = async () => {
     const cedulaBuscada = terminoBusqueda.value.trim(); 
 
     if (!cedulaBuscada) {
+        mensajeError.value = 'Por favor, ingrese una Cédula/RUC para buscar.';
         return; 
     }
 
@@ -38,6 +39,15 @@ const buscarCliente = async () => {
         } else {
             mensajeError.value = 'Error al buscar cliente. Verifique la conexión con el servidor.';
         }
+    }
+};
+
+// NUEVA FUNCIÓN: Para iniciar la facturación con el cliente encontrado
+const iniciarFacturacionConCliente = () => {
+    if (clienteEncontrado.value) {
+        // Guarda el cliente en localStorage para que facturacion.vue lo pueda leer
+        localStorage.setItem('modasoft_cliente_para_facturacion', JSON.stringify(clienteEncontrado.value));
+        router.push('/facturacion'); // Navega a la página de facturación
     }
 };
 
@@ -97,9 +107,10 @@ const buscarCliente = async () => {
                     <tr>
                         <th class="table-secondary"></th>
                         <td class="text-center">
-                            <router-link to="/facturacion" class="btn btn-success btn-lg w-50">
+                            <!-- CAMBIO AQUÍ: Usamos un botón que llama a la nueva función -->
+                            <button @click="iniciarFacturacionConCliente" class="btn btn-success btn-lg w-50">
                                 <i class="bi bi-cash-coin"></i> Realizar Venta con {{ clienteEncontrado.nombre }}
-                            </router-link>
+                            </button>
                         </td>
                     </tr>
                 </tbody>
