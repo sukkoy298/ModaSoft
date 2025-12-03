@@ -13,7 +13,9 @@ const router = express.Router();
 // GET /api/ventas - Obtener todas las ventas
 router.get('/', async (req, res) => {
   try {
-    const ventas = await obtenerTodasLasVentas();
+    const { fechaInicio, fechaFin } = req.query;
+    
+    const ventas = await obtenerTodasLasVentas(fechaInicio, fechaFin);
     res.json(ventas);
   } catch (error) {
     res.status(500).json({ message: error.message });

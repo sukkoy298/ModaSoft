@@ -37,7 +37,7 @@ import Footer from '@/components/Footer.vue';
                                 <i class="bi bi-bar-chart fs-1 text-danger d-block mb-4"></i>
                             </div>
                             
-                            <router-link to="/reportes-clientes" class="btn btn-outline-danger w-50 mx-auto p-2">
+                            <router-link to="/reportes-graficos" class="btn btn-outline-danger w-50 mx-auto p-2">
                                 <i class="bi bi-flag"></i> Ver Reportes
                             </router-link>
                         </div>

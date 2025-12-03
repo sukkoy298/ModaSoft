@@ -10,23 +10,33 @@ const router = express.Router();
 
 // GET /api/compras - Obtener todas las compras
 router.get('/', async (req, res) => {
-  try {
-    const compras = await obtenerTodasLasCompras();
-    res.json(compras);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
+    try {
+        const fechaInicio = req.query.fechainicio || req.query.fechaInicio;
+        const fechaFin = req.query.fechafin || req.query.fechaFin;
+        
+        console.log('Filtros recibidos en /compras:', {
+            fechaInicio,
+            fechaFin,
+            todosParams: req.query
+        });
+        
+        const compras = await obtenerTodasLasCompras(fechaInicio, fechaFin);
+        res.json(compras);
+    } catch (error) {
+        console.error('Error en GET /compras:', error);
+        res.status(500).json({ message: error.message });
+    }
 });
 
 // GET /api/compras/:id - Obtener compra por ID
-router.get('/:id', async (req, res) => {
+router.get('/', async (req, res) => {
   try {
-    const compra = await obtenerCompraPorId(req.params.id);
-    if (!compra) {
-      return res.status(404).json({ message: 'Compra no encontrada' });
-    }
-    res.json(compra);
+    const { fechaInicio, fechaFin } = req.query;
+    
+    const compras = await obtenerTodasLasCompras(fechaInicio, fechaFin);
+    res.json(compras);
   } catch (error) {
+    console.error('Error en GET /compras:', error);
     res.status(500).json({ message: error.message });
   }
 });

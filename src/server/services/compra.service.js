@@ -5,9 +5,27 @@ import VarianteProductoModel from '../../models/VarianteProductoModel.js';
 import InventarioModel from '../../models/InventarioModel.js';
 import { Op } from 'sequelize';
 
-export const obtenerTodasLasCompras = async () => {
+export const obtenerTodasLasCompras = async (fechaInicio, fechaFin) => {
     try {
+        const whereConditions = {};
+        
+        // Agregar filtro por rango de fechas si se proporcionan
+        if (fechaInicio && fechaFin) {
+            whereConditions.fecha = {
+                [Op.between]: [new Date(fechaInicio), new Date(fechaFin)]
+            };
+        } else if (fechaInicio) {
+            whereConditions.fecha = {
+                [Op.gte]: new Date(fechaInicio)
+            };
+        } else if (fechaFin) {
+            whereConditions.fecha = {
+                [Op.lte]: new Date(fechaFin)
+            };
+        }
+
         const compras = await CompraModel.findAll({
+            where: whereConditions,
             include: [
                 {
                     model: ProveedorModel,

@@ -12,7 +12,7 @@ import registroVarianteProducto from '@/components/registroVarianteProducto.vue'
 import registroCategoria from '@/components/registroCategoria.vue';
 import registroMarca from '@/components/registroMarca.vue';
 import reportesClientes from '@/components/reportesClientes.vue';
-import Facturacion from '@/components/facturacion.vue'; 
+import reportesGraficos from '@/components/reportesGraficos.vue'
 
 const routes = [
     {
@@ -77,9 +77,9 @@ const routes = [
         component: reportesClientes
     },
     {
-        path: '/facturacion',
-        name: 'Facturacion',
-        component: Facturacion
+        path: '/reportes-graficos',
+        name: 'reportesGraficos',
+        component: reportesGraficos
     }
 ]
 

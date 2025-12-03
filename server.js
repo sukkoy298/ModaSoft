@@ -15,7 +15,7 @@ import devolucionRoutes from './src/server/routes/devolucion.route.js';
 import inventarioRoutes from './src/server/routes/inventario.route.js'; 
 import rolUsuarioRoutes from './src/server/routes/rolUsuario.route.js';
 import metodoPagoRoutes from './src/server/routes/metodoPago.route.js';
-import reportesRoute from './src/server/routes/reportes.route.js';
+import reporteGraficosRoutes from './src/server/routes/reporteGraficos.route.js';
 
 import dotenv from 'dotenv';
 
@@ -52,7 +52,7 @@ app.use('/api/ventas', ventaRoutes);
 app.use('/api/devoluciones', devolucionRoutes);
 app.use('/api/inventario', inventarioRoutes);
 app.use('/api/metodos-pago', metodoPagoRoutes);
-app.use('/api/reportes', reportesRoute);
+app.use('/api/reportes', reporteGraficosRoutes);
 
 // Ruta para verificar estado del servidor
 app.get('/api/status', (req, res) => {

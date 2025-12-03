@@ -3,9 +3,11 @@ import {
   obtenerTodosLosProductos,
   obtenerProductoPorId,
   registrarProducto,
-  actualizarProducto,
-  eliminarProducto,
-  obtenerInventarioCompleto
+  registrarVarianteProducto,
+  obtenerProductosPrincipales,
+  obtenerTodasLasVariantes,
+  actualizarStockVariante,
+  obtenerProductosMasVendidos
 } from '../services/producto.service.js';
 
 const router = express.Router();
@@ -20,31 +22,8 @@ router.get('/', async (req, res) => {
   }
 });
 
-// GET /api/productos/inventario - Obtener inventario completo
-router.get('/inventario', async (req, res) => {
-  try {
-    const inventario = await obtenerInventarioCompleto();
-    res.json(inventario);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
-
-// GET /api/productos/:id - Obtener producto por ID
-router.get('/:id', async (req, res) => {
-  try {
-    const producto = await obtenerProductoPorId(req.params.id);
-    if (!producto) {
-      return res.status(404).json({ message: 'Producto no encontrado' });
-    }
-    res.json(producto);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
-
-// POST /api/productos - Registrar nuevo producto
-router.post('/', async (req, res) => {
+// POST /api/productos/principales - Registrar producto principal
+router.post('/principales', async (req, res) => {
   try {
     const nuevoProducto = await registrarProducto(req.body);
     res.status(201).json(nuevoProducto);
@@ -53,24 +32,113 @@ router.post('/', async (req, res) => {
   }
 });
 
-// PUT /api/productos/:id - Actualizar producto
-router.put('/:id', async (req, res) => {
+// GET para obtener variantes
+router.get('/variantes', async (req, res) => {
   try {
-    const productoActualizado = await actualizarProducto(req.params.id, req.body);
-    res.json(productoActualizado);
+    const variantes = await obtenerTodasLasVariantes();
+    res.json(variantes);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// GET /api/productos/variantes/:id - Obtener variante por ID
+router.get('/variantes/:id', async (req, res) => {
+  try {
+    const variante = await obtenerVariantePorId(req.params.id);
+    if (!variante) {
+      return res.status(404).json({ message: 'Variante no encontrada' });
+    }
+    res.json(variante);
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
 });
 
-// DELETE /api/productos/:id - Eliminar producto
-router.delete('/:id', async (req, res) => {
+// VARIANTES DE PRODUCTO
+// POST /api/productos/variantes - Registrar variante de producto
+router.post('/variantes', async (req, res) => {
   try {
-    const resultado = await eliminarProducto(req.params.id);
+    const nuevaVariante = await registrarVarianteProducto(req.body);
+    res.status(201).json(nuevaVariante);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+});
+
+// STOCK
+// PUT /api/productos/stock/:codigoBarras - Actualizar stock
+router.put('/stock/:codigoBarras', async (req, res) => {
+  try {
+    const { cantidad } = req.body;
+    const resultado = await actualizarStockVariante(req.params.codigoBarras, cantidad);
     res.json(resultado);
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
 });
+
+// CATEGORÍAS
+// GET /api/productos/categorias - Obtener todas las categorías
+router.get('/categorias', async (req, res) => {
+  try {
+    const categorias = await obtenerTodasLasCategorias();
+    res.json(categorias);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// GET /api/productos/mas-vendidos
+router.get('/mas-vendidos', async (req, res) => {
+    try {
+        const { limite = 10, fechaInicio, fechaFin } = req.query;
+        console.log('📞 Llamada a productos más vendidos:', { limite, fechaInicio, fechaFin });
+        
+        let productos;
+        
+        // Primero intentar con la función principal
+        try {
+            productos = await obtenerProductosMasVendidos(limite, fechaInicio, fechaFin);
+            console.log('✅ Productos obtenidos con función principal');
+        } catch (error) {
+            console.log('⚠️ Función principal falló', error.message);
+        }
+        
+        // Asegurar formato consistente
+        const productosFormateados = productos.map(p => {
+            // Si viene de la función simple
+            if (p.nombre) {
+                return {
+                    nombre: p.nombre,
+                    total_vendido: p.total_vendido,
+                    monto_total: p.monto_total,
+                    VarianteProducto: {
+                        ProductoPrincipal: {
+                            nombre: p.nombre
+                        }
+                    }
+                };
+            }
+            // Si viene de la función principal
+            return p;
+        });
+        
+        res.json({
+            success: true,
+            count: productosFormateados.length,
+            data: productosFormateados
+        });
+        
+    } catch (error) {
+        console.error('❌ Error en ruta /mas-vendidos:', error);
+        res.status(500).json({ 
+            success: false,
+            error: error.message,
+            message: 'Error al obtener productos más vendidos'
+        });
+    }
+});
+
 
 export default router;

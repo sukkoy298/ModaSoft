@@ -3,6 +3,7 @@ import DetalleVentaModel from '../../models/DetalleVentaModel.js';
 import ClienteModel from '../../models/ClienteModel.js';
 import VarianteProductoModel from '../../models/VarianteProductoModel.js';
 import InventarioModel from '../../models/InventarioModel.js';
+import { Op } from 'sequelize';
 
 export const registrarVenta = async (ventaData) => {
     const transaction = await VentaModel.sequelize.transaction();
@@ -79,9 +80,30 @@ export const registrarVenta = async (ventaData) => {
     }
 };
 
-export const obtenerTodasLasVentas = async () => {
+export const obtenerTodasLasVentas = async (fechaInicio, fechaFin) => {
     try {
+        const whereConditions = {};
+        
+        // Agregar filtro por rango de fechas si se proporcionan
+        if (fechaInicio && fechaFin) {
+            whereConditions.fecha = {
+                [Op.between]: [new Date(fechaInicio), new Date(fechaFin)]
+            };
+        } else if (fechaInicio) {
+            whereConditions.fecha = {
+                [Op.gte]: new Date(fechaInicio)
+            };
+        } else if (fechaFin) {
+            whereConditions.fecha = {
+                [Op.lte]: new Date(fechaFin)
+            };
+        }
+        
+        // Solo ventas activas (no anuladas)
+        whereConditions.estado = 'pagada';
+
         const ventas = await VentaModel.findAll({
+            where: whereConditions,
             include: [
                 {
                     model: ClienteModel,
