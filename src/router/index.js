@@ -5,6 +5,7 @@ import Registro from '@/components/registroCliente.vue'
 import HomeView from '@/components/HomeView.vue'
 import consultaCliente from '@/components/consultaCliente.vue'
 import listaCliente from '@/components/listaCliente.vue'
+import facturacion from '@/components/facturacion.vue'
 import edicionCliente from '@/components/edicionCliente.vue' 
 import listaProducto from '@/components/listaProducto.vue';
 import registroProducto from '@/components/registroProducto.vue'; 
@@ -86,6 +87,11 @@ const routes = [
         path: '/reportes-menu',
         name: 'reportesMenu',
         component: ReportesMenu
+    },
+    {
+        path: '/facturacion',
+        name: 'facturacion',
+        component: facturacion
     }
 ]
 

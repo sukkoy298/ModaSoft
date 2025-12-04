@@ -20,7 +20,7 @@ import Footer from '@/components/Footer.vue';
                                 <i class="bi bi-cart-fill fs-1 text-info d-block mb-4"></i>
                             </div>
                             
-                            <router-link to="/consultaCliente" class="btn btn-outline-info text-dark w-50 mx-auto p-2">
+                            <router-link to="/facturacion" class="btn btn-outline-info text-dark w-50 mx-auto p-2">
                                 <i class="bi bi-arrow-right-circle"></i> Realizar Venta
                             </router-link>
                         </div>
