@@ -150,19 +150,19 @@ onMounted(() => {
                     + Producto Principal
                 </button>
                 <button @click="router.push('/registroCategoria')"
-                    class="btn btn-outline-dark px-3 py-2 rounded shadow text-sm md:text-base">
+                    class="btn btn-outline-dark px-3 py-2 ms-2 rounded shadow text-sm md:text-base">
                     + Categoría
                 </button>
                 <button @click="router.push('/registroMarca')"
-                    class="btn btn-outline-info text-dark px-3 py-2 rounded shadow text-sm md:text-base">
+                    class="btn btn-outline-info text-dark px-3 py-2 ms-2 rounded shadow text-sm md:text-base">
                     + Marca
                 </button>
                 <button @click="goToRegistroVariante"
-                    class="btn btn-outline-primary px-4 py-2 rounded shadow text-sm md:text-base">
+                    class="btn btn-outline-primary px-4 py-2 ms-2 rounded shadow text-sm md:text-base">
                     + Nueva Variante
                 </button>
                 <button @click="cargarInventario" :disabled="loading"
-                    class="btn btn-outline-danger px-4 py-2 rounded shadow text-sm md:text-base">
+                    class="btn btn-outline-danger px-4 py-2 ms-2 rounded shadow text-sm md:text-base">
                     <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
                     {{ loading ? 'Cargando...' : 'Actualizar' }}
                 </button>

@@ -26,7 +26,7 @@ const tipoFeedback = ref('');
 // Función para obtener la lista de Productos Principales
 const fetchProductos = async () => {
     try {
-        const response = await axios.get(`${API_URL}/productos/principales`);
+        const response = await axios.get(`${API_URL}/productos/`);
         productos.value = response.data.map(p => ({
             id: p.id_producto,
             nombre: `${p.nombre} (${p.Marca ? p.Marca.nombre : 'Sin Marca'})`

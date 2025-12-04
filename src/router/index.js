@@ -12,7 +12,8 @@ import registroVarianteProducto from '@/components/registroVarianteProducto.vue'
 import registroCategoria from '@/components/registroCategoria.vue';
 import registroMarca from '@/components/registroMarca.vue';
 import reportesClientes from '@/components/reportesClientes.vue';
-import reportesGraficos from '@/components/reportesGraficos.vue'
+import reportesGraficos from '@/components/reportesGraficos.vue';
+import ReportesMenu from '@/components/ReportesMenu.vue'
 
 const routes = [
     {
@@ -80,6 +81,11 @@ const routes = [
         path: '/reportes-graficos',
         name: 'reportesGraficos',
         component: reportesGraficos
+    },
+    {
+        path: '/reportes-menu',
+        name: 'reportesMenu',
+        component: ReportesMenu
     }
 ]
 

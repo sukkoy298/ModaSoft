@@ -1,4 +1,3 @@
-<!-- src/components/reportesClientes.vue - CON FILTROS DE FECHA -->
 <script setup>
 import Header from '@/components/Header.vue'
 import { ref, onMounted } from 'vue'
@@ -103,7 +102,6 @@ const formatearFecha = (fecha) => {
 };
 
 onMounted(() => {
-    // Opcional: establecer un rango por defecto (últimos 30 días)
     establecerRangoFecha(30);
 });
 </script>
@@ -113,7 +111,6 @@ onMounted(() => {
     <div class="container mt-5">
         <h1 class="text-center mb-4"> <i class="bi bi-clipboard-data text-danger"></i>Reportes de Clientes</h1>
         
-        <!-- FILTROS DE FECHA (Compartidos para ambos reportes) -->
         <div class="card mb-4">
             <div class="card-body">
                 <h6 class="card-title mb-3">
