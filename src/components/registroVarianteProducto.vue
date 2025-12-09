@@ -1,3 +1,93 @@
+<template>
+    <div class="container mt-5 mb-5 moda-container">
+        <h1 class="moda-title text-center mb-4">🏷️ Registro de Variante de Producto</h1>
+
+        <div v-if="mensajeFeedback" :class="[
+            'alert alert-moda mb-4',
+            tipoFeedback === 'success' ? 'border-success' : 'border-danger'
+        ]" role="alert">
+            {{ mensajeFeedback }}
+        </div>
+
+        <div v-if="loading" class="text-center p-4">
+            <div class="spinner-border text-moda-secondary" role="status">
+                <span class="visually-hidden">Cargando...</span>
+            </div>
+            <p class="mt-3 moda-subtitle">Cargando lista de productos...</p>
+        </div>
+
+        <div v-else class="moda-card p-4 shadow-lg">
+            <form @submit.prevent="registrarVariante">
+                
+                <div class="mb-4">
+                    <label for="selectProducto" class="form-label moda-subtitle fw-bold mb-2">Producto Principal *</label>
+                    <select v-model="varianteForm.id_producto" id="selectProducto" 
+                        class="form-select moda-input" required>
+                        <option value="" disabled>Selecciona un producto</option>
+                        <option v-for="prod in productos" :key="prod.id" :value="prod.id">
+                            {{ prod.nombre }}
+                        </option>
+                    </select>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label for="inputSKU" class="form-label moda-subtitle fw-bold mb-2">SKU (Código de Variante) *</label>
+                        <input type="text" v-model="varianteForm.sku" id="inputSKU" 
+                            class="form-control moda-input" placeholder="Ej: V5-R-S-1004" required />
+                        <div class="form-text">Código único para identificar la variante</div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label for="inputPrecio" class="form-label moda-subtitle fw-bold mb-2">Precio de Venta *</label>
+                        <div class="input-group">
+                            <span class="input-group-text moda-input border-end-0">$</span>
+                            <input type="number" v-model.number="varianteForm.precio_venta" id="inputPrecio" 
+                                class="form-control moda-input border-start-0" placeholder="0.00" 
+                                min="0.01" step="0.01" required />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label for="inputTalla" class="form-label moda-subtitle fw-bold mb-2">Talla *</label>
+                        <input type="text" v-model="varianteForm.talla" id="inputTalla" 
+                            class="form-control moda-input" placeholder="S, M, L, 36, etc." required />
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label for="inputColor" class="form-label moda-subtitle fw-bold mb-2">Color *</label>
+                        <input type="text" v-model="varianteForm.color" id="inputColor" 
+                            class="form-control moda-input" placeholder="Rojo, Azul, Negro, etc." required />
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label for="inputStock" class="form-label moda-subtitle fw-bold mb-2">Stock Inicial *</label>
+                        <input type="number" v-model.number="varianteForm.stock_actual" id="inputStock" 
+                            class="form-control moda-input" placeholder="0" min="0" required />
+                    </div>
+                </div>
+
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <button type="submit" :disabled="submitLoading" 
+                        class="btn btn-moda-primary px-4 py-2">
+                        <span v-if="submitLoading">
+                            <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                            Registrando...
+                        </span>
+                        <span v-else>
+                            <i class="bi bi-save-fill me-2"></i>Guardar Variante
+                        </span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</template>
+
 <script setup>
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
@@ -8,22 +98,21 @@ const router = useRouter();
 
 // --- Estado del Componente ---
 const varianteForm = ref({
-    id_producto: '', // FK: ID del producto principal
-    sku: '',         // Único: Identificador de la variante
+    id_producto: '',
+    sku: '',
     talla: '',
     color: '',
     stock_actual: 0,
     precio_venta: 0.00
 });
 
-const productos = ref([]); // Lista de productos principales ya registrados
+const productos = ref([]);
 const loading = ref(true);
 const submitLoading = ref(false);
 const mensajeFeedback = ref('');
 const tipoFeedback = ref('');
 
-
-// Función para obtener la lista de Productos Principales
+// Función para obtener productos principales
 const fetchProductos = async () => {
     try {
         const response = await axios.get(`${API_URL}/productos/`);
@@ -32,13 +121,10 @@ const fetchProductos = async () => {
             nombre: `${p.nombre} (${p.Marca ? p.Marca.nombre : 'Sin Marca'})`
         }));
 
-        if (productos.value.length > 0) {
-            varianteForm.value.id_producto = productos.value[0].id;
-        }
     } catch (error) {
         console.error('Error al obtener productos principales:', error);
         tipoFeedback.value = 'danger';
-        mensajeFeedback.value = 'Fallo al cargar la lista de productos. Verifique la ruta /api/productos.';
+        mensajeFeedback.value = 'Fallo al cargar la lista de productos.';
     }
 };
 
@@ -51,7 +137,7 @@ onMounted(async () => {
 const registrarVariante = async () => {
     if (!varianteForm.value.id_producto || !varianteForm.value.sku || varianteForm.value.precio_venta <= 0) {
         tipoFeedback.value = 'danger';
-        mensajeFeedback.value = 'Asegúrese de seleccionar un Producto, ingresar el SKU y el Precio de Venta.';
+        mensajeFeedback.value = 'Complete los campos obligatorios (Producto, SKU, Precio).';
         return;
     }
 
@@ -61,94 +147,54 @@ const registrarVariante = async () => {
     try {
         const response = await axios.post(`${API_URL}/productos/variantes`, varianteForm.value);
         
-        // Manejo de éxito
         tipoFeedback.value = 'success';
-        mensajeFeedback.value = `Variante SKU: ${response.data.sku} registrada con éxito!`;
+        mensajeFeedback.value = `✅ Variante SKU: ${response.data.sku} registrada con éxito!`;
         
-        // Redireccionar o limpiar formulario
         setTimeout(() => {
-            router.push('/listaProducto'); // Redirige a la vista de inventario
+            router.push('/listaProducto');
         }, 2000);
 
     } catch (error) {
         console.error('Error al registrar variante:', error);
         tipoFeedback.value = 'danger';
-        // Mostrar mensaje de error del backend si existe
-        mensajeFeedback.value = error.response?.data?.message || 'Error desconocido al registrar la variante.';
+        mensajeFeedback.value = error.response?.data?.message || 'Error al registrar la variante.';
     } finally {
         submitLoading.value = false;
     }
 };
 </script>
 
-<template>
-    <div class="container mx-auto p-4 max-w-lg">
-        <h1 class="text-3xl font-extrabold text-gray-800 mb-6 text-center border-b pb-3">
-            🏷️ Registro de Variante de Producto (SKU, Talla, Color)
-        </h1>
+<style scoped>
+.container {
+    max-width: 800px;
+}
 
-        <div v-if="mensajeFeedback" :class="[
-            'alert mb-4',
-            tipoFeedback === 'success' ? 'alert-success' : 'alert-danger'
-        ]" role="alert">
-            {{ mensajeFeedback }}
-        </div>
+.moda-card {
+    padding: 2rem !important;
+}
 
-        <div v-if="loading" class="text-center p-4 text-lg text-gray-500">
-            Cargando lista de productos...
-        </div>
+.alert-moda {
+    padding: 1rem;
+    border-radius: 10px;
+}
 
-        <div v-else class="bg-white rounded-xl shadow-xl p-6">
-            <form @submit.prevent="registrarVariante">
-                
-                <div class="form-floating mb-3">
-                    <select v-model="varianteForm.id_producto" id="selectProducto" 
-                        class="form-select border rounded" required>
-                        <option v-for="prod in productos" :key="prod.id" :value="prod.id">
-                            {{ prod.nombre }}
-                        </option>
-                    </select>
-                    <label for="selectProducto" class="form-label">Producto Principal *</label>
-                </div>
+.alert-moda.border-success {
+    border-left: 4px solid #198754 !important;
+    background-color: rgba(25, 135, 84, 0.1);
+}
 
-                <div class="form-floating mb-3">
-                    <input type="text" v-model="varianteForm.sku" id="inputSKU" 
-                        class="form-control border rounded" placeholder="SKU Único (ej: VS-R-S-1004)" required />
-                    <label for="inputSKU" class="form-label">SKU (Código de Variante) *</label>
-                </div>
+.alert-moda.border-danger {
+    border-left: 4px solid #dc3545 !important;
+    background-color: rgba(220, 53, 69, 0.1);
+}
 
-                <div class="flex space-x-3 mb-3">
-                    <div class="form-floating flex-1">
-                        <input type="text" v-model="varianteForm.talla" id="inputTalla" 
-                            class="form-control border rounded" placeholder="Talla (S, M, L, 36, etc.)" required />
-                        <label for="inputTalla" class="form-label">Talla *</label>
-                    </div>
-                    <div class="form-floating flex-1">
-                        <input type="text" v-model="varianteForm.color" id="inputColor" 
-                            class="form-control border rounded" placeholder="Color" required />
-                        <label for="inputColor" class="form-label">Color *</label>
-                    </div>
-                </div>
+.input-group-text {
+    background-color: var(--moda-background) !important;
+    border-color: var(--moda-light) !important;
+    color: var(--moda-text-dark) !important;
+}
 
-                <div class="flex space-x-3 mb-4">
-                    <div class="form-floating flex-1">
-                        <input type="number" v-model.number="varianteForm.stock_actual" id="inputStock" 
-                            class="form-control border rounded" placeholder="Stock Inicial" min="0" required />
-                        <label for="inputStock" class="form-label">Stock Inicial *</label>
-                    </div>
-                    <div class="form-floating flex-1">
-                        <input type="number" v-model.number="varianteForm.precio_venta" id="inputPrecio" 
-                            class="form-control border rounded" placeholder="Precio de Venta" min="0.01" step="0.01" required />
-                        <label for="inputPrecio" class="form-label">Precio de Venta *</label>
-                    </div>
-                </div>
-
-                <button type="submit" :disabled="submitLoading" 
-                    class="btn btn-primary w-full px-4 py-2 rounded shadow">
-                    <span v-if="submitLoading">Registrando Variante...</span>
-                    <span v-else>Guardar Variante</span>
-                </button>
-            </form>
-        </div>
-    </div>
-</template>
+.spinner-border.text-moda-secondary {
+    color: var(--moda-secondary) !important;
+}
+</style>

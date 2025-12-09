@@ -1,0 +1,178 @@
+/* assets/css/global.css */
+:root {
+  /* Colores principales del diseño Moda */
+  --moda-primary-dark: #4A3B34;
+  --moda-primary-dark-hover: #352822;
+  --moda-secondary: #8B7355;
+  --moda-light: #D6CFC8;
+  --moda-background: #FFFDFB;
+  --moda-text-dark: #3A2E2A;
+  --moda-gradient-start: #d1c5b9;
+  --moda-gradient-middle: #8B7355;
+  --moda-gradient-end: #5D4A3A;
+}
+
+/* Fondo general para todo el proyecto */
+body {
+  background: radial-gradient(circle at center, 
+    var(--moda-gradient-start), 
+    var(--moda-gradient-middle), 
+    var(--moda-gradient-end)
+  ) !important;
+  min-height: 100vh;
+  color: var(--moda-text-dark);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* Estilos para contenedores Moda */
+.moda-container {
+  background-color: var(--moda-background);
+  border: 1px solid var(--moda-light);
+  border-radius: 14px;
+  padding: 2rem;
+}
+
+.moda-card {
+  background-color: var(--moda-background) !important;
+  border: 1px solid var(--moda-light) !important;
+  border-radius: 14px !important;
+  transition: all 0.3s ease;
+}
+
+.moda-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(74, 59, 52, 0.15) !important;
+}
+
+/* Botones Moda */
+.btn-moda-primary {
+  background-color: var(--moda-primary-dark) !important;
+  border-color: var(--moda-primary-dark) !important;
+  color: white !important;
+  border-radius: 10px;
+  padding: 0.75rem 1.5rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.btn-moda-primary:hover {
+  background-color: var(--moda-primary-dark-hover) !important;
+  border-color: var(--moda-primary-dark-hover) !important;
+  transform: translateY(-2px);
+}
+
+.btn-moda-outline {
+  background-color: transparent !important;
+  border: 2px solid var(--moda-primary-dark) !important;
+  color: var(--moda-primary-dark) !important;
+  border-radius: 10px;
+  padding: 0.75rem 1.5rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.btn-moda-outline:hover {
+  background-color: var(--moda-primary-dark) !important;
+  color: white !important;
+}
+
+/* Inputs Moda */
+.moda-input {
+  border-radius: 10px !important;
+  border: 1px solid var(--moda-light) !important;
+  background-color: var(--moda-background) !important;
+  padding: 0.75rem 1rem !important;
+  color: var(--moda-text-dark) !important;
+}
+
+.moda-input:focus {
+  border-color: var(--moda-primary-dark) !important;
+  box-shadow: 0 0 0 0.25rem rgba(74, 59, 52, 0.25) !important;
+}
+
+/* Encabezados y textos */
+.moda-title {
+  color: var(--moda-text-dark) !important;
+  font-weight: 700 !important;
+  margin-bottom: 1.5rem;
+}
+
+.moda-subtitle {
+  color: var(--moda-secondary) !important;
+  font-weight: 500 !important;
+}
+
+/* Navbar Moda */
+.navbar-moda {
+  background-color: var(--moda-background) !important;
+  border-bottom: 1px solid var(--moda-light);
+  box-shadow: 0 2px 10px rgba(74, 59, 52, 0.1);
+}
+
+/* Tablas Moda */
+.table-moda {
+  background-color: var(--moda-background) !important;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.table-moda th {
+  background-color: var(--moda-primary-dark) !important;
+  color: white !important;
+  border: none !important;
+  padding: 1rem !important;
+}
+
+.table-moda td {
+  border-color: var(--moda-light) !important;
+  padding: 0.75rem 1rem !important;
+}
+
+.table-moda tr:hover {
+  background-color: rgba(214, 207, 200, 0.2) !important;
+}
+
+/* Alertas Moda */
+.alert-moda {
+  background-color: var(--moda-background);
+  border: 1px solid var(--moda-light);
+  border-radius: 10px;
+  color: var(--moda-text-dark);
+}
+
+/* Iconos Moda */
+.moda-icon {
+  color: var(--moda-primary-dark);
+  transition: color 0.3s ease;
+}
+
+.moda-icon:hover {
+  color: var(--moda-primary-dark-hover);
+}
+
+/* Grid específico para Moda */
+.moda-grid {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+}
+
+/* Estilos para enlaces */
+a.moda-link {
+  color: var(--moda-primary-dark);
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+a.moda-link:hover {
+  color: var(--moda-primary-dark-hover);
+  text-decoration: underline;
+}
+
+/* Badges Moda */
+.badge-moda {
+  background-color: var(--moda-primary-dark) !important;
+  color: white !important;
+  border-radius: 20px;
+  padding: 0.35em 0.85em;
+}

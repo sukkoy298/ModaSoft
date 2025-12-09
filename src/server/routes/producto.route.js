@@ -1,15 +1,18 @@
 import express from 'express';
 import {
-  obtenerInventarioCompleto,
-  obtenerProductoPorId,
-  actualizarProducto,
-  eliminarProducto,
-  registrarProducto,
-  registrarVarianteProducto,
-  obtenerProductosPrincipales,
-  obtenerTodasLasVariantes,
-  actualizarStockVariante,
-  obtenerProductosMasVendidos
+    obtenerInventarioCompleto,
+    obtenerProductoPorId,
+    actualizarProducto,
+    eliminarProducto,
+    registrarProducto,
+    registrarVarianteProducto,
+    obtenerProductosPrincipales,
+    obtenerTodasLasVariantes,
+    actualizarStockVariante,
+    obtenerProductosMasVendidos,
+    buscarProductos,
+    obtenerProductosBajoStock,
+    obtenerVariantePorCodigoBarras
 } from '../services/producto.service.js';
 import { obtenerTodasLasCategorias } from '../services/categoria.service.js';
 
@@ -194,6 +197,36 @@ router.delete('/:id', async (req, res) => {
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
+});
+
+// GET /api/productos/buscar/:termino - Buscar productos para compras
+router.get('/buscar/:termino', async (req, res) => {
+    try {
+        const productos = await buscarProductos(req.params.termino);
+        res.json(productos);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// GET /api/productos/bajo-stock - Productos con stock bajo
+router.get('/bajo-stock', async (req, res) => {
+    try {
+        const productos = await obtenerProductosBajoStock();
+        res.json(productos);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// GET /api/productos/codigo/:codigo_barras - Buscar por código de barras
+router.get('/codigo/:codigo_barras', async (req, res) => {
+    try {
+        const producto = await obtenerVariantePorCodigoBarras(req.params.codigo_barras);
+        res.json(producto);
+    } catch (error) {
+        res.status(404).json({ message: error.message });
+    }
 });
 
 export default router;

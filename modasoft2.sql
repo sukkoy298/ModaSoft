@@ -1,12 +1,11 @@
 CREATE DATABASE modasoft2;
 USE modasoft2;
-
 -- phpMyAdmin SQL Dump
 -- version 5.2.1
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 26-11-2025 a las 00:02:04
+-- Tiempo de generación: 09-12-2025 a las 03:26:13
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -99,9 +98,11 @@ CREATE TABLE `cliente` (
 --
 
 INSERT INTO `cliente` (`id_cliente`, `cedula`, `nombre`, `email`, `telefono`, `direccion`, `tipo`, `fecha_registro`, `created_at`, `updated_at`, `activo`) VALUES
+(10, '20664895', 'Leo Torres', 'Leo@gmail.com', '04143849587', 'Barquisimeto Calle 37 carrera 35', 'Jurídico', '2025-12-08', '2025-12-09 02:12:00', '2025-12-09 02:12:00', 1),
 (2, '23948576', 'Roberto Pérez', 'roberto@gmail.com', '04163847596', 'Barquisimeto Calle 38 carrera 31', 'Genérico', '2025-11-08', '2025-11-08 17:25:04', '2025-11-08 17:25:04', 1),
+(9, '24867592', 'Camilo Hernandez', 'Camilo@gmail.com', '04168459384', 'Cabudare, Av. La Mata Calle 8', 'Natural', '2025-12-07', '2025-12-07 17:20:04', '2025-12-07 17:20:39', 1),
 (1, '27586745', 'Carla Soto', 'carla@gmail.com', '04142837489', 'Barquisimeto Calle 57 carrera 32', 'Natural', '2025-11-08', '2025-11-08 16:58:26', '2025-11-08 16:58:26', 1),
-(3, '29384758', 'Mario Soto', 'mario@gmail.com', '04241238866', 'Barquisimeto Calle 33 carrera 32', 'Natural', '2025-11-08', '2025-11-08 17:28:24', '2025-11-13 21:49:26', 1),
+(3, '29384758', 'Mario Soto', 'mario@gmail.com', '04241238866', 'Barquisimeto Calle 33 carrera 32', 'Natural', '2025-11-08', '2025-11-08 17:28:24', '2025-12-09 02:12:31', 1),
 (5, '30998746', 'Angela Rodriguez', 'angela@gmail.com', '04241198374', 'Calle 34 carrera 29', 'Genérico', '2025-11-08', '2025-11-09 02:28:53', '2025-11-09 02:28:53', 1);
 
 -- --------------------------------------------------------
@@ -114,7 +115,7 @@ CREATE TABLE `compra` (
   `id_compra` int(11) NOT NULL,
   `cedula_proveedor` varchar(30) NOT NULL,
   `fecha` date NOT NULL,
-  `nro_factura` decimal(10,2) NOT NULL,
+  `nro_factura` varchar(50) NOT NULL,
   `total` decimal(10,2) NOT NULL,
   `id_usuario` int(11) NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
@@ -128,8 +129,32 @@ CREATE TABLE `compra` (
 --
 
 INSERT INTO `compra` (`id_compra`, `cedula_proveedor`, `fecha`, `nro_factura`, `total`, `id_usuario`, `created_at`, `updated_at`, `subtotal`, `iva`) VALUES
-(2, '21003948', '2025-11-08', 0.00, 500.00, 1, '2025-11-08 21:01:51', '2025-11-08 21:01:51', 431.03, 68.97),
-(3, '21003948', '2025-11-09', 0.00, 232.00, 1, '2025-11-25 21:36:03', '2025-11-25 21:36:03', 200.00, 32.00);
+(2, '21003948', '2025-11-08', '0.00', 500.00, 1, '2025-11-08 21:01:51', '2025-11-08 21:01:51', 431.03, 68.97),
+(3, '21003948', '2025-11-09', '0.00', 232.00, 1, '2025-11-25 21:36:03', '2025-11-25 21:36:03', 200.00, 32.00),
+(20, '22003948', '2025-12-08', '1.00', 4.64, 1, '2025-12-08 22:01:31', '2025-12-08 22:01:31', 4.00, 0.64),
+(21, '22003948', '2025-12-08', '002', 4.64, 1, '2025-12-08 22:04:52', '2025-12-08 22:04:52', 4.00, 0.64),
+(22, '22003948', '2025-12-09', '3', 116.93, 1, '2025-12-09 02:05:07', '2025-12-09 02:05:07', 100.80, 16.13),
+(23, '22003948', '2025-12-09', '5', 87.66, 1, '2025-12-09 02:24:29', '2025-12-09 02:24:29', 75.57, 12.09);
+
+--
+-- Disparadores `compra`
+--
+DELIMITER $$
+CREATE TRIGGER `after_compra_insert` AFTER INSERT ON `compra` FOR EACH ROW BEGIN
+    -- 1. Débito a Inventario
+    INSERT INTO movimientos_contables (fecha_movimiento, codigo_cuenta, descripcion, debe, haber, id_compra, id_usuario)
+    VALUES (NEW.fecha, '1.1.3', CONCAT('Compra #', NEW.id_compra, ' - Mercancía'), NEW.subtotal, 0.00, NEW.id_compra, NEW.id_usuario);
+    
+    -- 2. Débito a IVA Crédito Fiscal
+    INSERT INTO movimientos_contables (fecha_movimiento, codigo_cuenta, descripcion, debe, haber, id_compra, id_usuario)
+    VALUES (NEW.fecha, '2.1.2', CONCAT('IVA compra #', NEW.id_compra), NEW.iva, 0.00, NEW.id_compra, NEW.id_usuario);
+    
+    -- 3. Crédito a Proveedores
+    INSERT INTO movimientos_contables (fecha_movimiento, codigo_cuenta, descripcion, debe, haber, id_compra, id_usuario)
+    VALUES (NEW.fecha, '2.1.1', CONCAT('Compra #', NEW.id_compra, ' - Proveedor'), 0.00, NEW.total, NEW.id_compra, NEW.id_usuario);
+END
+$$
+DELIMITER ;
 
 -- --------------------------------------------------------
 
@@ -152,7 +177,11 @@ CREATE TABLE `detalle_compra` (
 --
 
 INSERT INTO `detalle_compra` (`id_detallecompra`, `id_compra`, `id_variante`, `cantidad`, `precio_unitario_costo`, `created_at`, `updated_at`) VALUES
-(1, 2, 1, 10, 50.00, '2025-11-08 21:01:51', '2025-11-08 21:01:51');
+(1, 2, 1, 10, 50.00, '2025-11-08 21:01:51', '2025-11-08 21:01:51'),
+(18, 20, 1, 1, 4.00, '2025-12-08 22:01:31', '2025-12-08 22:01:31'),
+(19, 21, 1, 1, 4.00, '2025-12-08 22:04:52', '2025-12-08 22:04:52'),
+(20, 22, 1, 4, 25.20, '2025-12-09 02:05:07', '2025-12-09 02:05:07'),
+(21, 23, 2, 3, 25.19, '2025-12-09 02:24:29', '2025-12-09 02:24:29');
 
 -- --------------------------------------------------------
 
@@ -200,6 +229,33 @@ CREATE TABLE `detalle_venta` (
 INSERT INTO `detalle_venta` (`id_detalleventa`, `id_venta`, `id_variante`, `id_metodo`, `cantidad`, `precio_unitario_venta`, `created_at`, `updated_at`) VALUES
 (1, 2, 1, 1, 2, 29.99, '2025-11-08 20:00:32', '2025-11-08 20:00:32'),
 (2, 3, 1, 1, 2, 35.99, '2025-11-09 02:26:24', '2025-11-09 02:26:24');
+
+--
+-- Disparadores `detalle_venta`
+--
+DELIMITER $$
+CREATE TRIGGER `after_detalle_venta_insert` AFTER INSERT ON `detalle_venta` FOR EACH ROW BEGIN
+    DECLARE costo_total DECIMAL(12,2);
+    DECLARE id_usuario_venta INT;
+    DECLARE costo_unitario_producto DECIMAL(10,2);
+    
+    -- Obtener usuario y costo
+    SELECT v.id_usuario INTO id_usuario_venta FROM venta v WHERE v.id_venta = NEW.id_venta;
+    SELECT vp.costo_unitario INTO costo_unitario_producto FROM variante_producto vp WHERE vp.id_variante = NEW.id_variante;
+    
+    -- Calcular costo total
+    SET costo_total = NEW.cantidad * costo_unitario_producto;
+    
+    -- 4. Débito a Costo de Ventas
+    INSERT INTO movimientos_contables (fecha_movimiento, codigo_cuenta, descripcion, debe, haber, id_venta, id_usuario)
+    VALUES (CURDATE(), '5.1.1', CONCAT('Costo venta #', NEW.id_venta), costo_total, 0.00, NEW.id_venta, id_usuario_venta);
+    
+    -- 5. Crédito a Inventario
+    INSERT INTO movimientos_contables (fecha_movimiento, codigo_cuenta, descripcion, debe, haber, id_venta, id_usuario)
+    VALUES (CURDATE(), '1.1.3', CONCAT('Salida inventario venta #', NEW.id_venta), 0.00, costo_total, NEW.id_venta, id_usuario_venta);
+END
+$$
+DELIMITER ;
 
 -- --------------------------------------------------------
 
@@ -249,8 +305,8 @@ CREATE TABLE `inventario` (
 --
 
 INSERT INTO `inventario` (`id_inventario`, `id_variante`, `tipo`, `cantidad`, `stock_actual`, `stock_minimo`, `fecha_ultima_entrada`, `referencia`, `id_usuario`, `created_at`, `updated_at`) VALUES
-(16, 2, 'entrada', 27, 27, 10, '2025-11-08 15:23:49', 'ajuste_manual', 1, '2025-11-08 19:23:49', '2025-11-08 19:23:49'),
-(17, 1, 'entrada', 10, 9, 10, '2025-11-08 22:26:24', 'compra_2', 1, '2025-11-08 21:01:51', '2025-11-08 21:01:51');
+(16, 2, 'entrada', 27, 30, 10, '2025-12-08 22:24:29', 'ajuste_manual', 1, '2025-11-08 19:23:49', '2025-11-08 19:23:49'),
+(17, 1, 'entrada', 10, 15, 10, '2025-12-08 22:05:07', 'compra_2', 1, '2025-11-08 21:01:51', '2025-11-08 21:01:51');
 
 -- --------------------------------------------------------
 
@@ -336,7 +392,19 @@ INSERT INTO `movimientos_contables` (`id_movimiento`, `fecha_movimiento`, `codig
 (12, '2025-11-08', '2.1.1', 'Compra #2 - Proveedor', 0.00, 500.00, NULL, 2, NULL, 1, '2025-11-25 23:01:02'),
 (13, '2025-11-09', '1.1.3', 'Compra #3 - Mercancía', 200.00, 0.00, NULL, 3, NULL, 1, '2025-11-25 23:01:03'),
 (14, '2025-11-09', '2.1.2', 'IVA compra #3', 32.00, 0.00, NULL, 3, NULL, 1, '2025-11-25 23:01:03'),
-(15, '2025-11-09', '2.1.1', 'Compra #3 - Proveedor', 0.00, 232.00, NULL, 3, NULL, 1, '2025-11-25 23:01:03');
+(15, '2025-11-09', '2.1.1', 'Compra #3 - Proveedor', 0.00, 232.00, NULL, 3, NULL, 1, '2025-11-25 23:01:03'),
+(64, '2025-12-08', '1.1.3', 'Compra #20 - Mercancía', 4.00, 0.00, NULL, 20, NULL, 1, '2025-12-08 22:01:31'),
+(65, '2025-12-08', '2.1.2', 'IVA compra #20', 0.64, 0.00, NULL, 20, NULL, 1, '2025-12-08 22:01:31'),
+(66, '2025-12-08', '2.1.1', 'Compra #20 - Proveedor', 0.00, 4.64, NULL, 20, NULL, 1, '2025-12-08 22:01:31'),
+(67, '2025-12-08', '1.1.3', 'Compra #21 - Mercancía', 4.00, 0.00, NULL, 21, NULL, 1, '2025-12-08 22:04:52'),
+(68, '2025-12-08', '2.1.2', 'IVA compra #21', 0.64, 0.00, NULL, 21, NULL, 1, '2025-12-08 22:04:52'),
+(69, '2025-12-08', '2.1.1', 'Compra #21 - Proveedor', 0.00, 4.64, NULL, 21, NULL, 1, '2025-12-08 22:04:52'),
+(70, '2025-12-09', '1.1.3', 'Compra #22 - Mercancía', 100.80, 0.00, NULL, 22, NULL, 1, '2025-12-09 02:05:07'),
+(71, '2025-12-09', '2.1.2', 'IVA compra #22', 16.13, 0.00, NULL, 22, NULL, 1, '2025-12-09 02:05:07'),
+(72, '2025-12-09', '2.1.1', 'Compra #22 - Proveedor', 0.00, 116.93, NULL, 22, NULL, 1, '2025-12-09 02:05:07'),
+(73, '2025-12-09', '1.1.3', 'Compra #23 - Mercancía', 75.57, 0.00, NULL, 23, NULL, 1, '2025-12-09 02:24:29'),
+(74, '2025-12-09', '2.1.2', 'IVA compra #23', 12.09, 0.00, NULL, 23, NULL, 1, '2025-12-09 02:24:29'),
+(75, '2025-12-09', '2.1.1', 'Compra #23 - Proveedor', 0.00, 87.66, NULL, 23, NULL, 1, '2025-12-09 02:24:29');
 
 -- --------------------------------------------------------
 
@@ -488,6 +556,26 @@ INSERT INTO `venta` (`id_venta`, `cedula_cliente`, `fecha`, `total`, `estado`, `
 (2, '29384758', '2025-11-08', 59.98, 'pagada', 1, '2025-11-08 20:00:32', '2025-11-08 20:00:32', 51.71, 8.27),
 (3, '27586745', '2025-11-08', 47.86, 'pagada', 4, '2025-11-09 02:26:24', '2025-11-09 02:26:24', 41.26, 6.60),
 (4, '27586745', '2025-11-09', 116.00, 'pagada', 1, '2025-11-25 21:36:03', '2025-11-25 21:36:03', 100.00, 16.00);
+
+--
+-- Disparadores `venta`
+--
+DELIMITER $$
+CREATE TRIGGER `after_venta_insert` AFTER INSERT ON `venta` FOR EACH ROW BEGIN
+    -- 1. Débito a Caja
+    INSERT INTO movimientos_contables (fecha_movimiento, codigo_cuenta, descripcion, debe, haber, id_venta, id_usuario)
+    VALUES (NEW.fecha, '1.1.1', CONCAT('Venta #', NEW.id_venta, ' - Cliente'), NEW.total, 0.00, NEW.id_venta, NEW.id_usuario);
+    
+    -- 2. Crédito a Ventas
+    INSERT INTO movimientos_contables (fecha_movimiento, codigo_cuenta, descripcion, debe, haber, id_venta, id_usuario)
+    VALUES (NEW.fecha, '4.1.1', CONCAT('Ingreso por venta #', NEW.id_venta), 0.00, NEW.subtotal, NEW.id_venta, NEW.id_usuario);
+    
+    -- 3. Crédito a IVA por Pagar
+    INSERT INTO movimientos_contables (fecha_movimiento, codigo_cuenta, descripcion, debe, haber, id_venta, id_usuario)
+    VALUES (NEW.fecha, '2.1.2', CONCAT('IVA venta #', NEW.id_venta), 0.00, NEW.iva, NEW.id_venta, NEW.id_usuario);
+END
+$$
+DELIMITER ;
 
 --
 -- Índices para tablas volcadas
@@ -647,19 +735,19 @@ ALTER TABLE `categoria`
 -- AUTO_INCREMENT de la tabla `cliente`
 --
 ALTER TABLE `cliente`
-  MODIFY `id_cliente` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id_cliente` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT de la tabla `compra`
 --
 ALTER TABLE `compra`
-  MODIFY `id_compra` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id_compra` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
 
 --
 -- AUTO_INCREMENT de la tabla `detalle_compra`
 --
 ALTER TABLE `detalle_compra`
-  MODIFY `id_detallecompra` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id_detallecompra` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
 
 --
 -- AUTO_INCREMENT de la tabla `detalle_devolucion`
@@ -701,7 +789,7 @@ ALTER TABLE `metodo_pago`
 -- AUTO_INCREMENT de la tabla `movimientos_contables`
 --
 ALTER TABLE `movimientos_contables`
-  MODIFY `id_movimiento` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `id_movimiento` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=76;
 
 --
 -- AUTO_INCREMENT de la tabla `producto`
@@ -816,6 +904,7 @@ ALTER TABLE `venta`
   ADD CONSTRAINT `venta_ibfk_1` FOREIGN KEY (`cedula_cliente`) REFERENCES `cliente` (`cedula`),
   ADD CONSTRAINT `venta_ibfk_2` FOREIGN KEY (`id_usuario`) REFERENCES `usuarios` (`id_usuario`);
 COMMIT;
+
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;

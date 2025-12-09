@@ -1,4 +1,189 @@
+<template>
+    <Header/>
+    <div class="container moda-main-container">
+        <h1 class="moda-title text-center mb-4">
+            <i class="bi bi-box-seam moda-icon-primary me-2"></i>
+            Módulo de Inventario de Productos
+        </h1>
+
+        <!-- Barra de búsqueda y acciones -->
+        <div class="moda-action-bar mb-4">
+            <div class="moda-search-container">
+                <div class="moda-search-group">
+                    <i class="bi bi-search moda-search-icon"></i>
+                    <input 
+                        type="text" 
+                        v-model="busqueda" 
+                        placeholder="Buscar por SKU, Producto, Talla o Color..."
+                        class="moda-search-input"
+                    />
+                </div>
+            </div>
+
+            <div class="moda-action-buttons">
+                <button @click="router.push('/registroProducto')" class="btn moda-btn-outline-success">
+                    <i class="bi bi-plus-circle me-1"></i> Producto Principal
+                </button>
+                <button @click="router.push('/registroCategoria')" class="btn moda-btn-outline">
+                    <i class="bi bi-tag me-1"></i> Categoría
+                </button>
+                <button @click="router.push('/registroMarca')" class="btn moda-btn-outline">
+                    <i class="bi bi-shop me-1"></i> Marca
+                </button>
+                <button @click="goToRegistroVariante" class="btn moda-btn-outline-primary">
+                    <i class="bi bi-plus-square me-1"></i> Nueva Variante
+                </button>
+                <button @click="cargarInventario" :disabled="loading" class="btn moda-btn-outline-secondary">
+                    <i class="bi bi-arrow-clockwise me-1"></i> {{ loading ? 'Cargando...' : 'Actualizar' }}
+                </button>
+            </div>
+        </div>
+
+        <!-- Mensajes de estado -->
+        <div v-if="errorConexion" class="moda-alert moda-alert-error">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            Error de Conexión: No se pudo conectar con el servidor. Usando datos de demostración.
+        </div>
+
+        <div v-else-if="loading" class="moda-loading-state">
+            <div class="moda-spinner"></div>
+            <p class="mt-3 moda-subtitle">Cargando datos del inventario...</p>
+        </div>
+
+        <!-- Tabla de inventario -->
+        <div v-else-if="inventarioFiltrado.length > 0">
+            <!-- Contador de resultados -->
+            <div class="moda-table-header mb-3">
+                <p class="moda-table-count">
+                    Mostrando {{ inventarioFiltrado.length }} de {{ inventarioList.length }} productos
+                    <span v-if="busqueda" class="moda-filter-note"> (filtrados por: "{{ busqueda }}")</span>
+                </p>
+            </div>
+            
+            <!-- Tabla -->
+            <div class="moda-table-container">
+                <table class="moda-table">
+                    <thead>
+                        <tr>
+                            <th scope="col" class="moda-table-th">#</th>
+                            <th scope="col" class="moda-table-th">SKU</th>
+                            <th scope="col" class="moda-table-th">PRODUCTO</th>
+                            <th scope="col" class="moda-table-th">MARCA / CATEGORÍA</th>
+                            <th scope="col" class="moda-table-th text-center">TALLA / COLOR</th>
+                            <th scope="col" class="moda-table-th text-center">STOCK MIN.</th>
+                            <th scope="col" class="moda-table-th text-center">STOCK ACT.</th>
+                            <th scope="col" class="moda-table-th text-center">PRECIO VENTA</th>
+                            <th scope="col" class="moda-table-th text-center">ESTADO</th>
+                            <th scope="col" class="moda-table-th text-center">ACCIONES</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="(variante, index) in inventarioFiltrado" :key="variante.sku + '-' + index" 
+                            :class="getEstadoRowClass(variante.stock_actual, variante.stock_minimo)">
+                            
+                            <td class="moda-table-td text-center">{{ index + 1 }}</td>
+                            
+                            <td class="moda-table-td">
+                                <span class="moda-badge moda-badge-sku">
+                                    {{ variante.sku }}
+                                </span>
+                            </td>
+                            
+                            <td class="moda-table-td">
+                                <div class="moda-product-name">{{ variante.producto }}</div>
+                                <div class="moda-product-desc" v-if="variante.descripcion">
+                                    {{ variante.descripcion.substring(0, 50) }}...
+                                </div>
+                            </td>
+                            
+                            <td class="moda-table-td">
+                                <div class="moda-tags">
+                                    <span class="moda-tag moda-tag-brand">{{ variante.marca }}</span>
+                                    <span class="moda-tag moda-tag-category">{{ variante.categoria }}</span>
+                                </div>
+                            </td>
+
+                            <td class="moda-table-td text-center">
+                                <div class="moda-variant-info">
+                                    <span class="moda-badge moda-badge-size">{{ variante.talla }}</span>
+                                    <span class="moda-badge moda-badge-color" :style="{ 
+                                        backgroundColor: getColorHex(variante.color),
+                                        color: getContrastColor(variante.color)
+                                    }">
+                                        {{ variante.color }}
+                                    </span>
+                                </div>
+                            </td>
+
+                            <td class="moda-table-td text-center">
+                                <span class="moda-badge moda-badge-secondary">{{ variante.stock_minimo }}</span>
+                            </td>
+
+                            <td class="moda-table-td text-center">
+                                <span class="moda-stock-count" :class="getStockCountClass(variante.stock_actual, variante.stock_minimo)">
+                                    {{ variante.stock_actual }}
+                                </span>
+                            </td>
+
+                            <td class="moda-table-td text-center">
+                                <span class="moda-price">
+                                    ${{ variante.precio_venta.toFixed(2) }}
+                                </span>
+                            </td>
+
+                            <td class="moda-table-td text-center">
+                                <span :class="getEstadoBadgeClass(variante.stock_actual, variante.stock_minimo)">
+                                    {{ getEstadoStock(variante.stock_actual, variante.stock_minimo) }}
+                                </span>
+                            </td>
+                            
+                            <td class="moda-table-td text-center">
+                                <div class="moda-action-buttons-small">
+                                    <button class="btn moda-btn-icon" title="Editar">
+                                        <i class="bi bi-pencil-square"></i>
+                                    </button>
+                                    <button class="btn moda-btn-icon moda-btn-icon-primary" title="Ingreso de stock">
+                                        <i class="bi bi-arrow-up"></i>
+                                    </button>
+                                    <button class="btn moda-btn-icon moda-btn-icon-info" title="Ver detalles">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pie de tabla -->
+            <div class="moda-table-footer">
+                <div class="moda-status-legend">
+                    <span class="moda-legend-item moda-legend-out">Agotado</span>
+                    <span class="moda-legend-item moda-legend-low">REORDENAR</span>
+                    <span class="moda-legend-item moda-legend-ok">Suficiente</span>
+                </div>
+                <div class="moda-update-time">
+                    Última actualización: {{ new Date().toLocaleTimeString('es-VE') }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Estado vacío -->
+        <div v-else class="moda-empty-state">
+            <div class="moda-empty-icon">
+                <i class="bi bi-inbox"></i>
+            </div>
+            <h4 class="moda-empty-title">Inventario vacío</h4>
+            <p class="moda-empty-text">No se encontraron productos en el inventario.</p>
+            <button @click="router.push('/registroProducto')" class="btn moda-btn-primary">
+                <i class="bi bi-plus-circle me-2"></i> Agregar Primer Producto
+            </button>
+        </div>
+    </div>
+</template>
+
 <script setup>
+import Header from './Header.vue';
 import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { obtenerTodoElInventario } from '@/producto.js';
@@ -14,12 +199,34 @@ const loading = ref(true);
 const errorConexion = ref(false);
 const busqueda = ref('');
 
-// Esta función transforma los datos de la API al formato que necesita tu tabla
+// Función auxiliar para colores
+const getColorHex = (colorName) => {
+    const colors = {
+        'negro': '#000000',
+        'blanco': '#FFFFFF',
+        'rojo': '#FF0000',
+        'azul': '#0000FF',
+        'verde': '#00FF00',
+        'amarillo': '#FFFF00',
+        'naranja': '#FFA500',
+        'morado': '#800080',
+        'rosa': '#FFC0CB',
+        'gris': '#808080',
+        'marrón': '#8B4513',
+        'beige': '#F5F5DC'
+    };
+    return colors[colorName?.toLowerCase()] || '#D6CFC8';
+};
+
+const getContrastColor = (colorName) => {
+    const darkColors = ['blanco', 'amarillo', 'beige'];
+    return darkColors.includes(colorName?.toLowerCase()) ? '#3A2E2A' : '#FFFDFB';
+};
+
 const transformarDatosInventario = (productos) => {
     const variantesLista = [];
     
     productos.forEach(producto => {
-        // Verificar si el producto tiene variantes
         if (producto.variantes && Array.isArray(producto.variantes)) {
             producto.variantes.forEach(variante => {
                 variantesLista.push({
@@ -29,7 +236,7 @@ const transformarDatosInventario = (productos) => {
                     categoria: producto.categoria || 'Sin categoría',
                     talla: variante.talla || 'N/A',
                     color: variante.color || 'N/A',
-                    stock_minimo: 10, // Valor por defecto, puedes ajustarlo
+                    stock_minimo: 10,
                     stock_actual: variante.stock_actual || 0,
                     precio_venta: variante.precio || 0,
                     id_producto: producto.id_producto,
@@ -38,7 +245,6 @@ const transformarDatosInventario = (productos) => {
                 });
             });
         } else {
-            // Si el producto no tiene variantes, mostrar el producto principal
             variantesLista.push({
                 sku: `PROD-${producto.id_producto}`,
                 producto: producto.nombre || 'Sin nombre',
@@ -61,10 +267,36 @@ const transformarDatosInventario = (productos) => {
 
 const getEstadoStock = (stockActual, stockMinimo) => {
     const min = stockMinimo || 10;
-
     if (stockActual <= 0) return 'Agotado';
     if (stockActual <= min) return 'REORDENAR';
     return 'Suficiente';
+};
+
+const getEstadoRowClass = (stockActual, stockMinimo) => {
+    const estado = getEstadoStock(stockActual, stockMinimo);
+    switch(estado) {
+        case 'Agotado': return 'moda-row-out';
+        case 'REORDENAR': return 'moda-row-low';
+        default: return 'moda-row-ok';
+    }
+};
+
+const getStockCountClass = (stockActual, stockMinimo) => {
+    const estado = getEstadoStock(stockActual, stockMinimo);
+    switch(estado) {
+        case 'Agotado': return 'moda-stock-out';
+        case 'REORDENAR': return 'moda-stock-low';
+        default: return 'moda-stock-ok';
+    }
+};
+
+const getEstadoBadgeClass = (stockActual, stockMinimo) => {
+    const estado = getEstadoStock(stockActual, stockMinimo);
+    switch(estado) {
+        case 'Agotado': return 'moda-badge moda-badge-danger';
+        case 'REORDENAR': return 'moda-badge moda-badge-warning';
+        default: return 'moda-badge moda-badge-success';
+    }
 };
 
 const cargarInventario = async () => {
@@ -72,12 +304,9 @@ const cargarInventario = async () => {
     errorConexion.value = false;
     try {
         const data = await obtenerTodoElInventario();
-        console.log('Datos recibidos de API:', data); // Para debugging
         
         if (Array.isArray(data)) {
-            // Transformar los datos al formato que necesita la tabla
             inventarioList.value = transformarDatosInventario(data);
-            console.log('Datos transformados:', inventarioList.value); // Para debugging
         } else {
             console.error('La API no devolvió un array:', data);
             inventarioList.value = [];
@@ -88,15 +317,40 @@ const cargarInventario = async () => {
         // Datos de ejemplo para desarrollo
         inventarioList.value = [
             {
-                sku: 'EJEMPLO-001',
-                producto: 'Camiseta Ejemplo',
-                marca: 'Marca Demo',
-                categoria: 'Ropa',
-                talla: 'M',
+                sku: 'ZAP-RUN-42',
+                producto: 'Camisa Clásica de Algodón',
+                marca: 'Puma',
+                categoria: 'Camisa',
+                talla: '42',
+                color: 'Negro',
+                stock_minimo: 10,
+                stock_actual: 27,
+                precio_venta: 9000,
+                descripcion: 'Camisa de vestir premium'
+            },
+            {
+                sku: 'CODI-BL-MJ',
+                producto: 'Camisa Clásica de Algodón',
+                marca: 'Puma',
+                categoria: 'Camisa',
+                talla: '14',
                 color: 'Blanco',
                 stock_minimo: 10,
-                stock_actual: 25,
-                precio_venta: 29.99
+                stock_actual: 9,
+                precio_venta: 9000,
+                descripcion: 'Camisa de vestir casual'
+            },
+            {
+                sku: 'ZAP-RUN-42',
+                producto: 'Camisa Clásica de Algodón',
+                marca: 'Puma',
+                categoria: 'Camisa',
+                talla: '42',
+                color: 'Negro',
+                stock_minimo: 10,
+                stock_actual: 0,
+                precio_venta: 9000,
+                descripcion: 'Camisa de vestir deportiva'
             }
         ];
     } finally {
@@ -126,251 +380,552 @@ onMounted(() => {
 });
 </script>
 
-<template>
-    <div class="container mx-auto p-4">
-        <h1 class="text-3xl font-extrabold text-gray-800 mb-6 text-center border-b pb-3">
-            📦 Módulo de Inventario de Productos
-        </h1>
-
-        <div class="mb-6 p-4 bg-white rounded-xl shadow-lg flex flex-col md:flex-row justify-between items-center">
-            <div class="form-floating flex-grow me-4 mb-3 md:mb-0">
-                <input 
-                    type="text" 
-                    v-model="busqueda" 
-                    placeholder="Buscar por SKU, Producto, Talla o Color..."
-                    id="floatingBuscador" 
-                    class="form-control border rounded w-full" 
-                />
-                <label for="floatingBuscador" class="form-label">Buscar Producto (SKU, Nombre, Variante...)</label>
-            </div>
-
-            <div class="flex flex-wrap gap-2 justify-center w-full md:w-auto">
-                <button @click="router.push('/registroProducto')"
-                    class="btn btn-outline-success px-4 py-2 rounded shadow text-sm md:text-base">
-                    + Producto Principal
-                </button>
-                <button @click="router.push('/registroCategoria')"
-                    class="btn btn-outline-dark px-3 py-2 ms-2 rounded shadow text-sm md:text-base">
-                    + Categoría
-                </button>
-                <button @click="router.push('/registroMarca')"
-                    class="btn btn-outline-info text-dark px-3 py-2 ms-2 rounded shadow text-sm md:text-base">
-                    + Marca
-                </button>
-                <button @click="goToRegistroVariante"
-                    class="btn btn-outline-primary px-4 py-2 ms-2 rounded shadow text-sm md:text-base">
-                    + Nueva Variante
-                </button>
-                <button @click="cargarInventario" :disabled="loading"
-                    class="btn btn-outline-danger px-4 py-2 ms-2 rounded shadow text-sm md:text-base">
-                    <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
-                    {{ loading ? 'Cargando...' : 'Actualizar' }}
-                </button>
-            </div>
-        </div>
-
-        <div v-if="errorConexion"
-            class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4 rounded-lg shadow-md" role="alert">
-            <p class="font-bold">Error de Conexión</p>
-            <p>No se pudo conectar con el servidor. Usando datos de demostración.</p>
-        </div>
-
-        <div v-else-if="loading" class="text-center p-8 text-lg text-gray-500">
-            <div class="spinner-border text-primary mb-3" role="status">
-                <span class="visually-hidden">Cargando...</span>
-            </div>
-            <p>Cargando datos del inventario...</p>
-        </div>
-
-        <div v-else-if="inventarioFiltrado.length > 0" class="bg-white rounded-xl shadow-xl overflow-x-auto">
-            <div class="p-3 bg-light">
-                <p class="mb-0 text-muted">
-                    Mostrando {{ inventarioFiltrado.length }} de {{ inventarioList.length }} productos
-                    <span v-if="busqueda" class="text-primary"> (filtrados por: "{{ busqueda }}")</span>
-                </p>
-            </div>
-            
-            <table class="table table-striped table-hover align-middle min-w-full">
-                <thead class="table-dark">
-                    <tr>
-                        <th scope="col" class="text-center">#</th>
-                        <th scope="col">SKU</th>
-                        <th scope="col">Producto</th>
-                        <th scope="col">Marca / Categoría</th>
-                        <th scope="col" class="text-center">Talla / Color</th>
-                        <th scope="col" class="text-center">Stock Mín.</th>
-                        <th scope="col" class="text-center">Stock Act.</th>
-                        <th scope="col" class="text-center">Precio Venta</th>
-                        <th scope="col" class="text-center">Estado</th>
-                        <th scope="col" class="text-center">Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr v-for="(variante, index) in inventarioFiltrado" :key="variante.sku + '-' + index" 
-                        :class="{
-                            'table-danger': getEstadoStock(variante.stock_actual, variante.stock_minimo) === 'Agotado',
-                            'table-warning': getEstadoStock(variante.stock_actual, variante.stock_minimo) === 'REORDENAR',
-                            'table-success': getEstadoStock(variante.stock_actual, variante.stock_minimo) === 'Suficiente'
-                        }">
-                        
-                        <td class="text-center text-muted">{{ index + 1 }}</td>
-                        
-                        <td class="font-semibold">
-                            <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary">
-                                {{ variante.sku }}
-                            </span>
-                        </td>
-                        
-                        <td class="text-gray-700">
-                            <div class="fw-bold">{{ variante.producto }}</div>
-                            <small class="text-muted" v-if="variante.descripcion">{{ variante.descripcion.substring(0, 50) }}...</small>
-                        </td>
-                        
-                        <td class="text-sm">
-                            <span class="badge bg-info bg-opacity-10 text-info me-1">{{ variante.marca }}</span>
-                            <span class="badge bg-dark bg-opacity-10 text-dark">{{ variante.categoria }}</span>
-                        </td>
-
-                        <td class="text-center">
-                            <span class="badge bg-primary me-1">{{ variante.talla }}</span>
-                            <span class="badge" :style="{ 
-                                backgroundColor: variante.color.toLowerCase(), 
-                                color: ['blanco', 'amarillo', 'beige'].includes(variante.color.toLowerCase()) ? 'black' : 'white',
-                                border: '1px solid #dee2e6'
-                            }">
-                                {{ variante.color }}
-                            </span>
-                        </td>
-
-                        <td class="text-center">
-                            <span class="badge bg-secondary">{{ variante.stock_minimo }}</span>
-                        </td>
-
-                        <td class="text-center">
-                            <span class="fw-bold" :class="{
-                                'text-danger': getEstadoStock(variante.stock_actual, variante.stock_minimo) === 'Agotado',
-                                'text-warning': getEstadoStock(variante.stock_actual, variante.stock_minimo) === 'REORDENAR',
-                                'text-success': getEstadoStock(variante.stock_actual, variante.stock_minimo) === 'Suficiente'
-                            }">
-                                {{ variante.stock_actual }}
-                            </span>
-                        </td>
-
-                        <td class="text-center">
-                            <span class="badge bg-success text-white">
-                                ${{ variante.precio_venta.toFixed(2) }}
-                            </span>
-                        </td>
-
-                        <td class="text-center">
-                            <span :class="[
-                                'badge',
-                                { 'bg-danger': getEstadoStock(variante.stock_actual, variante.stock_minimo) === 'Agotado' },
-                                { 'bg-warning text-dark': getEstadoStock(variante.stock_actual, variante.stock_minimo) === 'REORDENAR' },
-                                { 'bg-success': getEstadoStock(variante.stock_actual, variante.stock_minimo) === 'Suficiente' }
-                            ]">
-                                {{ getEstadoStock(variante.stock_actual, variante.stock_minimo) }}
-                            </span>
-                        </td>
-                        
-                        <td class="text-center">
-                            <div class="btn-group btn-group-sm" role="group">
-                                <button class="btn btn-outline-info" title="Editar">
-                                    <i class="bi bi-pencil-square"></i>
-                                </button>
-                                <button class="btn btn-outline-primary" title="Ingreso de stock">
-                                    <i class="bi bi-arrow-up"></i>
-                                </button>
-                                <button class="btn btn-outline-warning" title="Ver detalles">
-                                    <i class="bi bi-eye"></i>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-            
-            <div class="p-3 bg-light border-top">
-                <div class="row">
-                    <div class="col-md-6">
-                        <small class="text-muted">
-                            <span class="badge bg-danger">Agotado</span>
-                            <span class="badge bg-warning text-dark ms-2">REORDENAR</span>
-                            <span class="badge bg-success ms-2">Suficiente</span>
-                        </small>
-                    </div>
-                    <div class="col-md-6 text-end">
-                        <small class="text-muted">
-                            Última actualización: {{ new Date().toLocaleTimeString() }}
-                        </small>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div v-else class="bg-white rounded-xl shadow-lg p-8 text-center text-gray-500">
-            <div class="mb-4">
-                <i class="bi bi-inbox display-1 text-muted"></i>
-            </div>
-            <h4 class="mb-3">Inventario vacío</h4>
-            <p class="mb-4">No se encontraron productos en el inventario.</p>
-            <button @click="router.push('/registroProducto')" class="btn btn-primary">
-                <i class="bi bi-plus-circle me-2"></i>Agregar Primer Producto
-            </button>
-        </div>
-    </div>
-</template>
-
 <style scoped>
-.container {
-    max-width: 1400px;
+/* Contenedor principal */
+.moda-main-container {
+    background-color: #FFFDFB;
+    border-radius: 14px;
+    border: 1px solid #D6CFC8;
+    padding: 2rem;
+    box-shadow: 0 8px 32px rgba(74, 59, 52, 0.1);
+    margin: 1rem auto;
 }
 
-.table th {
-    font-weight: 600;
+/* Título */
+.moda-title {
+    color: #3A2E2A;
+    font-weight: 700;
+    font-size: 1.8rem;
+    margin-bottom: 2rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #D6CFC8;
+}
+
+.moda-icon-primary {
+    color: #4A3B34;
+}
+
+/* Barra de acciones */
+.moda-action-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #F8F5F2;
+    padding: 1rem;
+    border-radius: 10px;
+    border: 1px solid #D6CFC8;
+}
+
+.moda-search-container {
+    flex: 1;
+    min-width: 250px;
+}
+
+.moda-search-group {
+    position: relative;
+    width: 100%;
+}
+
+.moda-search-icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #8B7355;
+}
+
+.moda-search-input {
+    width: 100%;
+    padding: 0.75rem 1rem 0.75rem 3rem;
+    border: 2px solid #D6CFC8;
+    border-radius: 8px;
+    background-color: white;
+    color: #3A2E2A;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.moda-search-input:focus {
+    border-color: #4A3B34;
+    box-shadow: 0 0 0 3px rgba(74, 59, 52, 0.2);
+    outline: none;
+}
+
+.moda-action-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+/* Botones */
+.btn {
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    border: 2px solid;
+}
+
+.moda-btn-outline-success {
+    background-color: transparent;
+    border-color: #198754;
+    color: #198754;
+}
+
+.moda-btn-outline-success:hover {
+    background-color: #198754;
+    color: white;
+    transform: translateY(-2px);
+}
+
+.moda-btn-outline {
+    background-color: transparent;
+    border-color: #8B7355;
+    color: #8B7355;
+}
+
+.moda-btn-outline:hover {
+    background-color: #8B7355;
+    color: white;
+    transform: translateY(-2px);
+}
+
+.moda-btn-outline-primary {
+    background-color: transparent;
+    border-color: #4A3B34;
+    color: #4A3B34;
+}
+
+.moda-btn-outline-primary:hover {
+    background-color: #4A3B34;
+    color: white;
+    transform: translateY(-2px);
+}
+
+.moda-btn-outline-secondary {
+    background-color: transparent;
+    border-color: #D6CFC8;
+    color: #3A2E2A;
+}
+
+.moda-btn-outline-secondary:hover {
+    background-color: #D6CFC8;
+    color: #3A2E2A;
+    transform: translateY(-2px);
+}
+
+.moda-btn-primary {
+    background-color: #4A3B34;
+    border-color: #4A3B34;
+    color: white;
+}
+
+.moda-btn-primary:hover {
+    background-color: #352822;
+    border-color: #352822;
+    transform: translateY(-2px);
+}
+
+/* Tabla */
+.moda-table-header {
+    background-color: #F8F5F2;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    border: 1px solid #D6CFC8;
+    margin-bottom: 1rem;
+}
+
+.moda-table-count {
+    color: #8B7355;
+    margin: 0;
     font-size: 0.9rem;
+}
+
+.moda-filter-note {
+    color: #4A3B34;
+    font-weight: 500;
+}
+
+.moda-table-container {
+    background-color: white;
+    border-radius: 10px;
+    border: 1px solid #D6CFC8;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(74, 59, 52, 0.08);
+    margin-bottom: 1rem;
+}
+
+.moda-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.moda-table-th {
+    background: linear-gradient(135deg, #4A3B34, #5D4A3A);
+    color: white;
+    padding: 1rem;
+    font-weight: 600;
+    text-align: left;
+    border: none;
+    font-size: 0.85rem;
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
 
-.table td {
+.moda-table-td {
+    padding: 1rem;
+    color: #3A2E2A;
+    border-bottom: 1px solid #D6CFC8;
     vertical-align: middle;
 }
 
-.badge {
-    font-size: 0.75rem;
-    font-weight: 500;
+/* Clases para filas según estado */
+.moda-row-out {
+    background-color: rgba(220, 53, 69, 0.05);
 }
 
-.btn-group-sm > .btn {
-    padding: 0.25rem 0.5rem;
-    font-size: 0.75rem;
+.moda-row-low {
+    background-color: rgba(255, 193, 7, 0.05);
 }
 
-/* Efectos hover para las filas */
-.table-hover tbody tr:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+.moda-row-ok {
+    background-color: white;
+}
+
+.moda-row-out:hover,
+.moda-row-low:hover,
+.moda-row-ok:hover {
+    background-color: rgba(139, 115, 85, 0.05);
+    transform: translateY(-1px);
     transition: all 0.2s ease;
 }
 
-/* Scroll personalizado para la tabla */
-.overflow-x-auto {
-    scrollbar-width: thin;
-    scrollbar-color: #6c757d #f8f9fa;
+/* Badges */
+.moda-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
 }
 
-.overflow-x-auto::-webkit-scrollbar {
-    height: 8px;
+.moda-badge-sku {
+    background-color: rgba(139, 115, 85, 0.15);
+    color: #8B7355;
+    border: 1px solid #D6CFC8;
 }
 
-.overflow-x-auto::-webkit-scrollbar-track {
-    background: #f8f9fa;
+.moda-badge-secondary {
+    background-color: rgba(214, 207, 200, 0.3);
+    color: #3A2E2A;
+}
+
+.moda-badge-size {
+    background-color: #4A3B34;
+    color: white;
+    margin-right: 0.25rem;
+}
+
+.moda-badge-color {
+    border: 1px solid #D6CFC8;
+}
+
+.moda-badge-danger {
+    background-color: #dc3545;
+    color: white;
+}
+
+.moda-badge-warning {
+    background-color: #ffc107;
+    color: #3A2E2A;
+}
+
+.moda-badge-success {
+    background-color: #198754;
+    color: white;
+}
+
+/* Información del producto */
+.moda-product-name {
+    font-weight: 600;
+    color: #3A2E2A;
+    margin-bottom: 0.25rem;
+}
+
+.moda-product-desc {
+    color: #8B7355;
+    font-size: 0.85rem;
+    line-height: 1.4;
+}
+
+/* Tags */
+.moda-tags {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.moda-tag {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
     border-radius: 4px;
+    font-size: 0.8rem;
+    width: fit-content;
 }
 
-.overflow-x-auto::-webkit-scrollbar-thumb {
-    background-color: #6c757d;
-    border-radius: 4px;
+.moda-tag-brand {
+    background-color: rgba(74, 59, 52, 0.1);
+    color: #4A3B34;
+}
+
+.moda-tag-category {
+    background-color: rgba(139, 115, 85, 0.1);
+    color: #8B7355;
+}
+
+/* Stock */
+.moda-stock-count {
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.moda-stock-out {
+    color: #dc3545;
+}
+
+.moda-stock-low {
+    color: #ffc107;
+}
+
+.moda-stock-ok {
+    color: #198754;
+}
+
+/* Precio */
+.moda-price {
+    font-weight: 600;
+    color: #198754;
+    font-size: 1rem;
+}
+
+/* Botones de acción */
+.moda-action-buttons-small {
+    display: flex;
+    gap: 0.25rem;
+    justify-content: center;
+}
+
+.moda-btn-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 1px solid #D6CFC8;
+    background-color: transparent;
+    color: #8B7355;
+}
+
+.moda-btn-icon:hover {
+    background-color: #D6CFC8;
+    color: #3A2E2A;
+    transform: translateY(-2px);
+}
+
+.moda-btn-icon-primary {
+    border-color: #4A3B34;
+    color: #4A3B34;
+}
+
+.moda-btn-icon-primary:hover {
+    background-color: #4A3B34;
+    color: white;
+}
+
+.moda-btn-icon-info {
+    border-color: #0dcaf0;
+    color: #0dcaf0;
+}
+
+.moda-btn-icon-info:hover {
+    background-color: #0dcaf0;
+    color: white;
+}
+
+/* Pie de tabla */
+.moda-table-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    background-color: #F8F5F2;
+    border-radius: 8px;
+    border: 1px solid #D6CFC8;
+    font-size: 0.85rem;
+}
+
+.moda-status-legend {
+    display: flex;
+    gap: 1rem;
+}
+
+.moda-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #8B7355;
+}
+
+.moda-legend-item::before {
+    content: '';
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.moda-legend-out::before {
+    background-color: #dc3545;
+}
+
+.moda-legend-low::before {
+    background-color: #ffc107;
+}
+
+.moda-legend-ok::before {
+    background-color: #198754;
+}
+
+.moda-update-time {
+    color: #8B7355;
+}
+
+/* Estado vacío */
+.moda-empty-state {
+    text-align: center;
+    padding: 3rem;
+    background-color: #F8F5F2;
+    border-radius: 10px;
+    border: 2px dashed #D6CFC8;
+}
+
+.moda-empty-icon {
+    font-size: 3rem;
+    color: #D6CFC8;
+    margin-bottom: 1rem;
+}
+
+.moda-empty-title {
+    color: #3A2E2A;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.moda-empty-text {
+    color: #8B7355;
+    margin-bottom: 1.5rem;
+}
+
+/* Alertas y estados */
+.moda-alert {
+    padding: 1rem 1.5rem;
+    border-radius: 10px;
+    margin-bottom: 1.5rem;
+    border: 1px solid;
+    display: flex;
+    align-items: center;
+}
+
+.moda-alert-error {
+    background-color: rgba(220, 53, 69, 0.1);
+    border-color: #dc3545;
+    color: #dc3545;
+}
+
+.moda-loading-state {
+    text-align: center;
+    padding: 3rem;
+}
+
+.moda-spinner {
+    width: 50px;
+    height: 50px;
+    border: 3px solid #D6CFC8;
+    border-top-color: #4A3B34;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.moda-subtitle {
+    color: #8B7355;
+    font-weight: 500;
+    font-size: 1rem;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+    .moda-table-container {
+        overflow-x: auto;
+    }
+    
+    .moda-table {
+        min-width: 1100px;
+    }
+}
+
+@media (max-width: 768px) {
+    .moda-main-container {
+        padding: 1rem;
+    }
+    
+    .moda-action-bar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .moda-search-container {
+        width: 100%;
+    }
+    
+    .moda-action-buttons {
+        justify-content: center;
+    }
+    
+    .moda-table-footer {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+    }
+    
+    .moda-status-legend {
+        justify-content: center;
+    }
+}
+
+@media (max-width: 576px) {
+    .moda-title {
+        font-size: 1.5rem;
+    }
+    
+    .moda-action-buttons {
+        flex-direction: column;
+    }
+    
+    .moda-action-buttons .btn {
+        width: 100%;
+        justify-content: center;
+    }
 }
 </style>

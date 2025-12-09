@@ -3,7 +3,6 @@ import { createRouter, createWebHistory } from 'vue-router'
 import Login from '@/components/Login.vue'
 import Registro from '@/components/registroCliente.vue' 
 import HomeView from '@/components/HomeView.vue'
-import consultaCliente from '@/components/consultaCliente.vue'
 import listaCliente from '@/components/listaCliente.vue'
 import facturacion from '@/components/facturacion.vue'
 import edicionCliente from '@/components/edicionCliente.vue' 
@@ -15,6 +14,11 @@ import registroMarca from '@/components/registroMarca.vue';
 import reportesClientes from '@/components/reportesClientes.vue';
 import reportesGraficos from '@/components/reportesGraficos.vue';
 import ReportesMenu from '@/components/ReportesMenu.vue'
+import Compras from '@/components/Compras.vue'
+import ReportesContables from '@/components/ReportesContables.vue'
+import ListaProveedores from '@/components/ListaProveedores.vue'
+import ProveedorForm from '@/components/ProveedorForm.vue'
+import EdicionProveedor from '../components/edicionProveedor.vue'
 
 const routes = [
     {
@@ -31,11 +35,6 @@ const routes = [
         path: '/registro',
         name: 'Registro',
         component: Registro
-    },
-    {
-        path: '/consultaCliente',
-        name: 'consultaCliente',
-        component: consultaCliente
     },
     {
         path: '/listaProducto',
@@ -89,9 +88,34 @@ const routes = [
         component: ReportesMenu
     },
     {
+        path: '/compras',
+        name: 'compras',
+        component: Compras
+    },
+    {
+        path: '/reportes-contables',
+        name: 'reportes-contables',
+        component: ReportesContables
+    },
+    {
+        path: '/proveedor',
+        name: 'proveedor',
+        component: ListaProveedores
+    },
+    {
+        path: '/proveedor/nuevo',
+        name: 'proveedor-nuevo',
+        component: ProveedorForm
+    },
+    {
         path: '/facturacion',
         name: 'facturacion',
         component: facturacion
+    },
+    {
+        path: '/proveedor/editar/:doc_identidad',
+        name: 'edicion-proveedor',
+        component: EdicionProveedor
     }
 ]
 

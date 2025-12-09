@@ -1,3 +1,40 @@
+<template>
+    <div class="container mt-5 mb-5 moda-container">
+        <h1 class="moda-title text-center mb-4">🏷️ Registro de Nueva Marca</h1>
+
+        <div v-if="mensajeFeedback" :class="[
+            'alert alert-moda mb-4',
+            tipoFeedback === 'success' ? 'border-success' : 'border-danger'
+        ]" role="alert">
+            {{ mensajeFeedback }}
+        </div>
+
+        <div class="moda-card p-4 shadow-lg">
+            <form @submit.prevent="registrarMarca">
+                <div class="mb-4">
+                    <label for="inputNombre" class="form-label moda-subtitle fw-bold mb-2">Nombre de la Marca *</label>
+                    <input type="text" v-model="marcaForm.nombre" id="inputNombre" 
+                        class="form-control moda-input" placeholder="Ej: Puma, Nike, Zara, Adidas..." required />
+                    <div class="form-text">Ingresa el nombre de la marca comercial</div>
+                </div>
+
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <button type="submit" :disabled="submitLoading" 
+                        class="btn btn-moda-primary px-4 py-2">
+                        <span v-if="submitLoading">
+                            <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                            Guardando...
+                        </span>
+                        <span v-else>
+                            <i class="bi bi-tag-fill me-2"></i>Registrar Marca
+                        </span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</template>
+
 <script setup>
 import { ref } from 'vue';
 import axios from 'axios';
@@ -11,7 +48,7 @@ const marcaForm = ref({
 
 const submitLoading = ref(false);
 const mensajeFeedback = ref('');
-const tipoFeedback = ref(''); // success o danger
+const tipoFeedback = ref('');
 
 // --- Lógica de Registro ---
 const registrarMarca = async () => {
@@ -25,11 +62,10 @@ const registrarMarca = async () => {
     mensajeFeedback.value = '';
     
     try {
-        // Usa la ruta POST /api/marcas que configuramos
         const response = await axios.post(API_URL, marcaForm.value);
         
         tipoFeedback.value = 'success';
-        mensajeFeedback.value = `Marca "${response.data.marca.nombre}" registrada con éxito!`;
+        mensajeFeedback.value = `✅ Marca "${response.data.marca.nombre}" registrada con éxito!`;
         
         // Limpiar formulario
         marcaForm.value.nombre = '';
@@ -44,31 +80,27 @@ const registrarMarca = async () => {
 };
 </script>
 
-<template>
-    <div class="container mx-auto p-4 max-w-md">
-        <h1 class="text-3xl font-extrabold text-gray-800 mb-6 text-center border-b pb-3">
-            ➕ Registro de Nueva Marca
-        </h1>
+<style scoped>
+.container {
+    max-width: 500px;
+}
 
-        <div v-if="mensajeFeedback" :class="['alert mb-4', tipoFeedback === 'success' ? 'alert-success' : 'alert-danger']" role="alert">
-            {{ mensajeFeedback }}
-        </div>
+.moda-card {
+    padding: 2rem !important;
+}
 
-        <div class="bg-white rounded-xl shadow-xl p-6">
-            <form @submit.prevent="registrarMarca">
-                
-                <div class="form-floating mb-4">
-                    <input type="text" v-model="marcaForm.nombre" id="inputNombre" 
-                        class="form-control border rounded" placeholder="Nombre de la Marca" required />
-                    <label for="inputNombre" class="form-label">Nombre de la Marca *</label>
-                </div>
+.alert-moda {
+    padding: 1rem;
+    border-radius: 10px;
+}
 
-                <button type="submit" :disabled="submitLoading" 
-                    class="btn btn-outline-primary w-full px-4 py-2 rounded shadow">
-                    <span v-if="submitLoading">Guardando...</span>
-                    <span v-else>Registrar Marca</span>
-                </button>
-            </form>
-        </div>
-    </div>
-</template>
+.alert-moda.border-success {
+    border-left: 4px solid #198754 !important;
+    background-color: rgba(25, 135, 84, 0.1);
+}
+
+.alert-moda.border-danger {
+    border-left: 4px solid #dc3545 !important;
+    background-color: rgba(220, 53, 69, 0.1);
+}
+</style>

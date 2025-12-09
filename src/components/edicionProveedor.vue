@@ -3,7 +3,7 @@
     <div class="container moda-main-container mt-5">
         <h1 class="moda-title text-center mb-4">
             <i class="bi bi-person-gear moda-icon-primary me-2"></i>
-            Editar Cliente: {{ cliente.nombre || cedula }}
+            Editar Proveedor: {{ proveedor.nombre || doc_identidad }}
         </h1>
         
         <!-- Mensaje de resultado -->
@@ -13,23 +13,23 @@
         </div>
         
         <!-- Estado de carga -->
-        <div v-else-if="!cliente.cedula && !esError" class="moda-loading-state">
+        <div v-else-if="!proveedor.doc_identidad && !esError" class="moda-loading-state">
             <div class="moda-spinner"></div>
-            <p class="mt-3 moda-subtitle">Cargando datos del cliente {{ cedula }}...</p>
+            <p class="mt-3 moda-subtitle">Cargando datos del proveedor {{ doc_identidad }}...</p>
         </div>
         
         <!-- Formulario de edición -->
-        <form v-if="cliente.cedula" @submit.prevent="manejarEdicion" class="moda-form">
-            <!-- Cédula (solo lectura) -->
+        <form v-if="proveedor.doc_identidad" @submit.prevent="manejarEdicion" class="moda-form">
+            <!-- Documento de Identidad (solo lectura) -->
             <div class="moda-form-group">
-                <label for="cedula" class="moda-label">
-                    <i class="bi bi-card-text me-1"></i> Cédula
+                <label for="doc_identidad" class="moda-label">
+                    <i class="bi bi-card-text me-1"></i> Documento de Identidad
                 </label>
                 <div class="moda-readonly-field">
-                    {{ cliente.cedula }}
+                    {{ proveedor.doc_identidad }}
                 </div>
                 <div class="moda-note">
-                    <i class="bi bi-info-circle me-1"></i> La cédula no se puede modificar
+                    <i class="bi bi-info-circle me-1"></i> El documento no se puede modificar
                 </div>
             </div>
             
@@ -42,9 +42,9 @@
                     type="text" 
                     class="moda-input" 
                     id="nombre" 
-                    v-model="cliente.nombre" 
+                    v-model="proveedor.nombre" 
                     required
-                    placeholder="Nombre completo del cliente">
+                    placeholder="Nombre completo del proveedor">
                 <div class="moda-feedback">
                     Campo obligatorio
                 </div>
@@ -53,66 +53,68 @@
             <!-- Teléfono -->
             <div class="moda-form-group">
                 <label for="telefono" class="moda-label">
-                    <i class="bi bi-telephone me-1"></i> Teléfono *
+                    <i class="bi bi-telephone me-1"></i> Teléfono
                 </label>
                 <input 
                     type="tel" 
                     class="moda-input" 
                     id="telefono" 
-                    v-model="cliente.telefono" 
-                    required
+                    v-model="proveedor.telefono" 
                     placeholder="Número de teléfono">
                 <div class="moda-feedback">
-                    Campo obligatorio
+                    Campo opcional
                 </div>
             </div>
 
             <!-- Email -->
             <div class="moda-form-group">
                 <label for="email" class="moda-label">
-                    <i class="bi bi-envelope me-1"></i> Email *
+                    <i class="bi bi-envelope me-1"></i> Email
                 </label>
                 <input 
                     type="email" 
                     class="moda-input" 
                     id="email" 
-                    v-model="cliente.email" 
-                    required
+                    v-model="proveedor.email" 
                     placeholder="correo@ejemplo.com">
                 <div class="moda-feedback">
-                    Campo obligatorio
+                    Campo opcional
                 </div>
             </div>
             
             <!-- Dirección -->
             <div class="moda-form-group moda-form-group-wide">
                 <label for="direccion" class="moda-label">
-                    <i class="bi bi-geo-alt me-1"></i> Dirección *
+                    <i class="bi bi-geo-alt me-1"></i> Dirección
                 </label>
                 <textarea 
                     class="moda-textarea" 
                     id="direccion" 
-                    v-model="cliente.direccion" 
+                    v-model="proveedor.direccion" 
                     rows="3" 
-                    required
                     placeholder="Dirección completa"></textarea>
                 <div class="moda-feedback">
-                    Campo obligatorio
+                    Campo opcional
+                </div>
+            </div>
+            
+            <!-- Fecha de Registro (solo lectura) -->
+            <div class="moda-form-group">
+                <label class="moda-label">
+                    <i class="bi bi-calendar me-1"></i> Fecha de Registro
+                </label>
+                <div class="moda-readonly-field">
+                    {{ formatearFecha(proveedor.created_at) }}
                 </div>
             </div>
 
-            <!-- Tipo de Cliente -->
+            <!-- Última Actualización (solo lectura) -->
             <div class="moda-form-group">
-                <label for="tipo" class="moda-label">
-                    <i class="bi bi-tag me-1"></i> Tipo de Cliente *
+                <label class="moda-label">
+                    <i class="bi bi-clock-history me-1"></i> Última Actualización
                 </label>
-                <select class="moda-select" id="tipo" v-model="cliente.tipo" required>
-                    <option value="Natural">Natural</option>
-                    <option value="Jurídico">Jurídico</option>
-                    <option value="Genérico">Genérico</option>
-                </select>
-                <div class="moda-feedback">
-                    Seleccione el tipo de cliente
+                <div class="moda-readonly-field">
+                    {{ formatearFecha(proveedor.updated_at) }}
                 </div>
             </div>
             
@@ -128,8 +130,9 @@
                 <button type="button" @click="navegarALista" class="btn moda-btn-outline-secondary">
                     <i class="bi bi-arrow-left me-2"></i> Volver a la Lista
                 </button>
-                <button type="submit" class="btn moda-btn-primary">
-                    <i class="bi bi-save me-2"></i> Guardar Cambios
+                <button type="submit" class="btn moda-btn-primary" :disabled="procesando">
+                    <i class="bi" :class="procesando ? 'bi-hourglass-split' : 'bi-save'"></i>
+                    {{ procesando ? 'Guardando...' : 'Guardar Cambios' }}
                 </button>
             </div>
         </form>
@@ -140,68 +143,97 @@
 import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import Header from '@/components/Header.vue' 
-import { obtenerClientePorCedula, editarCliente } from '@/cliente.js' 
+import { obtenerProveedorPorDocIdentidad, editarProveedor } from '@/proveedor.js' 
 
 const router = useRouter();
 const route = useRoute();
 
-const cedula = route.params.cedula;
+const doc_identidad = route.params.doc_identidad;
 const mensaje = ref('');
 const esError = ref(false);
-const cliente = ref({
-    cedula: '',
+const procesando = ref(false);
+const proveedor = ref({
+    doc_identidad: '',
     nombre: '',
     telefono: '',
     email: '',
     direccion: '',
-    tipo: 'Natural'
+    created_at: '',
+    updated_at: ''
 });
 
-const cargarCliente = async () => {
+const cargarProveedor = async () => {
     try {
-        const data = await obtenerClientePorCedula(cedula);
-        cliente.value = data; 
+        const data = await obtenerProveedorPorDocIdentidad(doc_identidad);
+        proveedor.value = {
+            doc_identidad: data.doc_identidad,
+            nombre: data.nombre || '',
+            telefono: data.telefono || '',
+            email: data.email || '',
+            direccion: data.direccion || '',
+            created_at: data.created_at || '',
+            updated_at: data.updated_at || ''
+        };
         
     } catch (error) {
-        console.error(`❌ Error al cargar cliente ${cedula}:`, error);
-        mensaje.value = `❌ No se pudieron cargar los datos del cliente ${cedula}.`;
+        console.error(`❌ Error al cargar proveedor ${doc_identidad}:`, error);
+        mensaje.value = `❌ No se pudieron cargar los datos del proveedor ${doc_identidad}.`;
         esError.value = true;
         
         setTimeout(() => {
-            router.push('/listaCliente'); 
+            router.push('/proveedor'); 
         }, 2000); 
     }
 };
 
+const formatearFecha = (fecha) => {
+    if (!fecha) return 'No disponible';
+    try {
+        const fechaObj = new Date(fecha);
+        return fechaObj.toLocaleDateString('es-ES', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    } catch (error) {
+        return 'Fecha inválida';
+    }
+};
+
 onMounted(() => {
-    cargarCliente();
+    cargarProveedor();
 });
 
 const manejarEdicion = async () => {
     mensaje.value = '';
     esError.value = false;
+    procesando.value = true;
 
     try {
-        // Enviar todos los datos del cliente excepto campos internos
-        const { fecha_registro, activo, ...datosActualizados } = cliente.value;
+        // Enviar solo los datos editables
+        const { doc_identidad, created_at, updated_at, ...datosActualizados } = proveedor.value;
         
-        await editarCliente(cedula, datosActualizados); 
-        mensaje.value = '✅ Cliente actualizado con éxito.';
+        await editarProveedor(doc_identidad, datosActualizados); 
+        mensaje.value = '✅ Proveedor actualizado con éxito.';
         esError.value = false;
         
         setTimeout(() => {
-            router.push('/listaCliente');
+            router.push('/proveedor');
         }, 1500);
 
     } catch (error) {
         const errorMsg = error.response?.data?.message || 'Error al actualizar. Revise los datos.';
         mensaje.value = `❌ Fallo: ${errorMsg}`;
         esError.value = true;
+    } finally {
+        procesando.value = false;
     }
 };
 
 const navegarALista = () => {
-    router.push('/listaCliente');
+    router.push('/proveedor');
 };
 </script>
 
@@ -336,8 +368,7 @@ const navegarALista = () => {
 
 /* Inputs */
 .moda-input,
-.moda-textarea,
-.moda-select {
+.moda-textarea {
     background-color: white;
     border: 2px solid #D6CFC8;
     border-radius: 8px;
@@ -349,8 +380,7 @@ const navegarALista = () => {
 }
 
 .moda-input:focus,
-.moda-textarea:focus,
-.moda-select:focus {
+.moda-textarea:focus {
     border-color: #4A3B34;
     box-shadow: 0 0 0 3px rgba(74, 59, 52, 0.2);
     outline: none;
@@ -359,15 +389,6 @@ const navegarALista = () => {
 .moda-textarea {
     resize: vertical;
     min-height: 100px;
-}
-
-.moda-select {
-    appearance: none;
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%233A2E2A' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
-    background-repeat: no-repeat;
-    background-position: right 0.75rem center;
-    background-size: 16px 12px;
-    padding-right: 2.5rem;
 }
 
 /* Feedback */
@@ -416,7 +437,7 @@ const navegarALista = () => {
     justify-content: center;
 }
 
-.moda-btn-primary:hover {
+.moda-btn-primary:hover:not(:disabled) {
     background-color: #352822 !important;
     border-color: #352822 !important;
     transform: translateY(-2px);
@@ -440,6 +461,11 @@ const navegarALista = () => {
     background-color: #8B7355 !important;
     color: white !important;
     transform: translateY(-2px);
+}
+
+.moda-btn-primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
 }
 
 /* Responsive */

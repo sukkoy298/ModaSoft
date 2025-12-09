@@ -1,11 +1,51 @@
+<template>
+    <div class="container mt-5 mb-5 moda-container">
+        <h1 class="moda-title text-center mb-4">➕ Registro de Nueva Categoría</h1>
+
+        <div v-if="mensajeFeedback" :class="[
+            'alert alert-moda mb-4',
+            tipoFeedback === 'success' ? 'border-success' : 'border-danger'
+        ]" role="alert">
+            {{ mensajeFeedback }}
+        </div>
+
+        <div class="moda-card p-4 shadow-lg">
+            <form @submit.prevent="registrarCategoria">
+                <div class="mb-4">
+                    <label for="inputNombre" class="form-label moda-subtitle fw-bold mb-2">Nombre de la Categoría *</label>
+                    <input type="text" v-model="categoriaForm.nombre" id="inputNombre" 
+                        class="form-control moda-input" placeholder="Ej: Camisetas, Pantalones, Vestidos..." required />
+                </div>
+
+                <div class="mb-4">
+                    <label for="inputDescripcion" class="form-label moda-subtitle fw-bold mb-2">Descripción</label>
+                    <textarea v-model="categoriaForm.descripcion" id="inputDescripcion" 
+                        class="form-control moda-input" placeholder="Descripción breve de la categoría..." 
+                        style="height: 100px"></textarea>
+                </div>
+
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <button type="submit" :disabled="submitLoading" 
+                        class="btn btn-moda-primary px-4 py-2">
+                        <span v-if="submitLoading">
+                            <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                            Guardando...
+                        </span>
+                        <span v-else>
+                            <i class="bi bi-check-circle me-2"></i>Registrar Categoría
+                        </span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</template>
+
 <script setup>
 import { ref } from 'vue';
 import axios from 'axios';
-import { useRouter } from 'vue-router';
 
 const API_URL = 'http://localhost:3000/api/categorias';
-
-const router = useRouter();
 
 // --- Estado del Componente ---
 const categoriaForm = ref({
@@ -32,7 +72,7 @@ const registrarCategoria = async () => {
         const response = await axios.post(API_URL, categoriaForm.value);
         
         tipoFeedback.value = 'success';
-        mensajeFeedback.value = `Categoría "${response.data.categoria.nombre}" registrada con éxito!`;
+        mensajeFeedback.value = `✅ Categoría "${response.data.categoria.nombre}" registrada con éxito!`;
         
         // Limpiar formulario
         categoriaForm.value.nombre = '';
@@ -48,37 +88,27 @@ const registrarCategoria = async () => {
 };
 </script>
 
-<template>
-    <div class="container mx-auto p-4 max-w-md">
-        <h1 class="text-3xl font-extrabold text-gray-800 mb-6 text-center border-b pb-3">
-            ➕ Registro de Nueva Categoría
-        </h1>
+<style scoped>
+.container {
+    max-width: 600px;
+}
 
-        <div v-if="mensajeFeedback" :class="['alert mb-4', tipoFeedback === 'success' ? 'alert-success' : 'alert-danger']" role="alert">
-            {{ mensajeFeedback }}
-        </div>
+.moda-card {
+    padding: 2rem !important;
+}
 
-        <div class="bg-white rounded-xl shadow-xl p-6">
-            <form @submit.prevent="registrarCategoria">
-                
-                <div class="form-floating mb-3">
-                    <input type="text" v-model="categoriaForm.nombre" id="inputNombre" 
-                        class="form-control border rounded" placeholder="Nombre de la Categoría" required />
-                    <label for="inputNombre" class="form-label">Nombre de la Categoría *</label>
-                </div>
+.alert-moda {
+    padding: 1rem;
+    border-radius: 10px;
+}
 
-                <div class="form-floating mb-4">
-                    <textarea v-model="categoriaForm.descripcion" id="inputDescripcion" 
-                        class="form-control border rounded" placeholder="Descripción breve" style="height: 100px"></textarea>
-                    <label for="inputDescripcion" class="form-label">Descripción (Opcional)</label>
-                </div>
+.alert-moda.border-success {
+    border-left: 4px solid #198754 !important;
+    background-color: rgba(25, 135, 84, 0.1);
+}
 
-                <button type="submit" :disabled="submitLoading" 
-                    class="btn btn-outline-primary w-full px-4 py-2 rounded shadow">
-                    <span v-if="submitLoading">Guardando...</span>
-                    <span v-else>Registrar Categoría</span>
-                </button>
-            </form>
-        </div>
-    </div>
-</template>
+.alert-moda.border-danger {
+    border-left: 4px solid #dc3545 !important;
+    background-color: rgba(220, 53, 69, 0.1);
+}
+</style>

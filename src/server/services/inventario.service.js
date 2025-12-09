@@ -68,7 +68,7 @@ export const obtenerInventarioPorVariante = async (id_variante) => {
     }
 };
 
-export const actualizarStock = async (codigoBarras, cantidad) => {
+export const actualizarStock = async (codigoBarras, cantidad, referencia = 'ajuste_manual', id_usuario = 1, transaction = null) => {
     try {
         // Buscar la variante por código de barras
         const variante = await VarianteProductoModel.findOne({
@@ -90,21 +90,32 @@ export const actualizarStock = async (codigoBarras, cantidad) => {
             throw new Error(`Stock no puede ser negativo. Stock actual: ${inventario ? inventario.stock_actual : 0}`);
         }
 
+        const tipo = cantidad > 0 ? 'entrada' : 'salida';
+
         if (inventario) {
+            // USAR UPDATE EN LUGAR DE SAVE
+            await InventarioModel.update({
+                stock_actual: nuevoStock,
+                fecha_ultima_entrada: new Date()
+            }, {
+                where: { id_variante: variante.id_variante },
+                transaction: transaction
+            });
+            
+            // Actualizar el objeto local
             inventario.stock_actual = nuevoStock;
             inventario.fecha_ultima_entrada = new Date();
-            await inventario.save();
         } else {
             inventario = await InventarioModel.create({
                 id_variante: variante.id_variante,
-                tipo: cantidad > 0 ? 'entrada' : 'salida',
+                tipo: tipo,
                 cantidad: Math.abs(cantidad),
                 stock_actual: nuevoStock,
                 stock_minimo: 10,
                 fecha_ultima_entrada: new Date(),
-                referencia: 'ajuste_manual',
-                id_usuario: 1
-            });
+                referencia: referencia,
+                id_usuario: id_usuario
+            }, { transaction });
         }
 
         return { inventario, variante };
@@ -127,9 +138,16 @@ export const ajustarStock = async (id_variante, cantidad, motivo, id_usuario = 1
         }
 
         if (inventario) {
+            // USAR UPDATE EN LUGAR DE SAVE
+            await InventarioModel.update({
+                stock_actual: nuevoStock,
+                fecha_ultima_entrada: new Date()
+            }, {
+                where: { id_variante: id_variante }
+            });
+            
             inventario.stock_actual = nuevoStock;
             inventario.fecha_ultima_entrada = new Date();
-            await inventario.save();
         } else {
             inventario = await InventarioModel.create({
                 id_variante,

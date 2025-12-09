@@ -40,7 +40,6 @@ const currentStock = computed(() => {
 const currentPrice = computed(() => {
   if (!selectedVariant.value) return 0;
   
-  // <-- CORREGIDO: Usar precio_unitario_venta directamente
   const price = selectedVariant.value.precio_unitario_venta; 
   return typeof price === 'number' ? price : parseFloat(price) || 0;
 });
@@ -72,7 +71,7 @@ const handleAddToCart = () => {
       sku: selectedVariant.value.sku || '',
       talla: selectedVariant.value.talla || '',
       color: selectedVariant.value.color || '',
-      precio: currentPrice.value, // <-- Usar currentPrice que ya es precio_unitario_venta
+      precio: currentPrice.value,
       stock_actual: stock
     },
     qty: quantity,
@@ -120,34 +119,33 @@ const isAddButtonDisabled = computed(() => {
 </script>
 
 <template>
-  <div class="card h-100 shadow-sm product-card">
-    <div class="card-header bg-light py-2">
-      <h6 class="card-title mb-0 text-primary fw-bold">
+  <div class="moda-product-card h-100">
+    <div class="moda-product-header">
+      <h6 class="moda-product-title">
         <i class="bi bi-tag me-1"></i>{{ product.nombre }}
       </h6>
     </div>
     
-    <div class="card-body d-flex flex-column p-3">
+    <div class="moda-product-body">
       <!-- Información del producto -->
-      <div class="mb-2">
-        <small class="text-muted d-block">
+      <div class="moda-product-info mb-3">
+        <small class="moda-product-category">
           <i class="bi bi-grid-1x2 me-1"></i>{{ product.categoria || 'Sin categoría' }}
         </small>
-        <small class="text-muted d-block">
+        <small class="moda-product-brand">
           <i class="bi bi-award me-1"></i>{{ product.marca || 'Sin marca' }}
         </small>
       </div>
 
       <!-- Selector de variante -->
       <div class="mb-3">
-        <label class="form-label small fw-semibold text-secondary mb-1">
+        <label class="moda-label mb-1">
           <i class="bi bi-option me-1"></i>Seleccionar variante:
         </label>
         <select 
-          class="form-select form-select-sm" 
+          class="moda-select moda-select-sm" 
           v-model="selectedVariantId"
           :disabled="!product.variantes || product.variantes.length === 0"
-          :class="{ 'is-invalid': !product.variantes || product.variantes.length === 0 }"
         >
           <option v-if="!product.variantes || product.variantes.length === 0" value="" disabled>
             Sin variantes disponibles
@@ -165,31 +163,31 @@ const isAddButtonDisabled = computed(() => {
       </div>
 
       <!-- Información de la variante seleccionada -->
-      <div v-if="selectedVariant" class="mb-3">
+      <div v-if="selectedVariant" class="moda-variant-info">
         <!-- Precio y stock -->
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <div>
-            <div class="text-success fw-bold fs-5">
+        <div class="moda-price-stock mb-3">
+          <div class="moda-price-section">
+            <div class="moda-price">
               ${{ currentPrice.toFixed(2) }}
             </div>
-            <small class="text-muted">Precio unitario</small>
+            <small class="moda-price-label">Precio unitario</small>
           </div>
-          <div class="text-end">
-            <div :class="['badge', currentStock > 10 ? 'bg-success' : currentStock > 0 ? 'bg-warning text-dark' : 'bg-danger']">
+          <div class="moda-stock-section">
+            <div :class="['moda-stock-badge', currentStock > 10 ? 'moda-stock-high' : currentStock > 0 ? 'moda-stock-low' : 'moda-stock-out']">
               <i class="bi bi-box-seam me-1"></i>{{ currentStock }} unidades
             </div>
-            <small class="d-block text-muted mt-1">Stock disponible</small>
+            <small class="moda-stock-label">Stock disponible</small>
           </div>
         </div>
         
         <!-- Selector de cantidad -->
-        <div class="mb-3">
-          <label class="form-label small fw-semibold text-secondary mb-1">
+        <div class="moda-quantity-selector mb-3">
+          <label class="moda-label mb-1">
             <i class="bi bi-123 me-1"></i>Cantidad:
           </label>
-          <div class="input-group input-group-sm">
+          <div class="moda-quantity-control">
             <button 
-              class="btn btn-outline-secondary" 
+              class="moda-quantity-btn" 
               type="button" 
               @click="decrementQuantity"
               :disabled="currentStock === 0 || quantityToAdd <= 1"
@@ -199,7 +197,7 @@ const isAddButtonDisabled = computed(() => {
             
             <input 
               type="number" 
-              class="form-control text-center" 
+              class="moda-quantity-input" 
               v-model.number="quantityToAdd" 
               min="1" 
               :max="currentStock"
@@ -213,7 +211,7 @@ const isAddButtonDisabled = computed(() => {
             />
             
             <button 
-              class="btn btn-outline-secondary" 
+              class="moda-quantity-btn" 
               type="button" 
               @click="incrementQuantity"
               :disabled="currentStock === 0 || quantityToAdd >= currentStock"
@@ -223,14 +221,14 @@ const isAddButtonDisabled = computed(() => {
           </div>
           
           <!-- Mensajes de validación -->
-          <div class="mt-2">
-            <small v-if="currentStock === 0" class="text-danger d-block">
+          <div class="moda-validation-messages">
+            <small v-if="currentStock === 0" class="moda-validation-error">
               <i class="bi bi-exclamation-triangle me-1"></i>Producto agotado
             </small>
-            <small v-else-if="quantityToAdd > currentStock" class="text-warning d-block">
+            <small v-else-if="quantityToAdd > currentStock" class="moda-validation-warning">
               <i class="bi bi-exclamation-circle me-1"></i>Cantidad excede el stock disponible
             </small>
-            <small v-else-if="currentStock <= 5" class="text-warning d-block">
+            <small v-else-if="currentStock <= 5" class="moda-validation-warning">
               <i class="bi bi-exclamation-triangle me-1"></i>Últimas unidades disponibles
             </small>
           </div>
@@ -238,132 +236,345 @@ const isAddButtonDisabled = computed(() => {
         
         <!-- Botón de agregar al carrito -->
         <button 
-          class="btn btn-primary w-100 d-flex align-items-center justify-content-center"
+          class="moda-add-btn"
           @click="handleAddToCart" 
           :disabled="isAddButtonDisabled"
-          :class="{ 'btn-success': !isAddButtonDisabled }"
         >
           <i class="bi bi-cart-plus me-2"></i>
           <span>Agregar al carrito</span>
-          <span v-if="quantityToAdd > 1" class="ms-2 badge bg-white text-dark">
+          <span v-if="quantityToAdd > 1" class="moda-quantity-badge">
             {{ quantityToAdd }} unidades
           </span>
         </button>
         
         <!-- Subtotal -->
-        <div class="text-center mt-2">
-          <small class="text-muted">
+        <div class="moda-subtotal">
+          <small class="moda-subtotal-label">
             Subtotal: <strong>${{ (currentPrice * quantityToAdd).toFixed(2) }}</strong>
           </small>
         </div>
       </div>
       
       <!-- Mensaje si no hay variantes -->
-      <div v-else class="alert alert-warning small py-2 mt-2">
+      <div v-else class="moda-alert moda-alert-warning">
         <i class="bi bi-exclamation-circle me-1"></i>
         No hay variantes disponibles para este producto.
       </div>
     </div>
     
     <!-- Footer de la tarjeta -->
-    <div v-if="selectedVariant && selectedVariant.sku" class="card-footer bg-light py-2">
-      <small class="text-muted d-flex justify-content-between">
+    <div v-if="selectedVariant && selectedVariant.sku" class="moda-product-footer">
+      <small class="moda-product-footer-text">
         <span><i class="bi bi-upc-scan me-1"></i>SKU: {{ selectedVariant.sku }}</span>
-        <span v-if="product.id_producto" class="text-muted">ID: {{ product.id_producto }}</span>
+        <span v-if="product.id_producto" class="moda-product-id">ID: {{ product.id_producto }}</span>
       </small>
     </div>
   </div>
 </template>
 
 <style scoped>
-.product-card {
-  border: 1px solid #e0e0e0;
-  border-radius: 10px;
+/* Tarjeta de producto Moda */
+.moda-product-card {
+  background-color: #FFFDFB;
+  border: 1px solid #D6CFC8;
+  border-radius: 12px;
   transition: all 0.3s ease;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
-.product-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-  border-color: #007bff;
+.moda-product-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 15px 30px rgba(74, 59, 52, 0.2);
+  border-color: #8B7355;
 }
 
-.card-header {
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-  border-bottom: 1px solid #dee2e6;
+/* Header de la tarjeta */
+.moda-product-header {
+  background: linear-gradient(135deg, #4A3B34, #5D4A3A);
+  color: white;
+  padding: 1rem;
+  border-bottom: 1px solid #D6CFC8;
 }
 
-.form-select-sm {
+.moda-product-title {
+  color: white;
+  font-weight: 600;
+  font-size: 1rem;
+  margin-bottom: 0;
+}
+
+/* Cuerpo de la tarjeta */
+.moda-product-body {
+  padding: 1.5rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Información del producto */
+.moda-product-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.moda-product-category,
+.moda-product-brand {
+  color: #8B7355;
+  font-size: 0.85rem;
+}
+
+/* Select de variante */
+.moda-select {
+  background-color: white;
+  border: 2px solid #D6CFC8;
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  color: #3A2E2A;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+  width: 100%;
+}
+
+.moda-select-sm {
   font-size: 0.85rem;
   padding: 0.375rem 0.75rem;
-  border-radius: 0.375rem;
 }
 
-.form-select-sm:focus {
-  border-color: #86b7fe;
-  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+.moda-select:focus {
+  border-color: #4A3B34;
+  box-shadow: 0 0 0 3px rgba(74, 59, 52, 0.2);
+  outline: none;
 }
 
-.input-group-sm > .form-control,
-.input-group-sm > .btn {
-  height: calc(1.5em + 0.75rem + 2px);
-}
-
-.btn-outline-secondary {
-  border-color: #6c757d;
-  color: #6c757d;
-}
-
-.btn-outline-secondary:hover {
-  background-color: #6c757d;
-  color: white;
-}
-
-.btn-primary {
-  background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
-  border: none;
-  transition: all 0.3s ease;
-}
-
-.btn-primary:hover:not(:disabled) {
-  background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
-}
-
-.btn-success {
-  background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
-  border: none;
-}
-
-.btn-success:hover:not(:disabled) {
-  background: linear-gradient(135deg, #218838 0%, #1c7430 100%);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
-}
-
-.btn:disabled {
-  opacity: 0.65;
+.moda-select:disabled {
+  background-color: #F8F5F2;
+  opacity: 0.7;
   cursor: not-allowed;
 }
 
-.badge {
-  font-size: 0.75em;
-  padding: 0.35em 0.65em;
+/* Etiqueta */
+.moda-label {
+  color: #3A2E2A;
+  font-weight: 600;
+  font-size: 0.9rem;
+  display: block;
+}
+
+/* Información de precio y stock */
+.moda-price-stock {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.moda-price-section {
+  text-align: left;
+}
+
+.moda-stock-section {
+  text-align: right;
+}
+
+.moda-price {
+  color: #198754;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.moda-price-label {
+  color: #8B7355;
+  font-size: 0.8rem;
+}
+
+.moda-stock-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.moda-stock-high {
+  background-color: rgba(25, 135, 84, 0.15);
+  color: #198754;
+}
+
+.moda-stock-low {
+  background-color: rgba(255, 193, 7, 0.15);
+  color: #ffc107;
+}
+
+.moda-stock-out {
+  background-color: rgba(220, 53, 69, 0.15);
+  color: #dc3545;
+}
+
+.moda-stock-label {
+  color: #8B7355;
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+  display: block;
+}
+
+/* Control de cantidad */
+.moda-quantity-control {
+  display: flex;
+  border: 2px solid #D6CFC8;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.moda-quantity-btn {
+  background-color: #FFFDFB;
+  border: none;
+  color: #3A2E2A;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.moda-quantity-btn:hover:not(:disabled) {
+  background-color: #F8F5F2;
+}
+
+.moda-quantity-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.moda-quantity-input {
+  flex: 1;
+  border: none;
+  text-align: center;
+  font-weight: 600;
+  color: #3A2E2A;
+  background-color: white;
+  font-size: 1rem;
+}
+
+.moda-quantity-input:focus {
+  outline: none;
+}
+
+.moda-quantity-input:disabled {
+  background-color: #F8F5F2;
+}
+
+/* Mensajes de validación */
+.moda-validation-messages {
+  margin-top: 0.5rem;
+}
+
+.moda-validation-error {
+  color: #dc3545;
+  font-size: 0.8rem;
+  display: block;
+}
+
+.moda-validation-warning {
+  color: #ffc107;
+  font-size: 0.8rem;
+  display: block;
+}
+
+/* Botón de agregar al carrito */
+.moda-add-btn {
+  background-color: #4A3B34;
+  border: 2px solid #4A3B34;
+  color: white;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  margin-bottom: 0.5rem;
+  position: relative;
+}
+
+.moda-add-btn:hover:not(:disabled) {
+  background-color: #352822;
+  border-color: #352822;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(74, 59, 52, 0.3);
+}
+
+.moda-add-btn:disabled {
+  background-color: #D6CFC8;
+  border-color: #D6CFC8;
+  color: #8B7355;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.moda-quantity-badge {
+  position: absolute;
+  right: 0.75rem;
+  background-color: white;
+  color: #4A3B34;
+  border-radius: 20px;
+  padding: 0.1rem 0.5rem;
+  font-size: 0.75rem;
   font-weight: 600;
 }
 
-.text-success {
-  color: #198754 !important;
+/* Subtotal */
+.moda-subtotal {
+  text-align: center;
 }
 
-.text-warning {
-  color: #ffc107 !important;
+.moda-subtotal-label {
+  color: #8B7355;
+  font-size: 0.85rem;
 }
 
-.text-danger {
-  color: #dc3545 !important;
+.moda-subtotal-label strong {
+  color: #198754;
+}
+
+/* Alerta */
+.moda-alert {
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  border: 1px solid;
+  font-size: 0.85rem;
+  margin-top: 1rem;
+}
+
+.moda-alert-warning {
+  background-color: rgba(255, 193, 7, 0.1);
+  border-color: #ffc107;
+  color: #ffc107;
+}
+
+/* Footer de la tarjeta */
+.moda-product-footer {
+  background-color: #F8F5F2;
+  padding: 0.75rem 1rem;
+  border-top: 1px solid #D6CFC8;
+}
+
+.moda-product-footer-text {
+  color: #8B7355;
+  font-size: 0.8rem;
+  display: flex;
+  justify-content: space-between;
+}
+
+.moda-product-id {
+  color: #3A2E2A;
+  font-weight: 500;
 }
 
 /* Estilos específicos para el input de cantidad */
@@ -373,14 +584,39 @@ input[type="number"]::-webkit-outer-spin-button {
   height: auto;
 }
 
-/* Responsive adjustments */
+/* Responsive */
 @media (max-width: 768px) {
-  .product-card {
+  .moda-product-card {
     margin-bottom: 1rem;
   }
   
-  .card-title {
-    font-size: 1rem;
+  .moda-product-title {
+    font-size: 0.9rem;
+  }
+  
+  .moda-price {
+    font-size: 1.25rem;
+  }
+  
+  .moda-add-btn {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .moda-product-body {
+    padding: 1rem;
+  }
+  
+  .moda-price-stock {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .moda-stock-section {
+    text-align: left;
   }
 }
 </style>

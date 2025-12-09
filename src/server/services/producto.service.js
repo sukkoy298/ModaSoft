@@ -371,3 +371,145 @@ export const obtenerProductosMasVendidos = async (limite = 10, fechaInicio, fech
         throw error;
     }
 };
+
+// Función para buscar productos (para compras)
+export const buscarProductos = async (termino) => {
+    try {
+        const productos = await VarianteProductoModel.findAll({
+            where: {
+                [Op.or]: [
+                    { codigo_barras: { [Op.like]: `%${termino}%` } },
+                    { '$ProductoPrincipal.nombre$': { [Op.like]: `%${termino}%` } }
+                ]
+            },
+            include: [
+                {
+                    model: ProductoModel,
+                    as: 'ProductoPrincipal',
+                    attributes: ['id_producto', 'nombre'],
+                    include: [
+                        {
+                            model: CategoriaModel,
+                            as: 'Categoria',
+                            attributes: ['nombre']
+                        },
+                        {
+                            model: MarcaModel,
+                            as: 'Marca',
+                            attributes: ['nombre']
+                        }
+                    ]
+                },
+                {
+                    model: InventarioModel,
+                    as: 'Inventario',
+                    attributes: ['stock_actual', 'stock_minimo']
+                }
+            ],
+            order: [['codigo_barras', 'ASC']],
+            limit: 20
+        });
+        
+        // Formatear respuesta para compras
+        const productosFormateados = productos.map(variante => ({
+            id_variante: variante.id_variante,
+            codigo_barras: variante.codigo_barras,
+            talla: variante.talla,
+            color: variante.color,
+            precio_unitario_venta: variante.precio_unitario_venta,
+            producto_nombre: variante.ProductoPrincipal?.nombre || 'Sin nombre',
+            categoria: variante.ProductoPrincipal?.Categoria?.nombre || 'Sin categoría',
+            marca: variante.ProductoPrincipal?.Marca?.nombre || 'Sin marca',
+            stock_actual: variante.Inventario?.stock_actual || 0,
+            stock_minimo: variante.Inventario?.stock_minimo || 10
+        }));
+        
+        return productosFormateados;
+    } catch (error) {
+        console.error("Error al buscar productos:", error);
+        throw new Error("No se pudo realizar la búsqueda de productos.");
+    }
+};
+
+// Función para obtener productos con stock bajo (para compras)
+export const obtenerProductosBajoStock = async () => {
+    try {
+        const productos = await VarianteProductoModel.findAll({
+            include: [
+                {
+                    model: ProductoModel,
+                    as: 'ProductoPrincipal',
+                    attributes: ['id_producto', 'nombre']
+                },
+                {
+                    model: InventarioModel,
+                    as: 'Inventario',
+                    where: {
+                        stock_actual: {
+                            [Op.lte]: Sequelize.col('stock_minimo')
+                        }
+                    },
+                    attributes: ['stock_actual', 'stock_minimo'],
+                    required: true
+                }
+            ],
+            order: [[{ model: InventarioModel, as: 'Inventario' }, 'stock_actual', 'ASC']]
+        });
+        
+        // Formatear respuesta
+        const productosFormateados = productos.map(variante => ({
+            id_variante: variante.id_variante,
+            codigo_barras: variante.codigo_barras,
+            producto_nombre: variante.ProductoPrincipal?.nombre || 'Sin nombre',
+            talla: variante.talla,
+            color: variante.color,
+            stock_actual: variante.Inventario?.stock_actual || 0,
+            stock_minimo: variante.Inventario?.stock_minimo || 10,
+            necesita_reponer: (variante.Inventario?.stock_actual || 0) <= (variante.Inventario?.stock_minimo || 10)
+        }));
+        
+        return productosFormateados;
+    } catch (error) {
+        console.error("Error al obtener productos bajo stock:", error);
+        throw new Error("No se pudo obtener los productos con stock bajo.");
+    }
+};
+
+// Función para obtener variante por código de barras (para compras)
+export const obtenerVariantePorCodigoBarras = async (codigo_barras) => {
+    try {
+        const variante = await VarianteProductoModel.findOne({
+            where: { codigo_barras: codigo_barras },
+            include: [
+                {
+                    model: ProductoModel,
+                    as: 'ProductoPrincipal',
+                    attributes: ['id_producto', 'nombre']
+                },
+                {
+                    model: InventarioModel,
+                    as: 'Inventario',
+                    attributes: ['stock_actual', 'stock_minimo']
+                }
+            ]
+        });
+        
+        if (!variante) {
+            throw new Error(`Producto con código ${codigo_barras} no encontrado`);
+        }
+        
+        return {
+            id_variante: variante.id_variante,
+            codigo_barras: variante.codigo_barras,
+            talla: variante.talla,
+            color: variante.color,
+            precio_unitario_venta: variante.precio_unitario_venta,
+            producto_nombre: variante.ProductoPrincipal?.nombre || 'Sin nombre',
+            stock_actual: variante.Inventario?.stock_actual || 0,
+            stock_minimo: variante.Inventario?.stock_minimo || 10
+        };
+    } catch (error) {
+        console.error("Error al obtener variante por código:", error);
+        throw error;
+    }
+};

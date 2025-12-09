@@ -18,7 +18,7 @@ import MovimientoContableModel from './MovimientoContableModel.js';
 // 1. Producto (id_marca) <--> Marca
 ProductoModel.belongsTo(MarcaModel, {
     foreignKey: 'id_marca', 
-    as: 'Marca' // Alias usado en el frontend: p.Marca.nombre
+    as: 'Marca'
 });
 MarcaModel.hasMany(ProductoModel, {
     foreignKey: 'id_marca',
@@ -38,14 +38,14 @@ CategoriaModel.hasMany(ProductoModel, {
 // 3. VarianteProducto (id_producto) <--> Producto
 VarianteProductoModel.belongsTo(ProductoModel, {
     foreignKey: 'id_producto',
-    as: 'ProductoPrincipal' // Nombre que usaste en obtenerTodoElInventario
+    as: 'ProductoPrincipal'
 });
 ProductoModel.hasMany(VarianteProductoModel, {
     foreignKey: 'id_producto',
     as: 'Variantes'
 });
 
-// 4. Venta (Cabecera) <--> Cliente (CORREGIDO: usar cedula_cliente en lugar de id_cliente)
+// 4. Venta (Cabecera) <--> Cliente
 VentaModel.belongsTo(ClienteModel, {
     foreignKey: 'cedula_cliente',
     targetKey: 'cedula',
@@ -60,17 +60,17 @@ ClienteModel.hasMany(VentaModel, {
 // 5. Venta (Cabecera) <--> DetalleVenta (Items)
 VentaModel.hasMany(DetalleVentaModel, {
     foreignKey: 'id_venta',
-    as: 'Detalles'
+    as: 'DetallesVenta' // Cambiado de 'Detalles' para evitar conflicto
 });
 DetalleVentaModel.belongsTo(VentaModel, {
     foreignKey: 'id_venta',
-    as: 'VentaPrincipal'
+    as: 'Venta'
 });
 
 // 6. DetalleVenta <--> VarianteProducto
 DetalleVentaModel.belongsTo(VarianteProductoModel, {
     foreignKey: 'id_variante',
-    as: 'VarianteProducto' // Para saber qué producto se vendió
+    as: 'VarianteProducto'
 });
 VarianteProductoModel.hasMany(DetalleVentaModel, {
     foreignKey: 'id_variante',
@@ -80,9 +80,8 @@ VarianteProductoModel.hasMany(DetalleVentaModel, {
 // 7. Usuario <--> RolUsuario
 UsuariosModel.belongsTo(RolUsuarioModel, {
     foreignKey: 'id_rol',
-    as: 'RolUsuario'
+    as: 'Rol'
 });
-
 RolUsuarioModel.hasMany(UsuariosModel, {
     foreignKey: 'id_rol',
     as: 'Usuarios'
@@ -93,7 +92,6 @@ InventarioModel.belongsTo(UsuariosModel, {
     foreignKey: 'id_usuario',
     as: 'Usuario'
 });
-
 UsuariosModel.hasMany(InventarioModel, {
     foreignKey: 'id_usuario',
     as: 'Inventarios'
@@ -104,7 +102,6 @@ InventarioModel.belongsTo(VarianteProductoModel, {
     foreignKey: 'id_variante',
     as: 'Variante'
 });
-
 VarianteProductoModel.hasOne(InventarioModel, {
     foreignKey: 'id_variante',
     as: 'Inventario'
@@ -116,7 +113,6 @@ CompraModel.belongsTo(ProveedorModel, {
     targetKey: 'doc_identidad',
     as: 'Proveedor'
 });
-
 ProveedorModel.hasMany(CompraModel, {
     foreignKey: 'cedula_proveedor',
     sourceKey: 'doc_identidad',
@@ -126,9 +122,8 @@ ProveedorModel.hasMany(CompraModel, {
 // 11. Compra <--> DetalleCompra
 CompraModel.hasMany(DetalleCompraModel, {
     foreignKey: 'id_compra',
-    as: 'Detalles'
+    as: 'DetallesCompra' // Cambiado de 'Detalles' para evitar conflicto
 });
-
 DetalleCompraModel.belongsTo(CompraModel, {
     foreignKey: 'id_compra',
     as: 'Compra'
@@ -137,9 +132,8 @@ DetalleCompraModel.belongsTo(CompraModel, {
 // 12. DetalleCompra <--> VarianteProducto
 DetalleCompraModel.belongsTo(VarianteProductoModel, {
     foreignKey: 'id_variante',
-    as: 'Variante'
+    as: 'VarianteProducto' // Cambiado de 'Variante' para consistencia
 });
-
 VarianteProductoModel.hasMany(DetalleCompraModel, {
     foreignKey: 'id_variante',
     as: 'DetallesCompra'
@@ -150,7 +144,6 @@ DevolucionModel.belongsTo(VentaModel, {
     foreignKey: 'id_venta',
     as: 'Venta'
 });
-
 VentaModel.hasMany(DevolucionModel, {
     foreignKey: 'id_venta',
     as: 'Devoluciones'
@@ -159,9 +152,8 @@ VentaModel.hasMany(DevolucionModel, {
 // 14. Devolucion <--> DetalleDevolucion
 DevolucionModel.hasMany(DetalleDevolucionModel, {
     foreignKey: 'id_devolucion',
-    as: 'Detalles'
+    as: 'DetallesDevolucion' // Cambiado de 'Detalles' para evitar conflicto
 });
-
 DetalleDevolucionModel.belongsTo(DevolucionModel, {
     foreignKey: 'id_devolucion',
     as: 'Devolucion'
@@ -170,9 +162,8 @@ DetalleDevolucionModel.belongsTo(DevolucionModel, {
 // 15. DetalleDevolucion <--> VarianteProducto
 DetalleDevolucionModel.belongsTo(VarianteProductoModel, {
     foreignKey: 'id_variante',
-    as: 'Variante'
+    as: 'VarianteProducto'
 });
-
 VarianteProductoModel.hasMany(DetalleDevolucionModel, {
     foreignKey: 'id_variante',
     as: 'DetallesDevolucion'
@@ -183,17 +174,14 @@ MovimientoContableModel.belongsTo(VentaModel, {
     foreignKey: 'id_venta',
     as: 'Venta'
 });
-
 MovimientoContableModel.belongsTo(CompraModel, {
     foreignKey: 'id_compra',
     as: 'Compra'
 });
-
 MovimientoContableModel.belongsTo(DevolucionModel, {
     foreignKey: 'id_devolucion',
     as: 'Devolucion'
 });
-
 MovimientoContableModel.belongsTo(UsuariosModel, {
     foreignKey: 'id_usuario',
     as: 'Usuario'
@@ -201,15 +189,33 @@ MovimientoContableModel.belongsTo(UsuariosModel, {
 
 VentaModel.hasMany(MovimientoContableModel, {
     foreignKey: 'id_venta',
-    as: 'Movimientos'
+    as: 'MovimientosContables'
 });
-
 CompraModel.hasMany(MovimientoContableModel, {
     foreignKey: 'id_compra',
-    as: 'Movimientos'
+    as: 'MovimientosContables'
 });
 
-export const setupAssociations = () => {
-    console.log("✅ Asociaciones de Sequelize cargadas.");
-    // Esto asegura que el archivo se ejecute
+// Función de inicialización
+export const setupAssociations = async () => {
+    try {
+        // Validar que todos los modelos estén definidos
+        const modelos = [
+            VarianteProductoModel, ProductoModel, MarcaModel, CategoriaModel,
+            VentaModel, DetalleVentaModel, ClienteModel, UsuariosModel,
+            RolUsuarioModel, InventarioModel, CompraModel, DevolucionModel,
+            ProveedorModel, DetalleCompraModel, DetalleDevolucionModel,
+            MovimientoContableModel
+        ];
+        
+        for (const modelo of modelos) {
+            if (!modelo || typeof modelo !== 'function') {
+                console.error(`❌ Modelo no definido: ${modelo?.name || 'Desconocido'}`);
+            }
+        }
+        
+        console.log("✅ Asociaciones de Sequelize cargadas correctamente.");
+    } catch (error) {
+        console.error("❌ Error al cargar asociaciones:", error);
+    }
 };
