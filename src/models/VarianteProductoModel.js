@@ -34,6 +34,11 @@ const VarianteProductoModel = sequelize.define('variante_producto', {
     updated_at: {
         type: DataTypes.DATE,
         allowNull: true
+    },
+    costo_unitario: {
+        type: DataTypes.DECIMAL(10, 2),
+        allowNull: false,
+        defaultValue: 0.00
     }
 }, {
     tableName: 'variante_producto',
