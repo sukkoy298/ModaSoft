@@ -2,6 +2,8 @@ import express from 'express';
 import cors from 'cors';
 import { connectDB, sequelize } from './db.js';
 import { setupAssociations } from './src/models/asociaciones.js';
+import dotenv from 'dotenv';
+import crypto from 'crypto';
 import clienteRoutes from "./src/server/routes/cliente.route.js";
 import productoRoutes from './src/server/routes/producto.route.js';
 import categoriaRoutes from './src/server/routes/categoria.route.js';
@@ -19,9 +21,16 @@ import reporteRoutes from './src/server/routes/reportes.route.js';
 import movimientosRoutes from './src/server/routes/movimientos.route.js';
 import catalogoCuentasRoutes from './src/server/routes/catalogoCuentas.route.js';
 
-import dotenv from 'dotenv';
-
+// Cargar variables de entorno primero
 dotenv.config();
+
+// Si no se proporciona JWT_SECRET en entorno, generamos uno efímero por instancia
+// Esto invalida tokens previos al reiniciar el servidor (comportamiento deseado aquí).
+if (!process.env.JWT_SECRET) {
+    const randomSecret = crypto.randomBytes(32).toString('hex');
+    global.__MODASOFT_SESSION_SECRET = randomSecret;
+    console.log('⚠️ JWT secret not provided in env — using ephemeral secret for this process (tokens will expire on restart)');
+}
 
 const app = express();
 const PORT = process.env.SERVER_PORT || 3000;

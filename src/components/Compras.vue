@@ -602,8 +602,8 @@ const totalCompras = computed(() => {
 
 const totalProductos = computed(() => {
   return comprasFiltradas.value.reduce((sum, compra) => {
-    if (compra.Detalles) {
-      return sum + compra.Detalles.reduce((detSum, det) => detSum + Number(det.cantidad), 0)
+    if (compra.DetallesCompra) {
+      return sum + compra.DetallesCompra.reduce((detSum, det) => detSum + Number(det.cantidad), 0)
     }
     return sum
   }, 0)

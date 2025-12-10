@@ -10,8 +10,11 @@ import {
 
 const router = express.Router();
 
+import { authenticateToken } from '../middleware/auth.middleware.js';
+import { authorizeRoles } from '../middleware/authorize.middleware.js';
+
 // GET /api/proveedores - Obtener todos los proveedores
-router.get('/', async (req, res) => {
+router.get('/', authenticateToken, async (req, res) => {
   try {
     const proveedores = await obtenerTodosLosProveedores();
     res.json(proveedores);
@@ -21,7 +24,7 @@ router.get('/', async (req, res) => {
 });
 
 // GET /api/proveedores/:doc_identidad - Obtener proveedor por documento
-router.get('/:doc_identidad', async (req, res) => {
+router.get('/:doc_identidad', authenticateToken, async (req, res) => {
   try {
     const proveedor = await obtenerProveedorPorDocIdentidad(req.params.doc_identidad);
     res.json(proveedor);
@@ -31,7 +34,7 @@ router.get('/:doc_identidad', async (req, res) => {
 });
 
 // POST /api/proveedores - Registrar nuevo proveedor
-router.post('/', async (req, res) => {
+router.post('/', authenticateToken, authorizeRoles([1,3]), async (req, res) => {
   try {
     const nuevoProveedor = await registrarProveedor(req.body);
     res.status(201).json(nuevoProveedor);
@@ -41,7 +44,7 @@ router.post('/', async (req, res) => {
 });
 
 // PUT /api/proveedores/:doc_identidad - Actualizar proveedor
-router.put('/:doc_identidad', async (req, res) => {
+router.put('/:doc_identidad', authenticateToken, authorizeRoles([1,3]), async (req, res) => {
   try {
     const proveedorActualizado = await actualizarProveedor(req.params.doc_identidad, req.body);
     res.json(proveedorActualizado);
@@ -51,7 +54,7 @@ router.put('/:doc_identidad', async (req, res) => {
 });
 
 // DELETE /api/proveedores/:doc_identidad - Eliminar proveedor
-router.delete('/:doc_identidad', async (req, res) => {
+router.delete('/:doc_identidad', authenticateToken, authorizeRoles([1,3]), async (req, res) => {
   try {
     const resultado = await eliminarProveedor(req.params.doc_identidad);
     res.json(resultado);
@@ -61,7 +64,7 @@ router.delete('/:doc_identidad', async (req, res) => {
 });
 
 // GET /api/proveedores/buscar/:termino - Buscar proveedores
-router.get('/buscar/:termino', async (req, res) => {
+router.get('/buscar/:termino', authenticateToken, async (req, res) => {
   try {
     const proveedores = await buscarProveedores(req.params.termino);
     res.json(proveedores);

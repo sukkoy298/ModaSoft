@@ -6,7 +6,7 @@
             <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
                 
                 <!-- Facturación -->
-                <div class="col">
+                <div class="col" v-if="user && (isAdmin || isVendedor)">
                     <div class="card h-100 moda-card shadow-lg">
                         <div class="card-body text-center d-flex flex-column justify-content-between">
                             <div>
@@ -25,7 +25,7 @@
                 </div>
 
                 <!-- Reportes -->
-                <div class="col">
+                <div class="col" v-if="user && isAdmin">
                     <div class="card h-100 moda-card shadow-lg">
                         <div class="card-body text-center d-flex flex-column justify-content-between">
                             <div>
@@ -44,7 +44,7 @@
                 </div>
 
                 <!-- Inventario -->
-                <div class="col">
+                <div class="col" v-if="user && (isAdmin || isAlmacen)">
                     <div class="card h-100 moda-card shadow-lg">
                         <div class="card-body text-center d-flex flex-column justify-content-between">
                             <div>
@@ -66,7 +66,7 @@
                 </div>
                 
                 <!-- Clientes -->
-                <div class="col">
+                <div class="col" v-if="user && (isAdmin || isVendedor)">
                     <div class="card h-100 moda-card shadow-lg">
                         <div class="card-body text-center d-flex flex-column justify-content-between">
                             <div>
@@ -85,7 +85,7 @@
                 </div>
 
                 <!-- Proveedor -->
-                <div class="col">
+                <div class="col" v-if="user && (isAdmin || isAlmacen)">
                     <div class="card h-100 moda-card shadow-lg">
                         <div class="card-body text-center d-flex flex-column justify-content-between">
                             <div>
@@ -115,6 +115,12 @@
 <script setup>
 import Header from '@/components/Header.vue'; 
 import Footer from '@/components/Footer.vue'; 
+import { getUser } from '@/auth.js'
+
+const user = getUser()
+const isAdmin = user?.id_rol === 1
+const isVendedor = user?.id_rol === 2
+const isAlmacen = user?.id_rol === 3
 </script>
 
 <style scoped>

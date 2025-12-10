@@ -8,10 +8,13 @@ import {
   obtenerMovimientosInventario
 } from '../services/inventario.service.js';
 
+import { authenticateToken } from '../middleware/auth.middleware.js';
+import { authorizeRoles } from '../middleware/authorize.middleware.js';
+
 const router = express.Router();
 
 // GET /api/inventario - Obtener todo el inventario
-router.get('/', async (req, res) => {
+router.get('/', authenticateToken, authorizeRoles([1,3]), async (req, res) => {
   try {
     const inventario = await obtenerTodoElInventario();
     res.json(inventario);
@@ -21,7 +24,7 @@ router.get('/', async (req, res) => {
 });
 
 // GET /api/inventario/bajo-stock - Obtener productos con stock bajo
-router.get('/bajo-stock', async (req, res) => {
+router.get('/bajo-stock', authenticateToken, authorizeRoles([1,3]), async (req, res) => {
   try {
     const productos = await obtenerProductosBajoStock();
     res.json(productos);
@@ -31,7 +34,7 @@ router.get('/bajo-stock', async (req, res) => {
 });
 
 // GET /api/inventario/movimientos - Obtener movimientos de inventario
-router.get('/movimientos', async (req, res) => {
+router.get('/movimientos', authenticateToken, authorizeRoles([1,3]), async (req, res) => {
   try {
     const movimientos = await obtenerMovimientosInventario();
     res.json(movimientos);
@@ -41,7 +44,7 @@ router.get('/movimientos', async (req, res) => {
 });
 
 // GET /api/inventario/variante/:id_variante - Obtener inventario por variante
-router.get('/variante/:id_variante', async (req, res) => {
+router.get('/variante/:id_variante', authenticateToken, authorizeRoles([1,3]), async (req, res) => {
   try {
     const inventario = await obtenerInventarioPorVariante(req.params.id_variante);
     if (!inventario) {
@@ -54,7 +57,7 @@ router.get('/variante/:id_variante', async (req, res) => {
 });
 
 // PUT /api/inventario/stock/:codigoBarras - Actualizar stock
-router.put('/stock/:codigoBarras', async (req, res) => {
+router.put('/stock/:codigoBarras', authenticateToken, authorizeRoles([1,3]), async (req, res) => {
   try {
     const { cantidad } = req.body;
     const resultado = await actualizarStock(req.params.codigoBarras, cantidad);
@@ -65,7 +68,7 @@ router.put('/stock/:codigoBarras', async (req, res) => {
 });
 
 // POST /api/inventario/ajustar - Ajuste manual de stock
-router.post('/ajustar', async (req, res) => {
+router.post('/ajustar', authenticateToken, authorizeRoles([1,3]), async (req, res) => {
   try {
     const { id_variante, cantidad, motivo, id_usuario } = req.body;
     const resultado = await ajustarStock(id_variante, cantidad, motivo, id_usuario);

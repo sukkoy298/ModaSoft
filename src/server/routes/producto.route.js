@@ -17,9 +17,11 @@ import {
 import { obtenerTodasLasCategorias } from '../services/categoria.service.js';
 
 const router = express.Router();
+import { authenticateToken } from '../middleware/auth.middleware.js';
+import { authorizeRoles } from '../middleware/authorize.middleware.js';
 
 // GET /api/productos - Obtener todos los productos principales
-router.get('/', async (req, res) => {
+router.get('/', authenticateToken, async (req, res) => {
   try {
     const productos = await obtenerProductosPrincipales();
     res.json(productos);
@@ -29,7 +31,7 @@ router.get('/', async (req, res) => {
 });
 
 // POST /api/productos/ - Registrar producto principal
-router.post('/', async (req, res) => {
+router.post('/', authenticateToken, authorizeRoles([1,3]), async (req, res) => {
   try {
     const nuevoProducto = await registrarProducto(req.body);
     res.status(201).json(nuevoProducto);
@@ -39,7 +41,7 @@ router.post('/', async (req, res) => {
 });
 
 // GET para obtener variantes
-router.get('/variantes', async (req, res) => {
+router.get('/variantes', authenticateToken, async (req, res) => {
   try {
     const variantes = await obtenerTodasLasVariantes();
     res.json(variantes);
@@ -49,7 +51,7 @@ router.get('/variantes', async (req, res) => {
 });
 
 // GET /api/productos/variantes/:id - Obtener variante por ID
-router.get('/variantes/:id', async (req, res) => {
+router.get('/variantes/:id', authenticateToken, async (req, res) => {
   try {
     const variante = await obtenerVariantePorId(req.params.id);
     if (!variante) {
@@ -63,7 +65,7 @@ router.get('/variantes/:id', async (req, res) => {
 
 // VARIANTES DE PRODUCTO
 // POST /api/productos/variantes - Registrar variante de producto
-router.post('/variantes', async (req, res) => {
+router.post('/variantes', authenticateToken, authorizeRoles([1,3]), async (req, res) => {
   try {
     const nuevaVariante = await registrarVarianteProducto(req.body);
     res.status(201).json(nuevaVariante);
@@ -74,7 +76,7 @@ router.post('/variantes', async (req, res) => {
 
 // STOCK
 // PUT /api/productos/stock/:codigoBarras - Actualizar stock
-router.put('/stock/:codigoBarras', async (req, res) => {
+router.put('/stock/:codigoBarras', authenticateToken, authorizeRoles([1,3]), async (req, res) => {
   try {
     const { cantidad } = req.body;
     const resultado = await actualizarStockVariante(req.params.codigoBarras, cantidad);
@@ -86,7 +88,7 @@ router.put('/stock/:codigoBarras', async (req, res) => {
 
 // CATEGORÍAS
 // GET /api/productos/categorias - Obtener todas las categorías
-router.get('/categorias', async (req, res) => {
+router.get('/categorias', authenticateToken, async (req, res) => {
   try {
     const categorias = await obtenerTodasLasCategorias();
     res.json(categorias);
@@ -96,7 +98,7 @@ router.get('/categorias', async (req, res) => {
 });
 
 // GET /api/productos/mas-vendidos
-router.get('/mas-vendidos', async (req, res) => {
+router.get('/mas-vendidos', authenticateToken, async (req, res) => {
     try {
         const { limite = 10, fechaInicio, fechaFin } = req.query;
         console.log('📞 Llamada a productos más vendidos:', { limite, fechaInicio, fechaFin });
@@ -147,7 +149,7 @@ router.get('/mas-vendidos', async (req, res) => {
 });
 
 // GET /api/productos/inventario - Obtener inventario completo
-router.get('/inventario', async (req, res) => {
+router.get('/inventario', authenticateToken, async (req, res) => {
   try {
     const inventario = await obtenerInventarioCompleto();
     res.json(inventario);
@@ -167,7 +169,7 @@ router.get('/inventario', async (req, res) => {
 });
 
 // GET /api/productos/:id - Obtener producto por ID
-router.get('/:id', async (req, res) => {
+router.get('/:id', authenticateToken, async (req, res) => {
   try {
     const producto = await obtenerProductoPorId(req.params.id);
     if (!producto) {
@@ -180,7 +182,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // PUT /api/productos/:id - Actualizar producto
-router.put('/:id', async (req, res) => {
+router.put('/:id', authenticateToken, authorizeRoles([1,3]), async (req, res) => {
   try {
     const productoActualizado = await actualizarProducto(req.params.id, req.body);
     res.json(productoActualizado);
@@ -190,7 +192,7 @@ router.put('/:id', async (req, res) => {
 });
 
 // DELETE /api/productos/:id - Eliminar producto
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', authenticateToken, authorizeRoles([1,3]), async (req, res) => {
   try {
     const resultado = await eliminarProducto(req.params.id);
     res.json(resultado);
@@ -200,7 +202,7 @@ router.delete('/:id', async (req, res) => {
 });
 
 // GET /api/productos/buscar/:termino - Buscar productos para compras
-router.get('/buscar/:termino', async (req, res) => {
+router.get('/buscar/:termino', authenticateToken, async (req, res) => {
     try {
         const productos = await buscarProductos(req.params.termino);
         res.json(productos);
@@ -210,7 +212,7 @@ router.get('/buscar/:termino', async (req, res) => {
 });
 
 // GET /api/productos/bajo-stock - Productos con stock bajo
-router.get('/bajo-stock', async (req, res) => {
+router.get('/bajo-stock', authenticateToken, async (req, res) => {
     try {
         const productos = await obtenerProductosBajoStock();
         res.json(productos);
@@ -220,7 +222,7 @@ router.get('/bajo-stock', async (req, res) => {
 });
 
 // GET /api/productos/codigo/:codigo_barras - Buscar por código de barras
-router.get('/codigo/:codigo_barras', async (req, res) => {
+router.get('/codigo/:codigo_barras', authenticateToken, async (req, res) => {
     try {
         const producto = await obtenerVariantePorCodigoBarras(req.params.codigo_barras);
         res.json(producto);

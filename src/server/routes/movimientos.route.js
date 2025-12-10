@@ -5,11 +5,13 @@ import {
     obtenerResumenContable,
     registrarMovimiento
 } from '../services/movimiento.service.js';
+import { authenticateToken } from '../middleware/auth.middleware.js';
+import { authorizeRoles } from '../middleware/authorize.middleware.js';
 
 const router = express.Router();
 
 // GET /api/movimientos - listar movimientos con filtros
-router.get('/', async (req, res) => {
+router.get('/', authenticateToken, authorizeRoles([1]), async (req, res) => {
     try {
         const { fecha_inicio, fecha_fin, codigo_cuenta, tipo } = req.query;
         
@@ -36,7 +38,7 @@ router.get('/', async (req, res) => {
 });
 
 // GET /api/movimientos/resumen - obtener resumen contable
-router.get('/resumen', async (req, res) => {
+router.get('/resumen', authenticateToken, authorizeRoles([1]), async (req, res) => {
     try {
         const { fecha_inicio, fecha_fin } = req.query;
         const resumen = await obtenerResumenContable(fecha_inicio, fecha_fin);
@@ -56,7 +58,7 @@ router.get('/resumen', async (req, res) => {
 });
 
 // POST /api/movimientos - crear movimiento contable manual
-router.post('/', async (req, res) => {
+router.post('/', authenticateToken, authorizeRoles([1]), async (req, res) => {
     try {
         const movimiento = await registrarMovimiento(req.body);
         res.status(201).json({

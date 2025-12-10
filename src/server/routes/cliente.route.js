@@ -12,8 +12,11 @@ import {
 
 const router = express.Router();
 
+import { authenticateToken } from '../middleware/auth.middleware.js';
+import { authorizeRoles } from '../middleware/authorize.middleware.js';
+
 // GET /api/clientes - Obtener todos los clientes ACTIVOS
-router.get('/', async (req, res) => {
+router.get('/', authenticateToken, async (req, res) => {
   try {
     const clientes = await obtenerTodosLosClientes();
     res.json(clientes);
@@ -23,7 +26,7 @@ router.get('/', async (req, res) => {
 });
 
 // GET /api/clientes/inactivos - Obtener clientes INACTIVOS
-router.get('/inactivos', async (req, res) => {
+router.get('/inactivos', authenticateToken, async (req, res) => {
   try {
     const clientes = await obtenerClientesInactivos();
     res.json(clientes);
@@ -33,7 +36,7 @@ router.get('/inactivos', async (req, res) => {
 });
 
 // GET /api/clientes/:cedula - Obtener cliente por cédula
-router.get('/:cedula', async (req, res) => {
+router.get('/:cedula', authenticateToken, async (req, res) => {
   try {
     const cliente = await obtenerClientePorCedula(req.params.cedula);
     res.json(cliente);
@@ -43,7 +46,7 @@ router.get('/:cedula', async (req, res) => {
 });
 
 // POST /api/clientes - Registrar nuevo cliente
-router.post('/', async (req, res) => {
+router.post('/', authenticateToken, authorizeRoles([1,2]), async (req, res) => {
   try {
     const nuevoCliente = await registrarCliente(req.body);
     res.status(201).json(nuevoCliente);
@@ -53,7 +56,7 @@ router.post('/', async (req, res) => {
 });
 
 // PUT /api/clientes/:cedula - Actualizar cliente
-router.put('/:cedula', async (req, res) => {
+router.put('/:cedula', authenticateToken, authorizeRoles([1,2]), async (req, res) => {
   try {
     const clienteActualizado = await actualizarCliente(req.params.cedula, req.body);
     res.json(clienteActualizado);
@@ -63,7 +66,7 @@ router.put('/:cedula', async (req, res) => {
 });
 
 // DELETE /api/clientes/:cedula - Eliminar cliente
-router.delete('/:cedula', async (req, res) => {
+router.delete('/:cedula', authenticateToken, authorizeRoles([1,2]), async (req, res) => {
   try {
     const resultado = await eliminarCliente(req.params.cedula);
     res.json(resultado);
@@ -73,7 +76,7 @@ router.delete('/:cedula', async (req, res) => {
 });
 
 // POST /api/clientes/:cedula/restaurar - Restaurar cliente
-router.post('/:cedula/restaurar', async (req, res) => {
+router.post('/:cedula/restaurar', authenticateToken, authorizeRoles([1,2]), async (req, res) => {
   try {
     const resultado = await restaurarCliente(req.params.cedula);
     res.json(resultado);
@@ -83,7 +86,7 @@ router.post('/:cedula/restaurar', async (req, res) => {
 });
 
 // GET /api/clientes/:cedula/verificar-eliminacion - Verificar eliminación (opcional)
-router.get('/:cedula/verificar-eliminacion', async (req, res) => {
+router.get('/:cedula/verificar-eliminacion', authenticateToken, async (req, res) => {
   try {
     const resultado = await verificarEliminacionFisica(req.params.cedula);
     res.json(resultado);

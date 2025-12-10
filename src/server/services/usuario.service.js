@@ -8,7 +8,7 @@ export const obtenerTodosLosUsuarios = async () => {
             attributes: ['id_usuario', 'usuario', 'id_rol', 'created_at'],
             include: [{
                 model: RolUsuarioModel,
-                as: 'RolUsuario',
+                as: 'Rol',
                 attributes: ['rol']
             }],
             order: [['usuario', 'ASC']]
@@ -25,7 +25,7 @@ export const obtenerUsuarioPorId = async (id_usuario) => {
         const usuario = await UsuariosModel.findByPk(id_usuario, {
             include: [{
                 model: RolUsuarioModel,
-                as: 'RolUsuario',
+                as: 'Rol',
                 attributes: ['rol']
             }]
         });
@@ -130,7 +130,7 @@ export const loginUsuario = async (usuario, password) => {
             where: { usuario },
             include: [{
                 model: RolUsuarioModel,
-                as: 'RolUsuario',
+                as: 'Rol',
                 attributes: ['rol']
             }]
         });

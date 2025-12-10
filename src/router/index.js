@@ -19,17 +19,18 @@ import ReportesContables from '@/components/ReportesContables.vue'
 import ListaProveedores from '@/components/ListaProveedores.vue'
 import ProveedorForm from '@/components/ProveedorForm.vue'
 import EdicionProveedor from '../components/edicionProveedor.vue'
+import Perfil from '@/components/Perfil.vue'
 
 const routes = [
-    {
-        path: '/', 
-        name: 'Home',
-        component: HomeView
-    },
     {
         path: '/Login', 
         name: 'Login',
         component: Login
+    },
+    {
+        path: '/', 
+        name: 'Home',
+        component: HomeView
     },
     {
         path: '/registro',
@@ -39,12 +40,14 @@ const routes = [
     {
         path: '/listaProducto',
         name: 'listaProducto',
-        component: listaProducto
+        component: listaProducto,
+        meta: { requiresAuth: true, roles: [1,3] }
     },
     {
         path: '/listaCliente',
         name: 'listaCliente',
-        component: listaCliente
+        component: listaCliente,
+        meta: { requiresAuth: true, roles: [1,2] }
     },
     {
         path: '/edicionCliente/:cedula',
@@ -80,27 +83,32 @@ const routes = [
     {
         path: '/reportes-graficos',
         name: 'reportesGraficos',
-        component: reportesGraficos
+        component: reportesGraficos,
+        meta: { requiresAuth: true, roles: [1] }
     },
     {
         path: '/reportes-menu',
         name: 'reportesMenu',
-        component: ReportesMenu
+        component: ReportesMenu,
+        meta: { requiresAuth: true, roles: [1] }
     },
     {
         path: '/compras',
         name: 'compras',
-        component: Compras
+        component: Compras,
+        meta: { requiresAuth: true, roles: [1,3] }
     },
     {
         path: '/reportes-contables',
         name: 'reportes-contables',
-        component: ReportesContables
+        component: ReportesContables,
+        meta: { requiresAuth: true, roles: [1] } // Solo Administrador
     },
     {
         path: '/proveedor',
         name: 'proveedor',
-        component: ListaProveedores
+        component: ListaProveedores,
+        meta: { requiresAuth: true, roles: [1,3] }
     },
     {
         path: '/proveedor/nuevo',
@@ -110,7 +118,14 @@ const routes = [
     {
         path: '/facturacion',
         name: 'facturacion',
-        component: facturacion
+        component: facturacion,
+        meta: { requiresAuth: true, roles: [1,2] } // Administrador y Vendedor
+    },
+    {
+        path: '/perfil',
+        name: 'perfil',
+        component: Perfil,
+        meta: { requiresAuth: true }
     },
     {
         path: '/proveedor/editar/:doc_identidad',
@@ -122,6 +137,28 @@ const routes = [
 const router = createRouter({
     history: createWebHistory(), 
     routes
+})
+
+// Guard global para rutas que requieran autenticación
+import { getToken, getUser } from '@/auth.js'
+
+router.beforeEach((to, from, next) => {
+    // Allow public access only to Login and Registro
+    if (to.name === 'Login' || to.name === 'Registro') return next()
+
+    const token = getToken()
+    if (!token) return next({ name: 'Login' })
+
+    // si la ruta especifica roles, verificar rol del usuario
+    if (to.meta?.roles && Array.isArray(to.meta.roles)) {
+        const user = getUser()
+        const idrol = user?.id_rol || user?.idRol || user?.idRol
+        if (!idrol || !to.meta.roles.includes(Number(idrol))) {
+            // no autorizado
+            return next({ name: 'Home' })
+        }
+    }
+    return next()
 })
 
 export default router

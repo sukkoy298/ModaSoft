@@ -30,11 +30,19 @@
                             <i class="bi bi-menu-button-wide"></i> Módulos
                         </a>
                         <ul class="dropdown-menu moda-dropdown">
-                            <li><router-link to="/facturacion" class="dropdown-item moda-dropdown-item">Facturación</router-link></li>
-                            <li><router-link to="/listaProducto" class="dropdown-item moda-dropdown-item">Inventario</router-link></li>
-                            <li><router-link to="/listaCliente" class="dropdown-item moda-dropdown-item">Clientes</router-link></li>
-                            <li><router-link to="/reportes-menu" class="dropdown-item moda-dropdown-item">Reportes</router-link></li>
-                            <li><router-link to="/proveedor" class="dropdown-item moda-dropdown-item">Proveedores</router-link></li>
+                            <!-- Vendedor y Admin pueden facturar -->
+                            <li v-if="user && (isAdmin || isVendedor)"><router-link to="/facturacion" class="dropdown-item moda-dropdown-item">Facturación</router-link></li>
+                            <!-- Inventario visible para Almacén y Admin -->
+                            <li v-if="user && (isAdmin || isAlmacen)"><router-link to="/listaProducto" class="dropdown-item moda-dropdown-item">Inventario</router-link></li>
+                            <!-- Clientes visible para Vendedor y Admin -->
+                            <li v-if="user && (isAdmin || isVendedor)"><router-link to="/listaCliente" class="dropdown-item moda-dropdown-item">Clientes</router-link></li>
+                            <!-- Reportes sólo Admin -->
+                            <li v-if="user && isAdmin"><router-link to="/reportes-menu" class="dropdown-item moda-dropdown-item">Reportes</router-link></li>
+                            <!-- Proveedores y Compras para Almacén y Admin -->
+                            <li v-if="user && (isAdmin || isAlmacen)"><router-link to="/proveedor" class="dropdown-item moda-dropdown-item">Proveedores</router-link></li>
+                            <li v-if="user && (isAdmin || isAlmacen)"><router-link to="/compras" class="dropdown-item moda-dropdown-item">Compras</router-link></li>
+                            <!-- Contable sólo Admin -->
+                            <li v-if="user && isAdmin"><router-link to="/reportes-contables" class="dropdown-item moda-dropdown-item">Contable</router-link></li>
                         </ul>
                     </li>
                 </ul>
@@ -46,14 +54,14 @@
                             <div class="user-avatar me-2">
                                 <i class="bi bi-person"></i>
                             </div>
-                            <span>Usuario</span>
+                            <span>{{ user?.usuario || 'Invitado' }}</span>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end moda-dropdown">
-                            <li><router-link to="/perfil" class="dropdown-item moda-dropdown-item">Perfil</router-link></li>
-                            <li><router-link to="/configuracion" class="dropdown-item moda-dropdown-item">Configuración</router-link></li>
+                            <li><router-link v-if="user" to="/perfil" class="dropdown-item moda-dropdown-item">Perfil</router-link></li>
+                            <li v-if="user && isAdmin"><router-link to="/reportes-menu" class="dropdown-item moda-dropdown-item">Reportes</router-link></li>
                             <li><hr class="dropdown-divider moda-divider"></li>
-                            <li><router-link to="/login" class="dropdown-item moda-dropdown-item">Iniciar Sesión</router-link></li>
-                            <li><a class="dropdown-item moda-dropdown-item text-danger" href="#">Cerrar Sesión</a></li>
+                            <li v-if="user"><a class="dropdown-item moda-dropdown-item text-danger" href="#" @click.prevent="doLogout">Cerrar Sesión</a></li>
+                            <li v-else><router-link to="/login" class="dropdown-item moda-dropdown-item">Iniciar Sesión</router-link></li>
                         </ul>
                     </div>
                 </div>
@@ -186,3 +194,19 @@
     transform: translateY(0) !important;
 }
 </style>
+
+<script setup>
+import { getUser, logout } from '@/auth.js'
+import { useRouter } from 'vue-router'
+
+const user = getUser()
+const isAdmin = user?.id_rol === 1
+const isVendedor = user?.id_rol === 2
+const isAlmacen = user?.id_rol === 3
+const router = useRouter()
+
+function doLogout() {
+    logout()
+    router.push('/Login')
+}
+</script>

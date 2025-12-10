@@ -1,10 +1,12 @@
 import express from 'express';
 import { registrarVenta, obtenerHistorialVentas, obtenerVentaPorId } from '../services/venta.service.js';
+import { authenticateToken } from '../middleware/auth.middleware.js';
+import { authorizeRoles } from '../middleware/authorize.middleware.js';
 
 const router = express.Router();
 
 // POST /api/ventas - registrar venta
-router.post('/', async (req, res) => {
+router.post('/', authenticateToken, authorizeRoles([1,2]), async (req, res) => {
   try {
     const payload = req.body;
     const result = await registrarVenta(payload);

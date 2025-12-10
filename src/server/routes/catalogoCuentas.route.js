@@ -8,9 +8,11 @@ import {
 } from '../services/catalogoCuenta.service.js';
 
 const router = express.Router();
+import { authenticateToken } from '../middleware/auth.middleware.js';
+import { authorizeRoles } from '../middleware/authorize.middleware.js';
 
 // GET /api/catalogo-cuentas - Obtener todas las cuentas activas
-router.get('/', async (req, res) => {
+router.get('/', authenticateToken, authorizeRoles([1]), async (req, res) => {
     try {
         const cuentas = await obtenerCatalogoCuentas();
         res.json({
@@ -29,7 +31,7 @@ router.get('/', async (req, res) => {
 });
 
 // GET /api/catalogo-cuentas/:codigo - Obtener cuenta por código
-router.get('/:codigo', async (req, res) => {
+router.get('/:codigo', authenticateToken, authorizeRoles([1]), async (req, res) => {
     try {
         const { codigo } = req.params;
         const cuenta = await obtenerCuentaPorCodigo(codigo);
@@ -56,7 +58,7 @@ router.get('/:codigo', async (req, res) => {
 });
 
 // POST /api/catalogo-cuentas - Crear nueva cuenta
-router.post('/', async (req, res) => {
+router.post('/', authenticateToken, authorizeRoles([1]), async (req, res) => {
     try {
         const cuenta = await crearCuenta(req.body);
         res.status(201).json({
@@ -75,7 +77,7 @@ router.post('/', async (req, res) => {
 });
 
 // PUT /api/catalogo-cuentas/:id - Actualizar cuenta
-router.put('/:id', async (req, res) => {
+router.put('/:id', authenticateToken, authorizeRoles([1]), async (req, res) => {
     try {
         const { id } = req.params;
         const cuenta = await actualizarCuenta(id, req.body);
@@ -96,7 +98,7 @@ router.put('/:id', async (req, res) => {
 });
 
 // DELETE /api/catalogo-cuentas/:id - Desactivar cuenta
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', authenticateToken, authorizeRoles([1]), async (req, res) => {
     try {
         const { id } = req.params;
         const cuenta = await desactivarCuenta(id);

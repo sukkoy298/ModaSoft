@@ -19,6 +19,16 @@ const VentaModel = sequelize.define('venta', {
         type: DataTypes.DECIMAL(10, 2),
         allowNull: false
     },
+    subtotal: {
+        type: DataTypes.DECIMAL(10, 2),
+        allowNull: false,
+        defaultValue: 0.00
+    },
+    iva: {
+        type: DataTypes.DECIMAL(10, 2),
+        allowNull: false,
+        defaultValue: 0.00
+    },
     estado: {
         type: DataTypes.STRING(15),
         allowNull: false

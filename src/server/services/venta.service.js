@@ -7,6 +7,7 @@ import Inventario from '../../models/InventarioModel.js'
 import MetodoPago from '../../models/MetodoPagoModel.js'
 import Cliente from '../../models/ClienteModel.js'
 import Usuario from '../../models/UsuarioModel.js'
+import MovimientoContableModel from '../../models/MovimientoContableModel.js'
 
 const IVA_RATE = 0.16 // ajusta si corresponde
 
@@ -92,6 +93,90 @@ export async function registrarVenta(payload) {
       }, { transaction: t })
     }
 
+    // Registrar movimientos contables relacionados con la venta
+    // 1) DEBE: Caja (total)
+    // 2) HABER: Ventas (subtotal)
+    // 3) HABER: IVA por pagar (iva)
+    // 4) DEBE: Costo de ventas (costo_total)
+    // 5) HABER: Inventario (costo_total)
+    try {
+      // calcular costo total aproximado consultando las variantes (costo_unitario)
+      let costo_total = 0
+      for (const d of payload.detalles) {
+        const v = await VarianteProducto.findByPk(Number(d.id_variante), { transaction: t })
+        const costoUnit = v ? Number(v.costo_unitario || 0) : 0
+        costo_total += costoUnit * Number(d.cantidad || 0)
+      }
+
+      const movimientosContables = []
+
+      // Caja (DEBE)
+      movimientosContables.push({
+        fecha_movimiento: venta.fecha,
+        codigo_cuenta: '1.1.1',
+        descripcion: `Venta #${venta.id_venta} - Cobro`,
+        debe: total,
+        haber: 0,
+        id_venta: venta.id_venta,
+        id_usuario: venta.id_usuario || payload.id_usuario || 1
+      })
+
+      // Ventas (HABER)
+      movimientosContables.push({
+        fecha_movimiento: venta.fecha,
+        codigo_cuenta: '4.1.1',
+        descripcion: `Ingreso por venta #${venta.id_venta}`,
+        debe: 0,
+        haber: subtotal,
+        id_venta: venta.id_venta,
+        id_usuario: venta.id_usuario || payload.id_usuario || 1
+      })
+
+      // IVA por pagar (HABER)
+      if (iva > 0) {
+        movimientosContables.push({
+          fecha_movimiento: venta.fecha,
+          codigo_cuenta: '2.1.2',
+          descripcion: `IVA venta #${venta.id_venta}`,
+          debe: 0,
+          haber: iva,
+          id_venta: venta.id_venta,
+          id_usuario: venta.id_usuario || payload.id_usuario || 1
+        })
+      }
+
+      // Costo de ventas (DEBE) y ajuste de Inventario (HABER)
+      if (costo_total > 0) {
+        movimientosContables.push({
+          fecha_movimiento: venta.fecha,
+          codigo_cuenta: '5.1.1',
+          descripcion: `Costo venta #${venta.id_venta}`,
+          debe: costo_total,
+          haber: 0,
+          id_venta: venta.id_venta,
+          id_usuario: venta.id_usuario || payload.id_usuario || 1
+        })
+
+        movimientosContables.push({
+          fecha_movimiento: venta.fecha,
+          codigo_cuenta: '1.1.3',
+          descripcion: `Salida inventario venta #${venta.id_venta}`,
+          debe: 0,
+          haber: costo_total,
+          id_venta: venta.id_venta,
+          id_usuario: venta.id_usuario || payload.id_usuario || 1
+        })
+      }
+
+      if (movimientosContables.length) {
+        await MovimientoContableModel.bulkCreate(movimientosContables, { transaction: t })
+      }
+    } catch (errMov) {
+      // Si falla registrar movimientos contables, hacemos rollback y lanzamos
+      console.error('Error registrando movimientos contables de venta:', errMov)
+      throw errMov
+    }
+
     await t.commit()
     return { id_venta: venta.id_venta, subtotal, iva, total }
   } catch (err) {
@@ -115,8 +200,8 @@ export async function obtenerHistorialVentas(fechaInicio = null, fechaFin = null
   return Venta.findAll({
     where,
     include: [
-      { model: Cliente, attributes: ['cedula', 'nombre'] },
-      { model: Usuario, attributes: ['usuario'] }
+      { model: Cliente, as: 'Cliente', attributes: ['cedula', 'nombre'] },
+      { model: Usuario, as: 'Usuario', attributes: ['usuario'] }
     ],
     order: [['fecha', 'DESC'], ['id_venta', 'DESC']]
   })
@@ -125,13 +210,13 @@ export async function obtenerHistorialVentas(fechaInicio = null, fechaFin = null
 export async function obtenerVentaPorId(idVenta) {
   return Venta.findByPk(idVenta, {
     include: [
-      { model: Cliente, attributes: ['cedula', 'nombre', 'telefono', 'email', 'direccion'] },
-      { model: Usuario, attributes: ['usuario'] },
+      { model: Cliente, as: 'Cliente', attributes: ['cedula', 'nombre', 'telefono', 'email', 'direccion'] },
+      { model: Usuario, as: 'Usuario', attributes: ['usuario'] },
       {
         model: DetalleVenta,
         include: [
-          { model: VarianteProducto },
-          { model: MetodoPago }
+          { model: VarianteProducto, as: 'VarianteProducto' },
+          { model: MetodoPago, as: 'MetodoPago' }
         ]
       }
     ]
@@ -142,8 +227,8 @@ export async function obtenerDetalleVenta(idVenta) {
   return DetalleVenta.findAll({
     where: { id_venta: idVenta },
     include: [
-      { model: VarianteProducto },
-      { model: MetodoPago }
+      { model: VarianteProducto, as: 'VarianteProducto' },
+      { model: MetodoPago, as: 'MetodoPago' }
     ]
   })
 }

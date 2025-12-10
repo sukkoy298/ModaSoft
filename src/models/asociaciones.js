@@ -59,6 +59,16 @@ ClienteModel.hasMany(VentaModel, {
     as: 'Ventas'
 });
 
+// 4.b Venta <--> Usuario (responsable de la venta)
+VentaModel.belongsTo(UsuariosModel, {
+    foreignKey: 'id_usuario',
+    as: 'Usuario'
+});
+UsuariosModel.hasMany(VentaModel, {
+    foreignKey: 'id_usuario',
+    as: 'Ventas'
+});
+
 // 5. Venta (Cabecera) <--> DetalleVenta (Items)
 VentaModel.hasMany(DetalleVentaModel, {
     foreignKey: 'id_venta',

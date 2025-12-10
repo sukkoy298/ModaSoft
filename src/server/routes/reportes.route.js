@@ -7,8 +7,11 @@ import {
 
 const router = express.Router();
 
+import { authenticateToken } from '../middleware/auth.middleware.js';
+import { authorizeRoles } from '../middleware/authorize.middleware.js';
+
 // GET /api/reportes/clientes/top - Obtener top clientes
-router.get('/clientes/top', async (req, res) => {
+router.get('/clientes/top', authenticateToken, authorizeRoles([1]), async (req, res) => {
   try {
     const { limite, fechaInicio, fechaFin } = req.query;
     const clientes = await obtenerTopClientes(limite, fechaInicio, fechaFin);
@@ -19,7 +22,7 @@ router.get('/clientes/top', async (req, res) => {
 });
 
 // GET /api/reportes/clientes/por-tipo - Obtener clientes por tipo
-router.get('/clientes/por-tipo', async (req, res) => {
+router.get('/clientes/por-tipo', authenticateToken, authorizeRoles([1]), async (req, res) => {
   try {
     const { tipo } = req.query;
     const clientes = await obtenerClientesPorTipo(tipo);
@@ -30,7 +33,7 @@ router.get('/clientes/por-tipo', async (req, res) => {
 });
 
 // GET /api/reportes/clientes/historial/:cedula - Obtener historial de compras
-router.get('/clientes/historial/:cedula', async (req, res) => {
+router.get('/clientes/historial/:cedula', authenticateToken, authorizeRoles([1]), async (req, res) => {
   try {
     const { fechaInicio, fechaFin } = req.query;
     const resultado = await obtenerHistorialComprasCliente(req.params.cedula, fechaInicio, fechaFin);

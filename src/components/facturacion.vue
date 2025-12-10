@@ -11,8 +11,13 @@
                     <p class="moda-subtitle">Venta rápida en caja</p>
                 </div>
                 <div class="moda-user-badge">
-                    <i class="bi bi-person-circle me-2"></i>
-                    Usuario ID: {{ idUsuario }}
+                    <i class="bi bi-person-gear me-2"></i>
+                    <template v-if="usuarioAutenticado">
+                        {{ usuarioAutenticado.usuario }} ({{ rolNombre }})
+                    </template>
+                    <template v-else>
+                        Sistema no autenticado
+                    </template>
                 </div>
             </div>
         </header>
@@ -34,57 +39,52 @@
                                     <span class="moda-input-group-text">
                                         <i class="bi bi-person-badge"></i>
                                     </span>
-                                    <input 
-                                        v-model="cedulaBusqueda" 
-                                        type="text" 
-                                        class="moda-input"
-                                        placeholder="Ingrese cédula del cliente" 
-                                        @keyup.enter="buscarCliente"
-                                    />
+                                    <input v-model="cedulaBusqueda" type="text" class="moda-input"
+                                        placeholder="Ingrese cédula del cliente" @keyup.enter="buscarCliente" />
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="d-flex gap-2">
-                                    <button 
-                                        class="btn moda-btn-primary flex-grow-1" 
-                                        @click="buscarCliente" 
-                                        :disabled="buscandoCliente"
-                                    >
-                                        <span v-if="buscandoCliente" class="spinner-border spinner-border-sm me-1"></span>
+                                    <button class="btn moda-btn-primary flex-grow-1" @click="buscarCliente"
+                                        :disabled="buscandoCliente">
+                                        <span v-if="buscandoCliente"
+                                            class="spinner-border spinner-border-sm me-1"></span>
                                         {{ buscandoCliente ? 'Buscando...' : 'Buscar Cliente' }}
                                     </button>
-                                    <button 
-                                        class="btn moda-btn-outline" 
-                                        @click="limpiarCliente"
-                                        :disabled="buscandoCliente"
-                                    >
+                                    <button class="btn moda-btn-outline" @click="limpiarCliente"
+                                        :disabled="buscandoCliente">
                                         <i class="bi bi-x-lg"></i>
                                     </button>
                                 </div>
                             </div>
                         </div>
-                        
+
                         <div v-if="cliente" class="moda-client-found mt-3">
                             <div class="d-flex justify-content-between align-items-start">
                                 <div>
                                     <h6 class="moda-client-name mb-1">
-                                        <i class="bi bi-person-check me-2"></i>
+                                        <i class="bi bi-person-vcard me-2"></i> <!-- Icono diferente -->
                                         {{ cliente.nombre }}
                                     </h6>
                                     <div class="moda-client-info">
                                         <div><strong>Cédula:</strong> {{ cliente.cedula }}</div>
                                         <div><strong>Teléfono:</strong> {{ cliente.telefono }}</div>
                                         <div><strong>Email:</strong> {{ cliente.email }}</div>
+                                        <div class="mt-1">
+                                        </div>
                                     </div>
                                 </div>
-                                <span class="moda-badge moda-badge-success">Cliente registrado</span>
+                                <span class="moda-badge moda-badge-success">
+                                    <i class="bi bi-check-circle me-1"></i>Cliente registrado
+                                </span>
                             </div>
                         </div>
-                        
+
                         <!-- NUEVO: si no se encontró cliente, mostrar botones para registrar -->
                         <div v-else-if="clienteNoEncontrado" class="moda-client-default mt-3 p-3 text-center">
                             <i class="bi bi-exclamation-triangle moda-client-icon text-warning mb-2"></i>
-                            <p class="mb-2">Cliente no encontrado con la cédula <strong>{{ cedulaBusqueda }}</strong>.</p>
+                            <p class="mb-2">Cliente no encontrado con la cédula <strong>{{ cedulaBusqueda }}</strong>.
+                            </p>
                             <div class="d-grid gap-2 col-8 mx-auto">
                                 <button class="btn moda-btn-primary" @click="irARegistroCliente">
                                     <i class="bi bi-person-plus-fill me-2"></i> Registrar Cliente
@@ -118,12 +118,8 @@
                                 <span class="moda-input-group-text">
                                     <i class="bi bi-search"></i>
                                 </span>
-                                <input 
-                                    v-model="busquedaProducto" 
-                                    type="search" 
-                                    class="moda-input"
-                                    placeholder="Buscar productos por nombre..." 
-                                />
+                                <input v-model="busquedaProducto" type="search" class="moda-input"
+                                    placeholder="Buscar productos por nombre..." />
                             </div>
                         </div>
 
@@ -131,24 +127,21 @@
                             <i class="bi bi-exclamation-triangle me-2"></i>
                             No se pudo cargar el inventario. Verifique la conexión.
                         </div>
-                        
+
                         <div v-else-if="loadingProducts" class="moda-loading-state">
                             <div class="moda-spinner"></div>
                             <p class="mt-3 moda-subtitle">Cargando catálogo de productos...</p>
                         </div>
-                        
+
                         <div v-else-if="productosFiltrados.length === 0" class="moda-empty-state">
                             <i class="bi bi-inbox moda-empty-icon"></i>
                             <p class="mt-3 moda-empty-title">No se encontraron productos</p>
                         </div>
-                        
+
                         <div v-else class="row row-cols-1 row-cols-md-2 g-3">
                             <div v-for="p in productosFiltrados" :key="p.id_producto" class="col">
                                 <div class="moda-product-card">
-                                    <ProductCard 
-                                        :product="p" 
-                                        @add="addToCart"
-                                    />
+                                    <ProductCard :product="p" @add="addToCart" />
                                 </div>
                             </div>
                         </div>
@@ -175,18 +168,12 @@
                                 <i class="bi bi-credit-card me-1"></i>
                                 Método de Pago
                             </label>
-                            <select 
-                                v-model="metodoPagoSeleccionado" 
-                                class="moda-select"
+                            <select v-model="metodoPagoSeleccionado" class="moda-select"
                                 :disabled="cargandoMetodosPago || !cart.length"
-                                :class="{ 'moda-select-error': !metodoPagoSeleccionado && cart.length > 0 }"
-                            >
+                                :class="{ 'moda-select-error': !metodoPagoSeleccionado && cart.length > 0 }">
                                 <option value="">Seleccione método de pago</option>
-                                <option 
-                                    v-for="metodo in metodosPago" 
-                                    :key="metodo.id_metodo_pago" 
-                                    :value="metodo.id_metodo_pago"
-                                >
+                                <option v-for="metodo in metodosPago" :key="metodo.id_metodo_pago"
+                                    :value="metodo.id_metodo_pago">
                                     {{ metodo.nombre }}
                                 </option>
                             </select>
@@ -216,26 +203,27 @@
                                             <td class="moda-table-td">
                                                 <div class="moda-cart-product">
                                                     <div class="moda-cart-product-name">{{ item.product.nombre }}</div>
-                                                    <div class="moda-cart-product-variant">{{ item.product.variante_nombre }}</div>
-                                                    <div class="moda-cart-product-price">${{ item.product.precio_unitario_venta.toFixed(2) }} c/u</div>
-                                                    <div class="moda-cart-product-stock">Stock: {{ item.product.stock_actual }}</div>
+                                                    <div class="moda-cart-product-variant">{{
+                                                        item.product.variante_nombre }}
+                                                    </div>
+                                                    <div class="moda-cart-product-price">${{
+                                                        item.product.precio_unitario_venta.toFixed(2) }} c/u</div>
+                                                    <div class="moda-cart-product-stock">Stock: {{
+                                                        item.product.stock_actual }}
+                                                    </div>
                                                 </div>
                                             </td>
                                             <td class="moda-table-td text-center">
                                                 <div class="moda-quantity-control">
-                                                    <button 
-                                                        class="btn moda-quantity-btn"
+                                                    <button class="btn moda-quantity-btn"
                                                         @click="updateCartItem(idx, item.qty - 1)"
-                                                        :disabled="item.qty <= 1"
-                                                    >
+                                                        :disabled="item.qty <= 1">
                                                         -
                                                     </button>
                                                     <span class="moda-quantity-value">{{ item.qty }}</span>
-                                                    <button 
-                                                        class="btn moda-quantity-btn"
+                                                    <button class="btn moda-quantity-btn"
                                                         @click="updateCartItem(idx, item.qty + 1)"
-                                                        :disabled="item.qty >= item.product.stock_actual"
-                                                    >
+                                                        :disabled="item.qty >= item.product.stock_actual">
                                                         +
                                                     </button>
                                                 </div>
@@ -244,11 +232,8 @@
                                                 ${{ (item.product.precio_unitario_venta * item.qty).toFixed(2) }}
                                             </td>
                                             <td class="moda-table-td text-center">
-                                                <button 
-                                                    class="btn moda-btn-sm moda-btn-outline-danger" 
-                                                    @click="removeFromCart(idx)"
-                                                    title="Eliminar"
-                                                >
+                                                <button class="btn moda-btn-sm moda-btn-outline-danger"
+                                                    @click="removeFromCart(idx)" title="Eliminar">
                                                     <i class="bi bi-trash"></i>
                                                 </button>
                                             </td>
@@ -256,7 +241,7 @@
                                     </tbody>
                                 </table>
                             </div>
-                            
+
                             <!-- Total -->
                             <div class="moda-cart-total">
                                 <div class="d-flex justify-content-between align-items-center mb-3">
@@ -269,31 +254,25 @@
                                         <div class="moda-tax-text">IVA incluido</div>
                                     </div>
                                 </div>
-                                
+
                                 <!-- Botones de acción -->
                                 <div class="moda-cart-actions">
-                                    <button 
-                                        class="btn moda-btn-primary moda-btn-lg w-100 mb-2" 
-                                        @click="facturar" 
-                                        :disabled="processing || !metodoPagoSeleccionado"
-                                    >
+                                    <button class="btn moda-btn-primary moda-btn-lg w-100 mb-2" @click="facturar"
+                                        :disabled="processing || !metodoPagoSeleccionado">
                                         <span v-if="processing" class="spinner-border spinner-border-sm me-2"></span>
                                         <i v-else class="bi bi-receipt me-2"></i>
                                         {{ processing ? 'Procesando Factura...' : 'FACTURAR' }}
                                     </button>
-                                    
-                                    <button 
-                                        class="btn moda-btn-outline-danger w-100" 
-                                        @click="clearCart"
-                                        :disabled="processing"
-                                    >
+
+                                    <button class="btn moda-btn-outline-danger w-100" @click="clearCart"
+                                        :disabled="processing">
                                         <i class="bi bi-trash me-2"></i>
                                         Vaciar Carrito
                                     </button>
                                 </div>
                             </div>
                         </div>
-                        
+
                         <!-- Carrito vacío -->
                         <div v-else class="moda-empty-cart">
                             <div class="mb-3">
@@ -311,22 +290,23 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import ProductCard from '@/components/ProductCard.vue'
 import { obtenerClientePorCedula } from '@/cliente.js'
 import { obtenerTodoElInventario } from '@/producto.js'
-import Header from '@/components/Header.vue'; 
-import Footer from '@/components/Footer.vue'; 
+import Header from '@/components/Header.vue';
+import Footer from '@/components/Footer.vue';
 import axios from 'axios'
-import { useRouter } from 'vue-router' // <-- agregado
+import { useRouter } from 'vue-router'
+import { getToken, getUser, logout, saveAuth } from '@/auth.js'
 
-const router = useRouter() // <-- agregado
+const router = useRouter()
 
 // Estado del componente
 const cliente = ref(null)
 const cedulaBusqueda = ref('')
 const buscandoCliente = ref(false)
-const clienteNoEncontrado = ref(false) // <-- agregado
+const clienteNoEncontrado = ref(false)
 
 // Productos
 const products = ref([])
@@ -342,170 +322,276 @@ const metodosPago = ref([])
 const metodoPagoSeleccionado = ref('')
 const cargandoMetodosPago = ref(false)
 
-// Usuario
-const idUsuario = ref(1)
+// Usuario y autenticación
+const usuarioAutenticado = ref(null)
+const token = ref(null)
+const authCheckInterval = ref(null)
 
 // Estado de facturación
 const processing = ref(false)
 
 // Computed
 const total = computed(() => cart.value.reduce((s, i) =>
-  s + ((i.product.precio_unitario_venta ?? i.product.price ?? 0) * i.qty), 0))
+    s + ((i.product.precio_unitario_venta ?? i.product.price ?? 0) * i.qty), 0))
 
 const productosFiltrados = computed(() => {
-  if (!busquedaProducto.value) {
-    return products.value
-  }
-  const busqueda = busquedaProducto.value.toLowerCase()
-  return products.value.filter(p =>
-    p.nombre?.toLowerCase().includes(busqueda)
-  )
+    if (!busquedaProducto.value) {
+        return products.value
+    }
+    const busqueda = busquedaProducto.value.toLowerCase()
+    return products.value.filter(p =>
+        p.nombre?.toLowerCase().includes(busqueda)
+    )
 })
+
+// Computed para el nombre del rol
+const rolNombre = computed(() => {
+    if (!usuarioAutenticado.value) return 'Sin rol'
+
+    const r = usuarioAutenticado.value.id_rol
+    if (r === 1) return 'Administrador'
+    if (r === 2) return 'Vendedor'
+    if (r === 3) return 'Almacén'
+    return 'Usuario'
+})
+
+// Función para verificar y mantener la autenticación
+const verificarAutenticacion = () => {
+    try {
+        const userData = JSON.parse(localStorage.getItem('modasoft_system_user') || 'null')
+        const userToken = localStorage.getItem('modasoft_token')
+
+        console.log('🔍 Verificando autenticación (SISTEMA):', {
+            userData,
+            hasToken: !!userToken
+        })
+
+        if (!userData || !userToken) {
+            console.warn('⚠️ No hay credenciales del sistema en localStorage')
+            return false
+        }
+
+        usuarioAutenticado.value = userData
+        token.value = userToken
+
+        // Configurar axios globalmente
+        axios.defaults.headers.common['Authorization'] = `Bearer ${userToken}`
+
+        console.log('✅ Usuario del sistema autenticado:', usuarioAutenticado.value.usuario)
+        return true
+
+    } catch (error) {
+        console.error('❌ Error en verificarAutenticacion:', error)
+        return false
+    }
+}
+
+const forzarLogout = (mensaje = 'Sesión expirada. Por favor, inicie sesión nuevamente.') => {
+    console.warn('🚨 Forzando logout del SISTEMA:', mensaje)
+    localStorage.removeItem('modasoft_token')
+    localStorage.removeItem('modasoft_system_user')
+    usuarioAutenticado.value = null
+    token.value = null
+    alert(mensaje)
+    router.push('/login')
+}
+
+// Función para validar antes de acciones críticas
+const validarAntesDeAccion = () => {
+    if (!verificarAutenticacion()) {
+        forzarLogout('Su sesión ha expirado. Por favor, inicie sesión nuevamente.')
+        return false
+    }
+    return true
+}
+
+// Configurar interceptor de axios para manejar errores de autenticación
+const setupAxiosInterceptor = () => {
+    axios.interceptors.response.use(
+        response => response,
+        error => {
+            if (error.response?.status === 401) {
+                console.error('❌ Interceptor: Error 401 detectado')
+                forzarLogout('Su sesión ha expirado. Por favor, inicie sesión nuevamente.')
+            }
+            return Promise.reject(error)
+        }
+    )
+}
 
 // Funciones
 function limpiarCliente() {
+    console.log('🧹 Limpiando datos de CLIENTE (ventas)...')
     cliente.value = null
     cedulaBusqueda.value = ''
-    localStorage.removeItem('modasoft_user')
-    clienteNoEncontrado.value = false // <-- asegurar limpiar estado
+    localStorage.removeItem('modasoft_sales_customer')
+    clienteNoEncontrado.value = false
+
+    console.log('✅ Datos de cliente de ventas limpiados. Sistema intacto.')
 }
 
 function saveCart() {
-  localStorage.setItem('modasoft_cart', JSON.stringify(cart.value))
+    localStorage.setItem('modasoft_cart', JSON.stringify(cart.value))
 }
 
 function addToCart({ variant, qty, productName }) {
-  const stockDisponible = variant.stock_actual || 0
-  const cantidadSolicitada = Number(qty)
-  
-  if (stockDisponible < cantidadSolicitada) {
-    alert(`Stock insuficiente. Disponible: ${stockDisponible}`)
-    return
-  }
+    const stockDisponible = variant.stock_actual || 0
+    const cantidadSolicitada = Number(qty)
 
-  const existing = cart.value.find(i => i.product.id_variante === variant.id_variante)
-  if (existing) {
-    const nuevaCantidad = Number(existing.qty) + cantidadSolicitada
-    if (nuevaCantidad > stockDisponible) {
-      alert(`No hay suficiente stock. Disponible: ${stockDisponible}`)
-      return
+    if (stockDisponible < cantidadSolicitada) {
+        alert(`Stock insuficiente. Disponible: ${stockDisponible}`)
+        return
     }
-    existing.qty = nuevaCantidad
-  } else {
-    cart.value.push({
-      product: {
-        id_variante: variant.id_variante,
-        sku: variant.sku,
-        nombre: productName,
-        variante_nombre: `${variant.talla}, ${variant.color}`,
-        precio_unitario_venta: Number(variant.precio),
-        stock_actual: stockDisponible
-      },
-      qty: cantidadSolicitada
-    })
-  }
-  saveCart()
+
+    const existing = cart.value.find(i => i.product.id_variante === variant.id_variante)
+    if (existing) {
+        const nuevaCantidad = Number(existing.qty) + cantidadSolicitada
+        if (nuevaCantidad > stockDisponible) {
+            alert(`No hay suficiente stock. Disponible: ${stockDisponible}`)
+            return
+        }
+        existing.qty = nuevaCantidad
+    } else {
+        cart.value.push({
+            product: {
+                id_variante: variant.id_variante,
+                sku: variant.sku,
+                nombre: productName,
+                variante_nombre: `${variant.talla}, ${variant.color}`,
+                precio_unitario_venta: Number(variant.precio),
+                stock_actual: stockDisponible
+            },
+            qty: cantidadSolicitada
+        })
+    }
+    saveCart()
 }
 
 function updateCartItem(index, newQty) {
-  const item = cart.value[index]
-  if (newQty <= 0) {
-    removeFromCart(index)
-    return
-  }
-  
-  if (newQty > item.product.stock_actual) {
-    alert(`Stock insuficiente. Disponible: ${item.product.stock_actual}`)
-    return
-  }
-  
-  item.qty = newQty
-  saveCart()
+    const item = cart.value[index]
+    if (newQty <= 0) {
+        removeFromCart(index)
+        return
+    }
+
+    if (newQty > item.product.stock_actual) {
+        alert(`Stock insuficiente. Disponible: ${item.product.stock_actual}`)
+        return
+    }
+
+    item.qty = newQty
+    saveCart()
 }
 
 function removeFromCart(index) {
-  cart.value.splice(index, 1)
-  saveCart()
+    cart.value.splice(index, 1)
+    saveCart()
 }
 
 function clearCart() {
-  cart.value = []
-  saveCart()
-  limpiarCliente()
+    cart.value = []
+    saveCart()
+    limpiarCliente()
 }
 
 // Función para registrar venta
 async function registrarVenta(ventaData) {
-  try {
-    const response = await axios.post('http://localhost:3000/api/ventas', ventaData)
-    return response.data
-  } catch (error) {
-    console.error('Error en registrarVenta:', error)
-    
-    if (error.response?.data?.message) {
-      throw new Error(error.response.data.message)
-    } else if (error.response) {
-      throw new Error(`Error ${error.response.status}: ${error.response.statusText}`)
-    } else if (error.request) {
-      throw new Error('No se pudo conectar con el servidor')
-    } else {
-      throw new Error('Error al configurar la petición')
+    try {
+        console.log('📤 Enviando venta con datos:', ventaData)
+        console.log('🔑 Token usado:', token.value ? 'Disponible' : 'No disponible')
+
+        const response = await axios.post('http://localhost:3000/api/ventas', ventaData, {
+            headers: {
+                'Authorization': `Bearer ${token.value}`,
+                'Content-Type': 'application/json'
+            }
+        })
+
+        console.log('✅ Respuesta del servidor:', response.data)
+        return response.data
+    } catch (error) {
+        console.error('❌ Error en registrarVenta:', error)
+
+        // Manejar errores específicos
+        if (error.response?.status === 401) {
+            forzarLogout('Sesión expirada. Por favor, inicie sesión nuevamente.')
+            return null
+        }
+
+        if (error.response?.data?.message) {
+            throw new Error(error.response.data.message)
+        } else if (error.response) {
+            throw new Error(`Error ${error.response.status}: ${error.response.statusText}`)
+        } else if (error.request) {
+            throw new Error('No se pudo conectar con el servidor')
+        } else {
+            throw new Error('Error al configurar la petición')
+        }
     }
-  }
 }
 
 async function facturar() {
-  if (!cart.value.length) {
-    alert('El carrito está vacío.')
-    return
-  }
-
-  if (!metodoPagoSeleccionado.value) {
-    alert('Por favor seleccione un método de pago.')
-    return
-  }
-
-  // Validar stock antes de proceder
-  for (const item of cart.value) {
-    if (item.qty > item.product.stock_actual) {
-      alert(`Stock insuficiente para ${item.product.nombre}. Disponible: ${item.product.stock_actual}`)
-      return
-    }
-  }
-
-  processing.value = true
-
-  try {
-    const payload = {
-      cedula_cliente: cliente.value?.cedula || '23948576',
-      total: total.value,
-      estado: 'pagada',
-      id_usuario: idUsuario.value,
-      detalles: cart.value.map(item => ({
-        id_variante: item.product.id_variante,
-        id_metodo: metodoPagoSeleccionado.value,
-        cantidad: item.qty,
-        precio_unitario_venta: item.product.precio_unitario_venta
-      }))
+    // Validar que el usuario esté autenticado
+    if (!validarAntesDeAccion()) {
+        return
     }
 
-    console.log('Enviando venta:', payload)
-    
-    const resultado = await registrarVenta(payload)
-    
-    alert(`Factura registrada correctamente. ID de venta: ${resultado.id_venta}`)
-    
-    clearCart()
-    metodoPagoSeleccionado.value = ''
-    
-    await loadProducts()
-    
-  } catch (err) {
-    console.error('Error al facturar:', err)
-    alert(`Error: ${err.message}`)
-  } finally {
-    processing.value = false
-  }
+    if (!cart.value.length) {
+        alert('El carrito está vacío.')
+        return
+    }
+
+    if (!metodoPagoSeleccionado.value) {
+        alert('Por favor seleccione un método de pago.')
+        return
+    }
+
+    // Validar stock antes de proceder
+    for (const item of cart.value) {
+        if (item.qty > item.product.stock_actual) {
+            alert(`Stock insuficiente para ${item.product.nombre}. Disponible: ${item.product.stock_actual}`)
+            return
+        }
+    }
+
+    processing.value = true
+
+    try {
+        const payload = {
+            cedula_cliente: cliente.value?.cedula || '23948576',
+            total: total.value,
+            estado: 'pagada',
+            id_usuario: usuarioAutenticado.value.id_usuario,
+            detalles: cart.value.map(item => ({
+                id_variante: item.product.id_variante,
+                id_metodo: metodoPagoSeleccionado.value,
+                cantidad: item.qty,
+                precio_unitario_venta: item.product.precio_unitario_venta
+            }))
+        }
+
+        console.log('📋 Payload de venta:', payload)
+
+        const resultado = await registrarVenta(payload)
+
+        if (!resultado) {
+            // El resultado es null cuando hay error de autenticación
+            return
+        }
+
+        alert(`Factura registrada correctamente. ID de venta: ${resultado.id_venta}`)
+
+        clearCart()
+        metodoPagoSeleccionado.value = ''
+
+        await loadProducts()
+
+    } catch (err) {
+        console.error('❌ Error al facturar:', err)
+        alert(`Error: ${err.message}`)
+    } finally {
+        processing.value = false
+    }
 }
 
 async function buscarCliente() {
@@ -516,104 +602,188 @@ async function buscarCliente() {
   }
 
   buscandoCliente.value = true
-  clienteNoEncontrado.value = false // reset
+  clienteNoEncontrado.value = false
+  
   try {
-    const res = await obtenerClientePorCedula(ced)
-    cliente.value = res
-    localStorage.setItem('modasoft_user', JSON.stringify(res))
-  } catch (err) {
-    cliente.value = null
-    localStorage.removeItem('modasoft_user')
-    // En vez de alert, activamos la vista de registro
-    clienteNoEncontrado.value = true
+    console.log('🔍 Iniciando búsqueda de CLIENTE (ventas)...')
+    console.log('📋 Cédula a buscar:', ced)
+    console.log('🔑 Token disponible:', !!token.value)
+    
+    // CORRECCIÓN: Usar la variable correcta 'ced' en lugar de 'cedula'
+    const response = await axios.get(`http://localhost:3000/api/clientes/${ced}`, {
+      headers: {
+        'Authorization': `Bearer ${token.value}`,
+        'Content-Type': 'application/json'
+      }
+    })
+    
+    console.log('✅ Cliente de ventas encontrado:', response.data)
+    
+    // GUARDAR COMO CLIENTE DE VENTAS (nombre distinto)
+    cliente.value = response.data
+    localStorage.setItem('modasoft_sales_customer', JSON.stringify(response.data))
+    
+  } catch (error) {
+    console.error('❌ Error buscando cliente:', error.response?.status || error.message)
+    console.error('📋 Detalles del error:', error.response?.data || error.message)
+    
+    if (error.response?.status === 401) {
+      // Error de autenticación del SISTEMA
+      console.error('🔒 Error 401: Token inválido o expirado')
+      console.error('📋 Respuesta del servidor:', error.response.data)
+      forzarLogout('Sesión del sistema expirada')
+      return
+    } else if (error.response?.status === 404) {
+      // Cliente de ventas no encontrado
+      cliente.value = null
+      localStorage.removeItem('modasoft_sales_customer')
+      clienteNoEncontrado.value = true
+      console.log('ℹ️ Cliente de ventas no encontrado con cédula:', ced)
+    } else if (error.response?.status === 400) {
+      // Error en la solicitud
+      cliente.value = null
+      clienteNoEncontrado.value = false
+      alert(`Error del servidor: ${error.response.data?.message || 'Datos inválidos'}`)
+    } else {
+      // Otro error (error de red, etc.)
+      console.error('🌐 Error de red o conexión:', error.message)
+      alert(`Error de conexión: ${error.message}`)
+      cliente.value = null
+      clienteNoEncontrado.value = false
+    }
   } finally {
     buscandoCliente.value = false
   }
 }
 
-// NUEVO: guarda la cédula y navega a registro
 function irARegistroCliente() {
-  if (!cedulaBusqueda.value) return
-  localStorage.setItem('modasoft_cedula_para_registro', cedulaBusqueda.value)
-  router.push('/registro')
+    if (!cedulaBusqueda.value) return
+    localStorage.setItem('modasoft_cedula_para_registro', cedulaBusqueda.value)
+    router.push('/registro')
 }
 
 async function cargarMetodosPago() {
-  try {
-    cargandoMetodosPago.value = true;
-    const response = await axios.get('http://localhost:3000/api/metodos-pago');
-    // response.data puede venir con different naming: id_metodopago, id_metodo_pago, id_metodo
-    const raw = Array.isArray(response.data) ? response.data : [];
-    console.log('metodos-pago raw:', raw);
+    try {
+        cargandoMetodosPago.value = true;
+        const response = await axios.get('http://localhost:3000/api/metodos-pago');
 
-    // Normalizar campos a { id_metodo_pago, nombre }
-    metodosPago.value = raw.map(m => {
-      return {
-        id_metodo_pago: m.id_metodo_pago ?? m.id_metodopago ?? m.id ?? null,
-        nombre: m.nombre ?? m.nombre_metodo ?? m.descripcion ?? 'Método'
-      };
-    }).filter(m => m.id_metodo_pago !== null);
+        console.log('📋 Respuesta métodos de pago:', response.data)
 
-    console.log('metodos-pago normalizados:', metodosPago.value);
+        const raw = Array.isArray(response.data) ? response.data : [];
 
-    if (metodosPago.value.length > 0) {
-      metodoPagoSeleccionado.value = metodosPago.value[0].id_metodo_pago;
-      console.log('metodoPagoSeleccionado set to', metodoPagoSeleccionado.value);
-    } else {
-      metodoPagoSeleccionado.value = '';
+        // Normalizar campos
+        metodosPago.value = raw.map(m => {
+            return {
+                id_metodo_pago: m.id_metodo_pago ?? m.id_metodopago ?? m.id ?? null,
+                nombre: m.nombre ?? m.nombre_metodo ?? m.descripcion ?? 'Método'
+            };
+        }).filter(m => m.id_metodo_pago !== null);
+
+        console.log('✅ Métodos de pago normalizados:', metodosPago.value);
+
+        if (metodosPago.value.length > 0) {
+            metodoPagoSeleccionado.value = metodosPago.value[0].id_metodo_pago;
+        } else {
+            metodoPagoSeleccionado.value = '';
+        }
+    } catch (error) {
+        console.error('❌ Error cargando métodos de pago:', error)
+        if (error.response?.status === 401) {
+            forzarLogout()
+            return
+        }
+        metodosPago.value = [];
+        metodoPagoSeleccionado.value = '';
+    } finally {
+        cargandoMetodosPago.value = false;
     }
-  } catch (error) {
-    console.error('Error cargando métodos de pago:', error);
-    metodosPago.value = [];
-    metodoPagoSeleccionado.value = '';
-  } finally {
-    cargandoMetodosPago.value = false;
-  }
 }
 
 async function loadProducts() {
-  loadingProducts.value = true
-  errorProducts.value = false
-  try {
-    const data = await obtenerTodoElInventario()
-    products.value = Array.isArray(data) ? data : []
-    
-    // Actualizar stock en el carrito
-    cart.value.forEach(item => {
-      const productoActual = products.value.find(p => 
-        p.variantes?.some(v => v.id_variante === item.product.id_variante)
-      )
-      if (productoActual) {
-        const variante = productoActual.variantes.find(v => v.id_variante === item.product.id_variante)
-        if (variante) {
-          item.product.stock_actual = variante.stock_actual || 0
+    if (!validarAntesDeAccion()) {
+        return
+    }
+
+    loadingProducts.value = true
+    errorProducts.value = false
+    try {
+        const data = await obtenerTodoElInventario()
+        products.value = Array.isArray(data) ? data : []
+
+        // Actualizar stock en el carrito
+        cart.value.forEach(item => {
+            const productoActual = products.value.find(p =>
+                p.variantes?.some(v => v.id_variante === item.product.id_variante)
+            )
+            if (productoActual) {
+                const variante = productoActual.variantes.find(v => v.id_variante === item.product.id_variante)
+                if (variante) {
+                    item.product.stock_actual = variante.stock_actual || 0
+                }
+            }
+        })
+
+    } catch (err) {
+        console.error('❌ Error cargando inventario', err)
+        errorProducts.value = true
+
+        if (err.response?.status === 401) {
+            forzarLogout()
         }
-      }
-    })
-    
-  } catch (err) {
-    console.error('Error cargando inventario', err)
-    errorProducts.value = true
-  } finally {
-    loadingProducts.value = false
-  }
+    } finally {
+        loadingProducts.value = false
+    }
+}
+
+// Iniciar verificación periódica de autenticación
+const iniciarVerificacionPeriodica = () => {
+    if (authCheckInterval.value) {
+        clearInterval(authCheckInterval.value)
+    }
+
+    authCheckInterval.value = setInterval(() => {
+        if (!verificarAutenticacion()) {
+            forzarLogout('Sesión expirada por inactividad')
+        }
+    }, 30000) // Verificar cada 30 segundos
+}
+
+// Detener verificación periódica
+const detenerVerificacionPeriodica = () => {
+    if (authCheckInterval.value) {
+        clearInterval(authCheckInterval.value)
+        authCheckInterval.value = null
+    }
 }
 
 // Cargar datos al montar el componente
 onMounted(async () => {
-    await loadProducts()
-    await cargarMetodosPago()
-
-    // Cargar cliente desde localStorage
-    const clienteGuardado = localStorage.getItem('modasoft_user')
-    if (clienteGuardado) {
+    console.log('🚀 Montando componente de facturación')
+    if (!verificarAutenticacion()) {
+        forzarLogout('Debe iniciar sesión en el sistema para acceder a la facturación')
+        return
+    }
+    const clienteVentasGuardado = localStorage.getItem('modasoft_sales_customer')
+    if (clienteVentasGuardado) {
         try {
-            cliente.value = JSON.parse(clienteGuardado)
+            cliente.value = JSON.parse(clienteVentasGuardado)
             cedulaBusqueda.value = cliente.value.cedula || ''
+            console.log('✅ Cliente de ventas cargado:', cliente.value.nombre)
         } catch (e) {
-            console.error('Error parseando cliente:', e)
+            console.error('❌ Error parseando cliente de ventas:', e)
         }
     }
+
+    // Cargar datos del sistema
+    await Promise.all([
+        loadProducts(),
+        cargarMetodosPago()
+    ])
+})
+
+// Limpiar al desmontar
+onBeforeUnmount(() => {
+    detenerVerificacionPeriodica()
 })
 </script>
 
@@ -923,7 +1093,9 @@ onMounted(async () => {
 }
 
 @keyframes spin {
-    to { transform: rotate(360deg); }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 .moda-empty-state {
@@ -985,7 +1157,8 @@ onMounted(async () => {
     background-color: #F8F5F2;
 }
 
-.moda-row-even:hover, .moda-row-odd:hover {
+.moda-row-even:hover,
+.moda-row-odd:hover {
     background-color: rgba(139, 115, 85, 0.05);
 }
 
@@ -1126,7 +1299,7 @@ onMounted(async () => {
     .moda-main-container {
         padding: 1.5rem;
     }
-    
+
     .moda-cart-card {
         position: static;
     }
@@ -1137,15 +1310,15 @@ onMounted(async () => {
         padding: 1rem;
         margin: 1rem auto;
     }
-    
+
     .moda-title {
         font-size: 1.5rem;
     }
-    
+
     .moda-card-body {
         padding: 1rem;
     }
-    
+
     .row-cols-md-2 {
         grid-template-columns: 1fr !important;
     }
@@ -1155,15 +1328,16 @@ onMounted(async () => {
     .row {
         margin: 0 -0.5rem;
     }
-    
-    .col-md-4, .col-md-8 {
+
+    .col-md-4,
+    .col-md-8 {
         padding: 0.5rem;
     }
-    
+
     .moda-table-container {
         overflow-x: auto;
     }
-    
+
     .moda-table {
         min-width: 500px;
     }

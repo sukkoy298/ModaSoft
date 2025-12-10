@@ -4,6 +4,11 @@ import { ref } from 'vue';
 const API_URL = 'http://localhost:3000/api/clientes'; 
 export const clienteAEditar = ref(null);
 
+// Función para obtener el token del SISTEMA
+const getSystemToken = () => {
+  return localStorage.getItem('modasoft_token');
+};
+
 // --- FUNCIONES ASÍNCRONAS (CRUD usando Axios) ---
 
 // 1. Obtener todos los clientes ACTIVOS
@@ -19,18 +24,35 @@ export const obtenerTodosLosClientes = async () => {
 
 // 2. Obtener un cliente ACTIVO por Cédula
 export const obtenerClientePorCedula = async (cedula) => {
-    try {
-        const response = await axios.get(`${API_URL}/${cedula}`);
-        return response.data;
-    } catch (error) {
-        console.error(`Error al obtener cliente ${cedula}:`, error);
-        
-        if (error.response?.status === 404 || error.response?.status === 400) {
-            throw new Error('Cliente no encontrado o está inactivo');
-        }
-        
-        throw error;
+  try {
+    const token = getSystemToken();
+    
+    if (!token) {
+      throw new Error('No hay sesión activa del sistema');
     }
+    
+    const response = await axios.get(`${API_URL}/${cedula}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    return response.data;
+  } catch (error) {
+    console.error(`Error al obtener cliente ${cedula}:`, error);
+    
+    if (error.response?.status === 401) {
+      console.error('❌ Token del sistema inválido o expirado');
+      throw new Error('Sesión del sistema expirada. Por favor, inicie sesión nuevamente.');
+    }
+    
+    if (error.response?.status === 404 || error.response?.status === 400) {
+      throw new Error('Cliente no encontrado o está inactivo');
+    }
+    
+    throw error;
+  }
 };
 
 // 3. Actualizar cliente

@@ -16,7 +16,6 @@
           <input v-model="password" type="password" class="form-control moda-input-custom"
             placeholder="Ingresa tu contraseña">
         </div>
-
         <button class="btn btn-dark w-100 mb-3 moda-btn-login">
           Iniciar sesión
         </button>
@@ -25,26 +24,43 @@
           <a href="#" class="forgot-link">¿Olvidaste tu contraseña?</a>
         </div>
       </form>
+      </div>
     </div>
-  </div>
-</template>
+  </template>
 
-<script>
-export default {
-  data() {
-    return {
-      username: "",
-      password: ""
-    };
-  },
-  methods: {
-    login() {
-      console.log("Usuario:", this.username);
-      console.log("Contraseña:", this.password);
+  <script>
+  import axios from 'axios'
+  import { saveAuth } from '@/auth.js'
+
+  export default {
+    data() {
+      return {
+        username: "",
+        password: ""
+      };
+    },
+    methods: {
+      async login() {
+        try {
+          const res = await axios.post('http://localhost:3000/api/usuarios/login', { usuario: this.username, password: this.password })
+          const { token, usuario } = res.data
+          if (token && usuario) {
+            saveAuth({ token, usuario })
+            // configurar axios para futuras peticiones
+            axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
+            // redirigir al home
+            this.$router.push('/')
+          } else {
+            alert('Login correcto pero no se recibió token')
+          }
+        } catch (err) {
+          console.error('Error login:', err)
+          alert(err.response?.data?.message || err.message || 'Error en login')
+        }
+      }
     }
   }
-};
-</script>
+  </script>
 
 <style scoped>
 /* :root {

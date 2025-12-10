@@ -5,7 +5,7 @@ USE modasoft2;
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 10-12-2025 a las 02:18:03
+-- Tiempo de generación: 10-12-2025 a las 22:24:49
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -101,6 +101,7 @@ INSERT INTO `cliente` (`id_cliente`, `cedula`, `nombre`, `email`, `telefono`, `d
 (10, '20664895', 'Leo Torres', 'Leo@gmail.com', '04143849587', 'Barquisimeto Calle 37 carrera 35', 'Jurídico', '2025-12-08', '2025-12-09 02:12:00', '2025-12-09 02:12:00', 1),
 (2, '23948576', 'Roberto Pérez', 'roberto@gmail.com', '04163847596', 'Barquisimeto Calle 38 carrera 31', 'Genérico', '2025-11-08', '2025-11-08 17:25:04', '2025-11-08 17:25:04', 1),
 (9, '24867592', 'Camilo Hernandez', 'Camilo@gmail.com', '04168459384', 'Cabudare, Av. La Mata Calle 8', 'Natural', '2025-12-07', '2025-12-07 17:20:04', '2025-12-07 17:20:39', 1),
+(11, '27488374', 'Rodrigo Paez', 'rodrigo@gmail.com', '04141234567', 'Cabudare, La Mata Calle 9', 'Genérico', '2025-12-10', '2025-12-10 21:12:59', '2025-12-10 21:13:15', 1),
 (1, '27586745', 'Carla Soto', 'carla@gmail.com', '04142837489', 'Barquisimeto Calle 57 carrera 32', 'Natural', '2025-11-08', '2025-11-08 16:58:26', '2025-11-08 16:58:26', 1),
 (3, '29384758', 'Mario Soto', 'mario@gmail.com', '04241238866', 'Barquisimeto Calle 33 carrera 32', 'Natural', '2025-11-08', '2025-11-08 17:28:24', '2025-12-09 02:12:31', 1),
 (5, '30998746', 'Angela Rodriguez', 'angela@gmail.com', '04241198374', 'Calle 34 carrera 29', 'Genérico', '2025-11-08', '2025-11-09 02:28:53', '2025-11-09 02:28:53', 1);
@@ -140,7 +141,9 @@ INSERT INTO `compra` (`id_compra`, `cedula_proveedor`, `fecha`, `nro_factura`, `
 (25, '22003948', '2025-12-09', '7', 146.14, 1, NULL, '2025-12-09 02:35:11', '2025-12-09 02:35:11', 125.98, 20.16),
 (26, '22003948', '2025-12-09', '8', 219.21, 1, NULL, '2025-12-09 03:06:32', '2025-12-09 03:06:32', 188.97, 30.24),
 (27, '22003948', '2025-12-10', '9', 365.34, 1, NULL, '2025-12-10 01:12:49', '2025-12-10 01:12:49', 314.95, 50.39),
-(28, '22003948', '2025-12-10', '10', 87.66, 1, NULL, '2025-12-10 01:16:54', '2025-12-10 01:16:54', 75.57, 12.09);
+(28, '22003948', '2025-12-10', '10', 87.66, 1, NULL, '2025-12-10 01:16:54', '2025-12-10 01:16:54', 75.57, 12.09),
+(29, '21003948', '2025-12-10', '12', 438.41, 1, 4, '2025-12-10 01:25:15', '2025-12-10 01:25:15', 377.94, 60.47),
+(30, '21003948', '2025-12-10', '18', 365.34, 1, 3, '2025-12-10 21:15:54', '2025-12-10 21:15:54', 314.95, 50.39);
 
 --
 -- Disparadores `compra`
@@ -192,7 +195,9 @@ INSERT INTO `detalle_compra` (`id_detallecompra`, `id_compra`, `id_variante`, `c
 (23, 25, 2, 2, 62.99, '2025-12-09 02:35:11', '2025-12-09 02:35:11'),
 (24, 26, 2, 3, 62.99, '2025-12-09 03:06:32', '2025-12-09 03:06:32'),
 (25, 27, 2, 5, 62.99, '2025-12-10 01:12:49', '2025-12-10 01:12:49'),
-(26, 28, 1, 3, 25.19, '2025-12-10 01:16:54', '2025-12-10 01:16:54');
+(26, 28, 1, 3, 25.19, '2025-12-10 01:16:54', '2025-12-10 01:16:54'),
+(27, 29, 2, 6, 62.99, '2025-12-10 01:25:15', '2025-12-10 01:25:15'),
+(28, 30, 2, 5, 62.99, '2025-12-10 21:15:54', '2025-12-10 21:15:54');
 
 -- --------------------------------------------------------
 
@@ -239,7 +244,12 @@ CREATE TABLE `detalle_venta` (
 
 INSERT INTO `detalle_venta` (`id_detalleventa`, `id_venta`, `id_variante`, `id_metodo`, `cantidad`, `precio_unitario_venta`, `created_at`, `updated_at`) VALUES
 (1, 2, 1, 1, 2, 29.99, '2025-11-08 20:00:32', '2025-11-08 20:00:32'),
-(2, 3, 1, 1, 2, 35.99, '2025-11-09 02:26:24', '2025-11-09 02:26:24');
+(2, 3, 1, 1, 2, 35.99, '2025-11-09 02:26:24', '2025-11-09 02:26:24'),
+(3, 5, 2, 1, 2, 89.99, '2025-12-10 03:25:54', '2025-12-10 03:25:54'),
+(4, 6, 1, 2, 2, 35.99, '2025-12-10 18:17:07', '2025-12-10 18:17:07'),
+(5, 7, 2, 3, 4, 89.99, '2025-12-10 18:21:52', '2025-12-10 18:21:52'),
+(6, 8, 2, 1, 1, 89.99, '2025-12-10 18:23:09', '2025-12-10 18:23:09'),
+(7, 9, 1, 1, 2, 35.99, '2025-12-10 18:28:30', '2025-12-10 18:28:30');
 
 --
 -- Disparadores `detalle_venta`
@@ -316,8 +326,13 @@ CREATE TABLE `inventario` (
 --
 
 INSERT INTO `inventario` (`id_inventario`, `id_variante`, `tipo`, `cantidad`, `stock_actual`, `stock_minimo`, `fecha_ultima_entrada`, `referencia`, `id_usuario`, `created_at`, `updated_at`) VALUES
-(16, 2, 'entrada', 27, 41, 10, '2025-12-09 21:12:49', 'ajuste_manual', 1, '2025-11-08 19:23:49', '2025-11-08 19:23:49'),
-(17, 1, 'entrada', 10, 18, 10, '2025-12-09 21:16:54', 'compra_2', 1, '2025-11-08 21:01:51', '2025-11-08 21:01:51');
+(16, 2, 'entrada', 27, 52, 10, '2025-12-10 17:15:54', 'ajuste_manual', 1, '2025-11-08 19:23:49', '2025-11-08 19:23:49'),
+(17, 1, 'entrada', 10, 18, 10, '2025-12-09 21:16:54', 'compra_2', 1, '2025-11-08 21:01:51', '2025-11-08 21:01:51'),
+(18, 2, 'salida', 2, 52, 10, '2025-12-10 17:15:54', 'venta_5', 1, '2025-12-10 03:25:54', '2025-12-10 03:25:54'),
+(19, 1, 'salida', 2, 16, 10, '2025-12-10 14:17:07', 'venta_6', 1, '2025-12-10 18:17:07', '2025-12-10 18:17:07'),
+(20, 2, 'salida', 4, 52, 10, '2025-12-10 17:15:54', 'venta_7', 1, '2025-12-10 18:21:52', '2025-12-10 18:21:52'),
+(21, 2, 'salida', 1, 52, 10, '2025-12-10 17:15:54', 'venta_8', 1, '2025-12-10 18:23:09', '2025-12-10 18:23:09'),
+(22, 1, 'salida', 2, 14, 10, '2025-12-10 14:28:30', 'venta_9', 1, '2025-12-10 18:28:30', '2025-12-10 18:28:30');
 
 -- --------------------------------------------------------
 
@@ -430,7 +445,43 @@ INSERT INTO `movimientos_contables` (`id_movimiento`, `fecha_movimiento`, `codig
 (87, '2025-12-10', '2.1.1', 'Compra #27 - Proveedor', 0.00, 365.34, NULL, 27, NULL, 1, '2025-12-10 01:12:49'),
 (88, '2025-12-10', '1.1.3', 'Compra #28 - Mercancía', 75.57, 0.00, NULL, 28, NULL, 1, '2025-12-10 01:16:54'),
 (89, '2025-12-10', '2.1.2', 'IVA compra #28', 12.09, 0.00, NULL, 28, NULL, 1, '2025-12-10 01:16:54'),
-(90, '2025-12-10', '2.1.1', 'Compra #28 - Proveedor', 0.00, 87.66, NULL, 28, NULL, 1, '2025-12-10 01:16:54');
+(90, '2025-12-10', '2.1.1', 'Compra #28 - Proveedor', 0.00, 87.66, NULL, 28, NULL, 1, '2025-12-10 01:16:54'),
+(91, '2025-12-10', '1.1.3', 'Compra #29 - Mercancía', 377.94, 0.00, NULL, 29, NULL, 1, '2025-12-10 01:25:15'),
+(92, '2025-12-10', '2.1.2', 'IVA compra #29', 60.47, 0.00, NULL, 29, NULL, 1, '2025-12-10 01:25:15'),
+(93, '2025-12-10', '2.1.1', 'Compra #29 - Proveedor', 0.00, 438.41, NULL, 29, NULL, 1, '2025-12-10 01:25:15'),
+(94, '2025-12-09', '1.1.1', 'Venta #5 - Cliente', 208.78, 0.00, 5, NULL, NULL, 1, '2025-12-10 03:25:54'),
+(95, '2025-12-09', '4.1.1', 'Ingreso por venta #5', 0.00, 0.00, 5, NULL, NULL, 1, '2025-12-10 03:25:54'),
+(96, '2025-12-09', '2.1.2', 'IVA venta #5', 0.00, 0.00, 5, NULL, NULL, 1, '2025-12-10 03:25:54'),
+(97, '2025-12-09', '5.1.1', 'Costo venta #5', 90.00, 0.00, 5, NULL, NULL, 1, '2025-12-10 03:25:54'),
+(98, '2025-12-09', '1.1.3', 'Salida inventario venta #5', 0.00, 90.00, 5, NULL, NULL, 1, '2025-12-10 03:25:54'),
+(99, '2025-12-10', '1.1.1', 'Venta #6 - Cliente', 83.50, 0.00, 6, NULL, NULL, 1, '2025-12-10 18:17:07'),
+(100, '2025-12-10', '4.1.1', 'Ingreso por venta #6', 0.00, 0.00, 6, NULL, NULL, 1, '2025-12-10 18:17:07'),
+(101, '2025-12-10', '2.1.2', 'IVA venta #6', 0.00, 0.00, 6, NULL, NULL, 1, '2025-12-10 18:17:07'),
+(102, '2025-12-10', '5.1.1', 'Costo venta #6', 50.00, 0.00, 6, NULL, NULL, 1, '2025-12-10 18:17:07'),
+(103, '2025-12-10', '1.1.3', 'Salida inventario venta #6', 0.00, 50.00, 6, NULL, NULL, 1, '2025-12-10 18:17:07'),
+(104, '2025-12-10', '1.1.1', 'Venta #7 - Cliente', 417.55, 0.00, 7, NULL, NULL, 1, '2025-12-10 18:21:52'),
+(105, '2025-12-10', '4.1.1', 'Ingreso por venta #7', 0.00, 0.00, 7, NULL, NULL, 1, '2025-12-10 18:21:52'),
+(106, '2025-12-10', '2.1.2', 'IVA venta #7', 0.00, 0.00, 7, NULL, NULL, 1, '2025-12-10 18:21:52'),
+(107, '2025-12-10', '5.1.1', 'Costo venta #7', 180.00, 0.00, 7, NULL, NULL, 1, '2025-12-10 18:21:52'),
+(108, '2025-12-10', '1.1.3', 'Salida inventario venta #7', 0.00, 180.00, 7, NULL, NULL, 1, '2025-12-10 18:21:52'),
+(109, '2025-12-10', '1.1.1', 'Venta #8 - Cliente', 104.39, 0.00, 8, NULL, NULL, 1, '2025-12-10 18:23:09'),
+(110, '2025-12-10', '4.1.1', 'Ingreso por venta #8', 0.00, 0.00, 8, NULL, NULL, 1, '2025-12-10 18:23:09'),
+(111, '2025-12-10', '2.1.2', 'IVA venta #8', 0.00, 0.00, 8, NULL, NULL, 1, '2025-12-10 18:23:09'),
+(112, '2025-12-10', '5.1.1', 'Costo venta #8', 45.00, 0.00, 8, NULL, NULL, 1, '2025-12-10 18:23:09'),
+(113, '2025-12-10', '1.1.3', 'Salida inventario venta #8', 0.00, 45.00, 8, NULL, NULL, 1, '2025-12-10 18:23:09'),
+(114, '2025-12-10', '1.1.1', 'Venta #9 - Cliente', 83.50, 0.00, 9, NULL, NULL, 1, '2025-12-10 18:28:30'),
+(115, '2025-12-10', '4.1.1', 'Ingreso por venta #9', 0.00, 71.98, 9, NULL, NULL, 1, '2025-12-10 18:28:30'),
+(116, '2025-12-10', '2.1.2', 'IVA venta #9', 0.00, 11.52, 9, NULL, NULL, 1, '2025-12-10 18:28:30'),
+(117, '2025-12-10', '5.1.1', 'Costo venta #9', 50.00, 0.00, 9, NULL, NULL, 1, '2025-12-10 18:28:30'),
+(118, '2025-12-10', '1.1.3', 'Salida inventario venta #9', 0.00, 50.00, 9, NULL, NULL, 1, '2025-12-10 18:28:30'),
+(119, '2025-12-09', '1.1.1', 'Venta #9 - Cobro', 83.50, 0.00, 9, NULL, NULL, 1, '2025-12-10 18:28:30'),
+(120, '2025-12-09', '4.1.1', 'Ingreso por venta #9', 0.00, 71.98, 9, NULL, NULL, 1, '2025-12-10 18:28:30'),
+(121, '2025-12-09', '2.1.2', 'IVA venta #9', 0.00, 11.52, 9, NULL, NULL, 1, '2025-12-10 18:28:30'),
+(122, '2025-12-09', '5.1.1', 'Costo venta #9', 50.00, 0.00, 9, NULL, NULL, 1, '2025-12-10 18:28:30'),
+(123, '2025-12-09', '1.1.3', 'Salida inventario venta #9', 0.00, 50.00, 9, NULL, NULL, 1, '2025-12-10 18:28:30'),
+(124, '2025-12-10', '1.1.3', 'Compra #30 - Mercancía', 314.95, 0.00, NULL, 30, NULL, 1, '2025-12-10 21:15:54'),
+(125, '2025-12-10', '2.1.2', 'IVA compra #30', 50.39, 0.00, NULL, 30, NULL, 1, '2025-12-10 21:15:54'),
+(126, '2025-12-10', '2.1.1', 'Compra #30 - Proveedor', 0.00, 365.34, NULL, 30, NULL, 1, '2025-12-10 21:15:54');
 
 -- --------------------------------------------------------
 
@@ -479,7 +530,7 @@ CREATE TABLE `proveedor` (
 
 INSERT INTO `proveedor` (`doc_identidad`, `nombre`, `telefono`, `email`, `direccion`, `created_at`, `updated_at`) VALUES
 ('21003948', 'Distribuidora Moda S.A.', '04248875968', 'contacto@distribuidora.com', 'Av. Principal 456', '2025-11-08 19:08:05', '2025-11-08 19:08:05'),
-('22003948', 'Distribuidora Moda S.A.', '04248875968', 'contacto@distribuidora.com', 'Av. Principal 456', '2025-11-10 02:55:25', '2025-11-10 02:55:25');
+('22003948', 'Distribuidora Moda S.A. 2', '04248875968', 'contacto@distribuidora.com', 'Av. Principal 456', '2025-11-10 02:55:25', '2025-11-10 02:55:25');
 
 -- --------------------------------------------------------
 
@@ -526,7 +577,10 @@ INSERT INTO `usuarios` (`id_usuario`, `usuario`, `password_hash`, `id_rol`, `cre
 (1, 'admin', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 1, '2025-11-08 19:23:36', '2025-11-08 19:23:36'),
 (2, 'vendedor1', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 2, '2025-11-08 19:00:54', '2025-11-08 19:00:54'),
 (3, 'admin', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 1, '2025-11-08 19:22:28', '2025-11-08 19:22:28'),
-(4, 'Manuel', '$2b$10$xIx08mzUe78GoTk/RcW7au/yfomLc1LN/rFEEVmDj/rsYmoKAEiNS', 2, '2025-11-09 01:33:25', '2025-11-09 22:53:47');
+(4, 'Manuel', '$2b$10$hYPyTmXi0KBtZNm0DUGlQemFvUynkxl1m.cndY5syb13w4hMNt/E6', 2, '2025-11-09 01:33:25', '2025-12-10 20:23:27'),
+(6, 'admin', '$2b$10$BkC6.MQ3ea1npBl0RBRG/uAozsi5kcu5RdQ4hMHlMJaYXnvyfIJMy', 1, '2025-12-10 18:55:53', '2025-12-10 18:55:53'),
+(7, 'test_admin', '$2b$10$qQTNxE8CzcKqz2eJaz5L/.hSfq4aYpp7cotQPFS9L2c/zHBIZ7mFC', 1, '2025-12-10 18:57:17', '2025-12-10 18:57:17'),
+(8, 'test_almacen', '$2b$10$BLCPDHCpZFBJc9ar69dygeAN.2rwkJTyh60Jp3cttGOe9wQl/XCqy', 3, '2025-12-10 19:33:10', '2025-12-10 19:33:10');
 
 -- --------------------------------------------------------
 
@@ -552,7 +606,7 @@ CREATE TABLE `variante_producto` (
 
 INSERT INTO `variante_producto` (`id_variante`, `id_producto`, `talla`, `color`, `codigo_barras`, `precio_unitario_venta`, `created_at`, `updated_at`, `costo_unitario`) VALUES
 (1, 1, 'M', 'Blanco', 'C001-BL-M', 35.99, '2025-11-08 17:02:41', '2025-11-08 17:02:41', 25.00),
-(2, 1, '42', 'Negro', 'ZAP-RUN-42', 89.99, '2025-11-08 17:45:21', '2025-11-08 17:45:21', 45.00),
+(2, 1, '42', 'Negro', 'ZAP-RUN-42', 89.99, '2025-11-08 17:45:21', '2025-11-08 17:45:21', 62.99),
 (3, 1, '42', 'Negro', 'ZAP-RUN-42', 89.99, '2025-11-08 18:09:52', '2025-11-08 18:09:52', 45.00);
 
 -- --------------------------------------------------------
@@ -581,7 +635,12 @@ CREATE TABLE `venta` (
 INSERT INTO `venta` (`id_venta`, `cedula_cliente`, `fecha`, `total`, `estado`, `id_usuario`, `created_at`, `updated_at`, `subtotal`, `iva`) VALUES
 (2, '29384758', '2025-11-08', 59.98, 'pagada', 1, '2025-11-08 20:00:32', '2025-11-08 20:00:32', 51.71, 8.27),
 (3, '27586745', '2025-11-08', 47.86, 'pagada', 4, '2025-11-09 02:26:24', '2025-11-09 02:26:24', 41.26, 6.60),
-(4, '27586745', '2025-11-09', 116.00, 'pagada', 1, '2025-11-25 21:36:03', '2025-11-25 21:36:03', 100.00, 16.00);
+(4, '27586745', '2025-11-09', 116.00, 'pagada', 1, '2025-11-25 21:36:03', '2025-11-25 21:36:03', 100.00, 16.00),
+(5, '29384758', '2025-12-09', 208.78, 'pagada', 1, '2025-12-10 03:25:54', '2025-12-10 03:25:54', 0.00, 0.00),
+(6, '20664895', '2025-12-10', 83.50, 'pagada', 1, '2025-12-10 18:17:07', '2025-12-10 18:17:07', 0.00, 0.00),
+(7, '20664895', '2025-12-10', 417.55, 'pagada', 1, '2025-12-10 18:21:52', '2025-12-10 18:21:52', 0.00, 0.00),
+(8, '20664895', '2025-12-10', 104.39, 'pagada', 1, '2025-12-10 18:23:09', '2025-12-10 18:23:09', 0.00, 0.00),
+(9, '23948576', '2025-12-10', 83.50, 'pagada', 1, '2025-12-10 18:28:30', '2025-12-10 18:28:30', 71.98, 11.52);
 
 --
 -- Disparadores `venta`
@@ -762,19 +821,19 @@ ALTER TABLE `categoria`
 -- AUTO_INCREMENT de la tabla `cliente`
 --
 ALTER TABLE `cliente`
-  MODIFY `id_cliente` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `id_cliente` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT de la tabla `compra`
 --
 ALTER TABLE `compra`
-  MODIFY `id_compra` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=29;
+  MODIFY `id_compra` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
 
 --
 -- AUTO_INCREMENT de la tabla `detalle_compra`
 --
 ALTER TABLE `detalle_compra`
-  MODIFY `id_detallecompra` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=27;
+  MODIFY `id_detallecompra` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=29;
 
 --
 -- AUTO_INCREMENT de la tabla `detalle_devolucion`
@@ -786,7 +845,7 @@ ALTER TABLE `detalle_devolucion`
 -- AUTO_INCREMENT de la tabla `detalle_venta`
 --
 ALTER TABLE `detalle_venta`
-  MODIFY `id_detalleventa` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id_detalleventa` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT de la tabla `devolucion`
@@ -798,7 +857,7 @@ ALTER TABLE `devolucion`
 -- AUTO_INCREMENT de la tabla `inventario`
 --
 ALTER TABLE `inventario`
-  MODIFY `id_inventario` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
+  MODIFY `id_inventario` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
 
 --
 -- AUTO_INCREMENT de la tabla `marca`
@@ -816,7 +875,7 @@ ALTER TABLE `metodo_pago`
 -- AUTO_INCREMENT de la tabla `movimientos_contables`
 --
 ALTER TABLE `movimientos_contables`
-  MODIFY `id_movimiento` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=91;
+  MODIFY `id_movimiento` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=127;
 
 --
 -- AUTO_INCREMENT de la tabla `producto`
@@ -834,7 +893,7 @@ ALTER TABLE `rol_usuario`
 -- AUTO_INCREMENT de la tabla `usuarios`
 --
 ALTER TABLE `usuarios`
-  MODIFY `id_usuario` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id_usuario` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT de la tabla `variante_producto`
@@ -846,7 +905,7 @@ ALTER TABLE `variante_producto`
 -- AUTO_INCREMENT de la tabla `venta`
 --
 ALTER TABLE `venta`
-  MODIFY `id_venta` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id_venta` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- Restricciones para tablas volcadas

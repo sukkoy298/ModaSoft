@@ -10,6 +10,9 @@ import {
   obtenerComprasEsteMes
 } from '../services/compra.service.js';
 
+import { authenticateToken } from '../middleware/auth.middleware.js';
+import { authorizeRoles } from '../middleware/authorize.middleware.js';
+
 const router = express.Router();
 
 // GET /api/compras - Obtener todas las compras
@@ -53,7 +56,7 @@ router.get('/:id_compra', async (req, res) => {
 });
 
 // POST /api/compras - Registrar nueva compra
-router.post('/', async (req, res) => {
+router.post('/', authenticateToken, authorizeRoles([1,3]), async (req, res) => {
   try {
     const nuevaCompra = await registrarCompra(req.body);
     res.status(201).json(nuevaCompra);
