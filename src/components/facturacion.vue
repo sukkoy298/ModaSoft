@@ -81,6 +81,20 @@
                             </div>
                         </div>
                         
+                        <!-- NUEVO: si no se encontró cliente, mostrar botones para registrar -->
+                        <div v-else-if="clienteNoEncontrado" class="moda-client-default mt-3 p-3 text-center">
+                            <i class="bi bi-exclamation-triangle moda-client-icon text-warning mb-2"></i>
+                            <p class="mb-2">Cliente no encontrado con la cédula <strong>{{ cedulaBusqueda }}</strong>.</p>
+                            <div class="d-grid gap-2 col-8 mx-auto">
+                                <button class="btn moda-btn-primary" @click="irARegistroCliente">
+                                    <i class="bi bi-person-plus-fill me-2"></i> Registrar Cliente
+                                </button>
+                                <button class="btn moda-btn-outline" @click="limpiarCliente">
+                                    <i class="bi bi-x-lg me-2"></i> Cancelar búsqueda
+                                </button>
+                            </div>
+                        </div>
+
                         <div v-else class="moda-client-default mt-3">
                             <div class="text-center">
                                 <i class="bi bi-person moda-client-icon"></i>
@@ -304,11 +318,15 @@ import { obtenerTodoElInventario } from '@/producto.js'
 import Header from '@/components/Header.vue'; 
 import Footer from '@/components/Footer.vue'; 
 import axios from 'axios'
+import { useRouter } from 'vue-router' // <-- agregado
+
+const router = useRouter() // <-- agregado
 
 // Estado del componente
 const cliente = ref(null)
 const cedulaBusqueda = ref('')
 const buscandoCliente = ref(false)
+const clienteNoEncontrado = ref(false) // <-- agregado
 
 // Productos
 const products = ref([])
@@ -331,7 +349,8 @@ const idUsuario = ref(1)
 const processing = ref(false)
 
 // Computed
-const total = computed(() => cart.value.reduce((s, i) => s + (i.product.price || 0) * i.qty, 0))
+const total = computed(() => cart.value.reduce((s, i) =>
+  s + ((i.product.precio_unitario_venta ?? i.product.price ?? 0) * i.qty), 0))
 
 const productosFiltrados = computed(() => {
   if (!busquedaProducto.value) {
@@ -348,6 +367,7 @@ function limpiarCliente() {
     cliente.value = null
     cedulaBusqueda.value = ''
     localStorage.removeItem('modasoft_user')
+    clienteNoEncontrado.value = false // <-- asegurar limpiar estado
 }
 
 function saveCart() {
@@ -496,6 +516,7 @@ async function buscarCliente() {
   }
 
   buscandoCliente.value = true
+  clienteNoEncontrado.value = false // reset
   try {
     const res = await obtenerClientePorCedula(ced)
     cliente.value = res
@@ -503,27 +524,50 @@ async function buscarCliente() {
   } catch (err) {
     cliente.value = null
     localStorage.removeItem('modasoft_user')
-    alert('Cliente no encontrado o está inactivo')
+    // En vez de alert, activamos la vista de registro
+    clienteNoEncontrado.value = true
   } finally {
     buscandoCliente.value = false
   }
 }
 
+// NUEVO: guarda la cédula y navega a registro
+function irARegistroCliente() {
+  if (!cedulaBusqueda.value) return
+  localStorage.setItem('modasoft_cedula_para_registro', cedulaBusqueda.value)
+  router.push('/registro')
+}
+
 async function cargarMetodosPago() {
   try {
-    cargandoMetodosPago.value = true
-    const response = await axios.get('http://localhost:3000/api/metodos-pago')
-    metodosPago.value = response.data
-    
+    cargandoMetodosPago.value = true;
+    const response = await axios.get('http://localhost:3000/api/metodos-pago');
+    // response.data puede venir con different naming: id_metodopago, id_metodo_pago, id_metodo
+    const raw = Array.isArray(response.data) ? response.data : [];
+    console.log('metodos-pago raw:', raw);
+
+    // Normalizar campos a { id_metodo_pago, nombre }
+    metodosPago.value = raw.map(m => {
+      return {
+        id_metodo_pago: m.id_metodo_pago ?? m.id_metodopago ?? m.id ?? null,
+        nombre: m.nombre ?? m.nombre_metodo ?? m.descripcion ?? 'Método'
+      };
+    }).filter(m => m.id_metodo_pago !== null);
+
+    console.log('metodos-pago normalizados:', metodosPago.value);
+
     if (metodosPago.value.length > 0) {
-      metodoPagoSeleccionado.value = metodosPago.value[0].id_metodo_pago
+      metodoPagoSeleccionado.value = metodosPago.value[0].id_metodo_pago;
+      console.log('metodoPagoSeleccionado set to', metodoPagoSeleccionado.value);
+    } else {
+      metodoPagoSeleccionado.value = '';
     }
   } catch (error) {
-    console.error('Error cargando métodos de pago:', error)
-    metodosPago.value = []
-    metodoPagoSeleccionado.value = 1
+    console.error('Error cargando métodos de pago:', error);
+    metodosPago.value = [];
+    metodoPagoSeleccionado.value = '';
   } finally {
-    cargandoMetodosPago.value = false
+    cargandoMetodosPago.value = false;
   }
 }
 

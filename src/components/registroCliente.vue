@@ -148,7 +148,7 @@
                     <i class="bi bi-eraser-fill me-2"></i> Limpiar
                 </button>
                 <button type="button" @click="volverALista" class="btn moda-btn-outline-secondary">
-                    <i class="bi bi-arrow-left me-2"></i> Volver a la Lista
+                    <i class="bi bi-arrow-left me-2"></i> Volver
                 </button>
             </div>
         </form>
@@ -156,15 +156,15 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue' // <-- Importa onMounted
 import { useRouter } from 'vue-router'
-import { agregarCliente } from '@/cliente.js'; 
+import { agregarCliente } from '@/cliente.js';
 import Header from '@/components/Header.vue';
 
-const router = useRouter(); 
+const router = useRouter();
 
 // Datos del formulario
-const cedula = ref(''); 
+const cedula = ref('');
 const nombre = ref('');
 const telefono = ref('');
 const email = ref('');
@@ -175,6 +175,7 @@ const mensaje = ref('');
 const esError = ref(false);
 
 const tituloFormulario = computed(() => {
+    // Si la cédula ya está precargada, podemos ajustar el título si es necesario
     return 'Registrar Nuevo Cliente';
 });
 
@@ -185,33 +186,34 @@ const textoBoton = computed(() => {
 const handleSubmit = async (event) => {
     formularioEnviado.value = true;
     const formElement = event.target;
-    
+
     if (!formElement.checkValidity()) {
         return;
     }
-    
+
     const datosCliente = {
-        cedula: cedula.value, 
-        nombre: nombre.value, 
+        cedula: cedula.value,
+        nombre: nombre.value,
         telefono: telefono.value,
         email: email.value,
         direccion: direccion.value,
         tipo: tipo.value,
     };
-    
+
     try {
         const resultado = await agregarCliente(datosCliente);
-        
+
         if (resultado.accion === 'reactivado') {
             mensaje.value = `✅ Cliente reactivado y actualizado exitosamente.`;
         } else {
             mensaje.value = `✅ Cliente ${nombre.value} registrado con éxito.`;
         }
-        
+
         esError.value = false;
-        
+
         setTimeout(() => {
-            router.push('/listaCliente');
+            // Después de registrar, puedes enviarlo de vuelta a la facturación
+            router.push('/facturacion');
         }, 1500);
 
     } catch (error) {
@@ -234,8 +236,17 @@ const limpiarFormulario = () => {
 };
 
 const volverALista = () => {
-    router.push('/listaCliente');
+    router.push('/facturacion'); // <-- Volver a facturación o a consultaCliente si prefieres
 };
+
+onMounted(() => {
+    // NUEVO: Cargar cédula desde localStorage si viene de facturación
+    const cedulaGuardada = localStorage.getItem('modasoft_cedula_para_registro');
+    if (cedulaGuardada) {
+        cedula.value = cedulaGuardada;
+        localStorage.removeItem('modasoft_cedula_para_registro'); // Limpiar para futuras visitas
+    }
+});
 </script>
 
 <style scoped>
