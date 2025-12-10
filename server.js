@@ -17,6 +17,7 @@ import rolUsuarioRoutes from './src/server/routes/rolUsuario.route.js';
 import metodoPagoRoutes from './src/server/routes/metodoPago.route.js';
 import reporteRoutes from './src/server/routes/reportes.route.js';
 import movimientosRoutes from './src/server/routes/movimientos.route.js';
+import catalogoCuentasRoutes from './src/server/routes/catalogoCuentas.route.js';
 
 import dotenv from 'dotenv';
 
@@ -55,6 +56,7 @@ app.use('/api/inventario', inventarioRoutes);
 app.use('/api/metodos-pago', metodoPagoRoutes);
 app.use('/api/reportes', reporteRoutes);
 app.use('/api/movimientos', movimientosRoutes);
+app.use('/api/catalogo-cuentas', catalogoCuentasRoutes);
 
 // Ruta para verificar estado del servidor
 app.get('/api/status', (req, res) => {

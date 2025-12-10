@@ -5,7 +5,7 @@ USE modasoft2;
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 09-12-2025 a las 03:26:13
+-- Tiempo de generación: 10-12-2025 a las 02:18:03
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -118,6 +118,7 @@ CREATE TABLE `compra` (
   `nro_factura` varchar(50) NOT NULL,
   `total` decimal(10,2) NOT NULL,
   `id_usuario` int(11) NOT NULL,
+  `id_metodo_pago` int(11) DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `subtotal` decimal(10,2) DEFAULT 0.00,
@@ -128,13 +129,18 @@ CREATE TABLE `compra` (
 -- Volcado de datos para la tabla `compra`
 --
 
-INSERT INTO `compra` (`id_compra`, `cedula_proveedor`, `fecha`, `nro_factura`, `total`, `id_usuario`, `created_at`, `updated_at`, `subtotal`, `iva`) VALUES
-(2, '21003948', '2025-11-08', '0.00', 500.00, 1, '2025-11-08 21:01:51', '2025-11-08 21:01:51', 431.03, 68.97),
-(3, '21003948', '2025-11-09', '0.00', 232.00, 1, '2025-11-25 21:36:03', '2025-11-25 21:36:03', 200.00, 32.00),
-(20, '22003948', '2025-12-08', '1.00', 4.64, 1, '2025-12-08 22:01:31', '2025-12-08 22:01:31', 4.00, 0.64),
-(21, '22003948', '2025-12-08', '002', 4.64, 1, '2025-12-08 22:04:52', '2025-12-08 22:04:52', 4.00, 0.64),
-(22, '22003948', '2025-12-09', '3', 116.93, 1, '2025-12-09 02:05:07', '2025-12-09 02:05:07', 100.80, 16.13),
-(23, '22003948', '2025-12-09', '5', 87.66, 1, '2025-12-09 02:24:29', '2025-12-09 02:24:29', 75.57, 12.09);
+INSERT INTO `compra` (`id_compra`, `cedula_proveedor`, `fecha`, `nro_factura`, `total`, `id_usuario`, `id_metodo_pago`, `created_at`, `updated_at`, `subtotal`, `iva`) VALUES
+(2, '21003948', '2025-11-08', '0.00', 500.00, 1, NULL, '2025-11-08 21:01:51', '2025-11-08 21:01:51', 431.03, 68.97),
+(3, '21003948', '2025-11-09', '0.00', 232.00, 1, NULL, '2025-11-25 21:36:03', '2025-11-25 21:36:03', 200.00, 32.00),
+(20, '22003948', '2025-12-08', '1.00', 4.64, 1, NULL, '2025-12-08 22:01:31', '2025-12-08 22:01:31', 4.00, 0.64),
+(21, '22003948', '2025-12-08', '002', 4.64, 1, NULL, '2025-12-08 22:04:52', '2025-12-08 22:04:52', 4.00, 0.64),
+(22, '22003948', '2025-12-09', '3', 116.93, 1, NULL, '2025-12-09 02:05:07', '2025-12-09 02:05:07', 100.80, 16.13),
+(23, '22003948', '2025-12-09', '5', 87.66, 1, NULL, '2025-12-09 02:24:29', '2025-12-09 02:24:29', 75.57, 12.09),
+(24, '22003948', '2025-12-09', '6', 73.07, 1, NULL, '2025-12-09 02:34:35', '2025-12-09 02:34:35', 62.99, 10.08),
+(25, '22003948', '2025-12-09', '7', 146.14, 1, NULL, '2025-12-09 02:35:11', '2025-12-09 02:35:11', 125.98, 20.16),
+(26, '22003948', '2025-12-09', '8', 219.21, 1, NULL, '2025-12-09 03:06:32', '2025-12-09 03:06:32', 188.97, 30.24),
+(27, '22003948', '2025-12-10', '9', 365.34, 1, NULL, '2025-12-10 01:12:49', '2025-12-10 01:12:49', 314.95, 50.39),
+(28, '22003948', '2025-12-10', '10', 87.66, 1, NULL, '2025-12-10 01:16:54', '2025-12-10 01:16:54', 75.57, 12.09);
 
 --
 -- Disparadores `compra`
@@ -181,7 +187,12 @@ INSERT INTO `detalle_compra` (`id_detallecompra`, `id_compra`, `id_variante`, `c
 (18, 20, 1, 1, 4.00, '2025-12-08 22:01:31', '2025-12-08 22:01:31'),
 (19, 21, 1, 1, 4.00, '2025-12-08 22:04:52', '2025-12-08 22:04:52'),
 (20, 22, 1, 4, 25.20, '2025-12-09 02:05:07', '2025-12-09 02:05:07'),
-(21, 23, 2, 3, 25.19, '2025-12-09 02:24:29', '2025-12-09 02:24:29');
+(21, 23, 2, 3, 25.19, '2025-12-09 02:24:29', '2025-12-09 02:24:29'),
+(22, 24, 2, 1, 62.99, '2025-12-09 02:34:35', '2025-12-09 02:34:35'),
+(23, 25, 2, 2, 62.99, '2025-12-09 02:35:11', '2025-12-09 02:35:11'),
+(24, 26, 2, 3, 62.99, '2025-12-09 03:06:32', '2025-12-09 03:06:32'),
+(25, 27, 2, 5, 62.99, '2025-12-10 01:12:49', '2025-12-10 01:12:49'),
+(26, 28, 1, 3, 25.19, '2025-12-10 01:16:54', '2025-12-10 01:16:54');
 
 -- --------------------------------------------------------
 
@@ -305,8 +316,8 @@ CREATE TABLE `inventario` (
 --
 
 INSERT INTO `inventario` (`id_inventario`, `id_variante`, `tipo`, `cantidad`, `stock_actual`, `stock_minimo`, `fecha_ultima_entrada`, `referencia`, `id_usuario`, `created_at`, `updated_at`) VALUES
-(16, 2, 'entrada', 27, 30, 10, '2025-12-08 22:24:29', 'ajuste_manual', 1, '2025-11-08 19:23:49', '2025-11-08 19:23:49'),
-(17, 1, 'entrada', 10, 15, 10, '2025-12-08 22:05:07', 'compra_2', 1, '2025-11-08 21:01:51', '2025-11-08 21:01:51');
+(16, 2, 'entrada', 27, 41, 10, '2025-12-09 21:12:49', 'ajuste_manual', 1, '2025-11-08 19:23:49', '2025-11-08 19:23:49'),
+(17, 1, 'entrada', 10, 18, 10, '2025-12-09 21:16:54', 'compra_2', 1, '2025-11-08 21:01:51', '2025-11-08 21:01:51');
 
 -- --------------------------------------------------------
 
@@ -404,7 +415,22 @@ INSERT INTO `movimientos_contables` (`id_movimiento`, `fecha_movimiento`, `codig
 (72, '2025-12-09', '2.1.1', 'Compra #22 - Proveedor', 0.00, 116.93, NULL, 22, NULL, 1, '2025-12-09 02:05:07'),
 (73, '2025-12-09', '1.1.3', 'Compra #23 - Mercancía', 75.57, 0.00, NULL, 23, NULL, 1, '2025-12-09 02:24:29'),
 (74, '2025-12-09', '2.1.2', 'IVA compra #23', 12.09, 0.00, NULL, 23, NULL, 1, '2025-12-09 02:24:29'),
-(75, '2025-12-09', '2.1.1', 'Compra #23 - Proveedor', 0.00, 87.66, NULL, 23, NULL, 1, '2025-12-09 02:24:29');
+(75, '2025-12-09', '2.1.1', 'Compra #23 - Proveedor', 0.00, 87.66, NULL, 23, NULL, 1, '2025-12-09 02:24:29'),
+(76, '2025-12-09', '1.1.3', 'Compra #24 - Mercancía', 62.99, 0.00, NULL, 24, NULL, 1, '2025-12-09 02:34:35'),
+(77, '2025-12-09', '2.1.2', 'IVA compra #24', 10.08, 0.00, NULL, 24, NULL, 1, '2025-12-09 02:34:35'),
+(78, '2025-12-09', '2.1.1', 'Compra #24 - Proveedor', 0.00, 73.07, NULL, 24, NULL, 1, '2025-12-09 02:34:35'),
+(79, '2025-12-09', '1.1.3', 'Compra #25 - Mercancía', 125.98, 0.00, NULL, 25, NULL, 1, '2025-12-09 02:35:11'),
+(80, '2025-12-09', '2.1.2', 'IVA compra #25', 20.16, 0.00, NULL, 25, NULL, 1, '2025-12-09 02:35:11'),
+(81, '2025-12-09', '2.1.1', 'Compra #25 - Proveedor', 0.00, 146.14, NULL, 25, NULL, 1, '2025-12-09 02:35:11'),
+(82, '2025-12-09', '1.1.3', 'Compra #26 - Mercancía', 188.97, 0.00, NULL, 26, NULL, 1, '2025-12-09 03:06:32'),
+(83, '2025-12-09', '2.1.2', 'IVA compra #26', 30.24, 0.00, NULL, 26, NULL, 1, '2025-12-09 03:06:32'),
+(84, '2025-12-09', '2.1.1', 'Compra #26 - Proveedor', 0.00, 219.21, NULL, 26, NULL, 1, '2025-12-09 03:06:32'),
+(85, '2025-12-10', '1.1.3', 'Compra #27 - Mercancía', 314.95, 0.00, NULL, 27, NULL, 1, '2025-12-10 01:12:49'),
+(86, '2025-12-10', '2.1.2', 'IVA compra #27', 50.39, 0.00, NULL, 27, NULL, 1, '2025-12-10 01:12:49'),
+(87, '2025-12-10', '2.1.1', 'Compra #27 - Proveedor', 0.00, 365.34, NULL, 27, NULL, 1, '2025-12-10 01:12:49'),
+(88, '2025-12-10', '1.1.3', 'Compra #28 - Mercancía', 75.57, 0.00, NULL, 28, NULL, 1, '2025-12-10 01:16:54'),
+(89, '2025-12-10', '2.1.2', 'IVA compra #28', 12.09, 0.00, NULL, 28, NULL, 1, '2025-12-10 01:16:54'),
+(90, '2025-12-10', '2.1.1', 'Compra #28 - Proveedor', 0.00, 87.66, NULL, 28, NULL, 1, '2025-12-10 01:16:54');
 
 -- --------------------------------------------------------
 
@@ -607,7 +633,8 @@ ALTER TABLE `cliente`
 ALTER TABLE `compra`
   ADD PRIMARY KEY (`id_compra`),
   ADD KEY `cedula_proveedor` (`cedula_proveedor`),
-  ADD KEY `id_usuario` (`id_usuario`);
+  ADD KEY `id_usuario` (`id_usuario`),
+  ADD KEY `fk_compra_metodo_pago` (`id_metodo_pago`);
 
 --
 -- Indices de la tabla `detalle_compra`
@@ -741,13 +768,13 @@ ALTER TABLE `cliente`
 -- AUTO_INCREMENT de la tabla `compra`
 --
 ALTER TABLE `compra`
-  MODIFY `id_compra` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
+  MODIFY `id_compra` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=29;
 
 --
 -- AUTO_INCREMENT de la tabla `detalle_compra`
 --
 ALTER TABLE `detalle_compra`
-  MODIFY `id_detallecompra` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
+  MODIFY `id_detallecompra` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=27;
 
 --
 -- AUTO_INCREMENT de la tabla `detalle_devolucion`
@@ -789,7 +816,7 @@ ALTER TABLE `metodo_pago`
 -- AUTO_INCREMENT de la tabla `movimientos_contables`
 --
 ALTER TABLE `movimientos_contables`
-  MODIFY `id_movimiento` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=76;
+  MODIFY `id_movimiento` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=91;
 
 --
 -- AUTO_INCREMENT de la tabla `producto`
@@ -830,7 +857,8 @@ ALTER TABLE `venta`
 --
 ALTER TABLE `compra`
   ADD CONSTRAINT `compra_ibfk_1` FOREIGN KEY (`cedula_proveedor`) REFERENCES `proveedor` (`doc_identidad`),
-  ADD CONSTRAINT `compra_ibfk_2` FOREIGN KEY (`id_usuario`) REFERENCES `usuarios` (`id_usuario`);
+  ADD CONSTRAINT `compra_ibfk_2` FOREIGN KEY (`id_usuario`) REFERENCES `usuarios` (`id_usuario`),
+  ADD CONSTRAINT `fk_compra_metodo_pago` FOREIGN KEY (`id_metodo_pago`) REFERENCES `metodo_pago` (`id_metodopago`);
 
 --
 -- Filtros para la tabla `detalle_compra`
@@ -904,7 +932,6 @@ ALTER TABLE `venta`
   ADD CONSTRAINT `venta_ibfk_1` FOREIGN KEY (`cedula_cliente`) REFERENCES `cliente` (`cedula`),
   ADD CONSTRAINT `venta_ibfk_2` FOREIGN KEY (`id_usuario`) REFERENCES `usuarios` (`id_usuario`);
 COMMIT;
-
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;

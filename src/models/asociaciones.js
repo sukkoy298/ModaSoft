@@ -14,6 +14,8 @@ import ProveedorModel from './ProveedorModel.js';
 import DetalleCompraModel from './DetalleCompraModel.js';
 import DetalleDevolucionModel from './DetalleDevolucionModel.js';
 import MovimientoContableModel from './MovimientoContableModel.js';
+import CatalogoCuentaModel from './CatalogoCuentaModel.js'; // Importar el nuevo modelo
+import MetodoPagoModel from './MetodoPagoModel.js'; // Importar si también lo necesitas
 
 // 1. Producto (id_marca) <--> Marca
 ProductoModel.belongsTo(MarcaModel, {
@@ -60,7 +62,7 @@ ClienteModel.hasMany(VentaModel, {
 // 5. Venta (Cabecera) <--> DetalleVenta (Items)
 VentaModel.hasMany(DetalleVentaModel, {
     foreignKey: 'id_venta',
-    as: 'DetallesVenta' // Cambiado de 'Detalles' para evitar conflicto
+    as: 'DetallesVenta'
 });
 DetalleVentaModel.belongsTo(VentaModel, {
     foreignKey: 'id_venta',
@@ -122,7 +124,7 @@ ProveedorModel.hasMany(CompraModel, {
 // 11. Compra <--> DetalleCompra
 CompraModel.hasMany(DetalleCompraModel, {
     foreignKey: 'id_compra',
-    as: 'DetallesCompra' // Cambiado de 'Detalles' para evitar conflicto
+    as: 'DetallesCompra'
 });
 DetalleCompraModel.belongsTo(CompraModel, {
     foreignKey: 'id_compra',
@@ -132,7 +134,7 @@ DetalleCompraModel.belongsTo(CompraModel, {
 // 12. DetalleCompra <--> VarianteProducto
 DetalleCompraModel.belongsTo(VarianteProductoModel, {
     foreignKey: 'id_variante',
-    as: 'VarianteProducto' // Cambiado de 'Variante' para consistencia
+    as: 'VarianteProducto'
 });
 VarianteProductoModel.hasMany(DetalleCompraModel, {
     foreignKey: 'id_variante',
@@ -152,7 +154,7 @@ VentaModel.hasMany(DevolucionModel, {
 // 14. Devolucion <--> DetalleDevolucion
 DevolucionModel.hasMany(DetalleDevolucionModel, {
     foreignKey: 'id_devolucion',
-    as: 'DetallesDevolucion' // Cambiado de 'Detalles' para evitar conflicto
+    as: 'DetallesDevolucion'
 });
 DetalleDevolucionModel.belongsTo(DevolucionModel, {
     foreignKey: 'id_devolucion',
@@ -169,7 +171,19 @@ VarianteProductoModel.hasMany(DetalleDevolucionModel, {
     as: 'DetallesDevolucion'
 });
 
-// 16. Movimientos Contables
+// 16. Movimientos Contables con CatalogoCuenta
+MovimientoContableModel.belongsTo(CatalogoCuentaModel, {
+    foreignKey: 'codigo_cuenta',
+    targetKey: 'codigo',
+    as: 'Cuenta'
+});
+CatalogoCuentaModel.hasMany(MovimientoContableModel, {
+    foreignKey: 'codigo_cuenta',
+    sourceKey: 'codigo',
+    as: 'Movimientos'
+});
+
+// 17. Movimientos Contables con otras tablas
 MovimientoContableModel.belongsTo(VentaModel, {
     foreignKey: 'id_venta',
     as: 'Venta'
@@ -196,6 +210,27 @@ CompraModel.hasMany(MovimientoContableModel, {
     as: 'MovimientosContables'
 });
 
+CompraModel.belongsTo(MetodoPagoModel, {
+    foreignKey: 'id_metodo_pago',
+    as: 'MetodoPago'
+});
+MetodoPagoModel.hasMany(CompraModel, {
+    foreignKey: 'id_metodo_pago',
+    as: 'Compras'
+});
+
+// 19. Venta <--> MetodoPago (a través de DetalleVenta)
+if (MetodoPagoModel) {
+    DetalleVentaModel.belongsTo(MetodoPagoModel, {
+        foreignKey: 'id_metodo',
+        as: 'MetodoPago'
+    });
+    MetodoPagoModel.hasMany(DetalleVentaModel, {
+        foreignKey: 'id_metodo',
+        as: 'DetallesVenta'
+    });
+}
+
 // Función de inicialización
 export const setupAssociations = async () => {
     try {
@@ -205,12 +240,14 @@ export const setupAssociations = async () => {
             VentaModel, DetalleVentaModel, ClienteModel, UsuariosModel,
             RolUsuarioModel, InventarioModel, CompraModel, DevolucionModel,
             ProveedorModel, DetalleCompraModel, DetalleDevolucionModel,
-            MovimientoContableModel
+            MovimientoContableModel, CatalogoCuentaModel
         ];
         
         for (const modelo of modelos) {
             if (!modelo || typeof modelo !== 'function') {
                 console.error(`❌ Modelo no definido: ${modelo?.name || 'Desconocido'}`);
+            } else {
+                console.log(`✅ Modelo cargado: ${modelo.name}`);
             }
         }
         

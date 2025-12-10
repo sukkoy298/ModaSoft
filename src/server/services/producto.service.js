@@ -304,14 +304,14 @@ export const obtenerProductosMasVendidos = async (limite = 10, fechaInicio, fech
         }
         
         // Obtener detalles de venta con sus relaciones
-        const detallesVenta = await DetalleVentaModel.findAll({
-            include: [
-                {
-                    model: VentaModel,
-                    as: 'VentaPrincipal',
-                    where: whereVenta,
-                    attributes: ['fecha']
-                },
+            const detallesVenta = await DetalleVentaModel.findAll({
+                include: [
+                    {
+                        model: VentaModel,
+                        as: 'Venta',
+                        where: whereVenta,
+                        attributes: ['fecha']
+                    },
                 {
                     model: VarianteProductoModel,
                     as: 'VarianteProducto',

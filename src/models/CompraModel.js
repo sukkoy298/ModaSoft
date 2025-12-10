@@ -44,6 +44,11 @@ const CompraModel = sequelize.define('compra', {
         allowNull: false,
         defaultValue: 1
     },
+    id_metodo_pago: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        defaultValue: null
+    },
     created_at: {
         type: DataTypes.DATE,
         allowNull: true,

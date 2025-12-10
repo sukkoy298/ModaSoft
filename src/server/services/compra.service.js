@@ -53,7 +53,7 @@ export const obtenerCompraPorId = async (id_compra) => {
                 },
                 {
                     model: DetalleCompraModel,
-                    as: 'Detalles',
+                    as: 'DetallesCompra',
                     include: [{
                         model: VarianteProductoModel,
                         as: 'VarianteProducto',
@@ -80,10 +80,9 @@ export const obtenerCompraPorId = async (id_compra) => {
 
 export const registrarCompra = async (data) => {
     const t = await sequelize.transaction();
-    
+    let nuevaCompra = null;
     try {
         // Validaciones básicas
-        // Aceptar nro_factura como string o número; considerar vacío como inválido
         if (!data.cedula_proveedor || data.nro_factura === undefined || data.nro_factura === null || String(data.nro_factura).trim() === '' || !data.detalles || !Array.isArray(data.detalles) || data.detalles.length === 0) {
             throw new Error("Datos de compra incompletos. Se requiere proveedor, número de factura y al menos un producto.");
         }
@@ -112,14 +111,15 @@ export const registrarCompra = async (data) => {
         const total = subtotal + iva;
 
         // Crear compra
-        const nuevaCompra = await CompraModel.create({
+        nuevaCompra = await CompraModel.create({
             cedula_proveedor: data.cedula_proveedor,
             fecha: data.fecha || new Date(),
             nro_factura: data.nro_factura,
             subtotal: subtotal.toFixed(2),
             iva: iva.toFixed(2),
             total: total.toFixed(2),
-            id_usuario: data.id_usuario || 1
+            id_usuario: data.id_usuario || 1,
+            id_metodo_pago: data.id_metodo_pago || null
         }, { transaction: t });
 
         // Crear detalles y actualizar inventario
@@ -138,10 +138,10 @@ export const registrarCompra = async (data) => {
                 precio_unitario_costo: detalle.precio_unitario_costo
             }, { transaction: t });
 
-            // Actualizar inventario usando tu función existente
-            // Primero necesitamos obtener el código de barras de la variante
+            // Obtener variante completa (para código de barras)
             const varianteCompleta = await VarianteProductoModel.findByPk(detalle.id_variante);
-            
+
+            // Actualizar inventario usando la transacción
             await actualizarStock(
                 varianteCompleta.codigo_barras,
                 detalle.cantidad,
@@ -163,9 +163,22 @@ export const registrarCompra = async (data) => {
         // Registrar movimiento contable
         await registrarMovimientoContable(nuevaCompra, t);
 
+        // Commit de la transacción
         await t.commit();
 
-        // Obtener compra completa para retornar
+    } catch (error) {
+        // Si la transacción todavía no fue confirmada, hacer rollback
+        try {
+            await t.rollback();
+        } catch (rbError) {
+            console.error('Error al intentar hacer rollback:', rbError);
+        }
+        console.error("Error al registrar compra (transaccional):", error);
+        throw error;
+    }
+
+    // Fuera de la transacción, obtener la compra completa para retornar
+    try {
         const compraCompleta = await CompraModel.findByPk(nuevaCompra.id_compra, {
             include: [
                 {
@@ -174,7 +187,7 @@ export const registrarCompra = async (data) => {
                 },
                 {
                     model: DetalleCompraModel,
-                    as: 'Detalles'
+                    as: 'DetallesCompra'
                 }
             ]
         });
@@ -184,11 +197,14 @@ export const registrarCompra = async (data) => {
             compra: compraCompleta,
             accion: 'creada'
         };
-
     } catch (error) {
-        await t.rollback();
-        console.error("Error al registrar compra:", error);
-        throw error;
+        // No intentamos rollback aquí porque ya se hizo commit; registramos y devolvemos información básica
+        console.error('Compra registrada pero fallo al obtener detalles finales:', error);
+        return {
+            message: 'Compra registrada parcialmente: no se pudo obtener detalles finales. Ver logs en el servidor.',
+            compra: { id_compra: nuevaCompra ? nuevaCompra.id_compra : null },
+            accion: 'creada'
+        };
     }
 };
 

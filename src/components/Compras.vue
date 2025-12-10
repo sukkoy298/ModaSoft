@@ -90,7 +90,7 @@
 
             <!-- Información de factura -->
             <div class="row mb-4">
-              <div class="col-md-6">
+              <div class="col-md-4">
                 <div class="moda-form-group">
                   <label class="moda-label">
                     <i class="bi bi-receipt me-1"></i> Número de Factura *
@@ -107,7 +107,7 @@
                   </div>
                 </div>
               </div>
-              <div class="col-md-6">
+              <div class="col-md-4">
                 <div class="moda-form-group">
                   <label class="moda-label">
                     <i class="bi bi-calendar me-1"></i> Fecha de Compra
@@ -120,6 +120,22 @@
                   >
                   <div class="moda-feedback">
                     Por defecto: hoy
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="moda-form-group">
+                  <label class="moda-label">
+                    <i class="bi bi-credit-card-2-front me-1"></i> Método de Pago
+                  </label>
+                  <select v-model="nuevaCompra.id_metodo_pago" class="moda-select">
+                    <option :value="null">Seleccione método (opcional)</option>
+                    <option v-for="m in metodosPago" :key="m.id_metodopago" :value="m.id_metodopago">
+                      {{ m.nombre }}
+                    </option>
+                  </select>
+                  <div class="moda-feedback">
+                    Método de pago (opcional)
                   </div>
                 </div>
               </div>
@@ -391,45 +407,72 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="compra in comprasFiltradasPagadas" :key="compra.id_compra">
-                <td class="text-center">#{{ compra.id_compra }}</td>
-                <td>
-                  <div class="d-flex align-items-center">
-                    <i class="bi bi-person-circle me-2 moda-icon"></i>
-                    <div>
-                      <div class="fw-semibold">{{ compra.Proveedor?.nombre || 'N/A' }}</div>
-                      <div class="small text-muted">{{ compra.cedula_proveedor }}</div>
+              <template v-for="compra in comprasFiltradasPagadas" :key="compra.id_compra">
+                <tr>
+                  <td class="text-center">#{{ compra.id_compra }}</td>
+                  <td>
+                    <div class="d-flex align-items-center">
+                      <i class="bi bi-person-circle me-2 moda-icon"></i>
+                      <div>
+                        <div class="fw-semibold">{{ compra.Proveedor?.nombre || 'N/A' }}</div>
+                        <div class="small text-muted">{{ compra.cedula_proveedor }}</div>
+                      </div>
                     </div>
-                  </div>
-                </td>
-                <td class="text-center">
-                  {{ formatearFecha(compra.fecha) }}
-                </td>
-                <td class="text-center">
-                  <span class="badge badge-moda">{{ compra.nro_factura }}</span>
-                </td>
-                <td class="text-end">${{ Number(compra.subtotal).toFixed(2) }}</td>
-                <td class="text-end">${{ Number(compra.iva).toFixed(2) }}</td>
-                <td class="text-end">
-                  <span class="fw-bold text-success">${{ Number(compra.total).toFixed(2) }}</span>
-                </td>
-                <td class="text-center">
-                  <button 
-                    class="btn btn-sm btn-moda-action btn-info me-1"
-                    @click="verDetalleCompra(compra.id_compra)"
-                    title="Ver detalles"
-                  >
-                    <i class="bi bi-eye"></i>
-                  </button>
-                  <button 
-                    class="btn btn-sm btn-moda-action btn-delete"
-                    @click="manejarEliminacion(compra.id_compra, compra.Proveedor?.nombre)"
-                    title="Eliminar compra"
-                  >
-                    <i class="bi bi-trash"></i>
-                  </button>
-                </td>
-              </tr>
+                  </td>
+                  <td class="text-center">
+                    {{ formatearFecha(compra.fecha) }}
+                  </td>
+                  <td class="text-center">
+                    <span class="badge badge-moda">{{ compra.nro_factura }}</span>
+                  </td>
+                  <td class="text-end">${{ Number(compra.subtotal).toFixed(2) }}</td>
+                  <td class="text-end">${{ Number(compra.iva).toFixed(2) }}</td>
+                  <td class="text-end">
+                    <span class="fw-bold text-success">${{ Number(compra.total).toFixed(2) }}</span>
+                  </td>
+                  <td class="text-center">
+                    <button 
+                      class="btn btn-sm btn-moda-action btn-info me-1"
+                      @click="verDetalleCompra(compra.id_compra)"
+                      title="Ver detalles"
+                    >
+                      <i class="bi bi-eye"></i>
+                    </button>
+                    <button 
+                      class="btn btn-sm btn-moda-action btn-delete"
+                      @click="manejarEliminacion(compra.id_compra, compra.Proveedor?.nombre)"
+                      title="Eliminar compra"
+                    >
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </td>
+                </tr>
+                <tr v-if="openDetalleId === compra.id_compra">
+                  <td colspan="8">
+                    <div v-if="compraSeleccionada" class="p-3 border rounded bg-white">
+                      <div class="table-responsive">
+                        <table class="table table-sm">
+                          <thead>
+                            <tr>
+                              <th>Producto / Variante</th>
+                              <th class="text-center">Cantidad</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr v-for="detalle in compraSeleccionada.DetallesCompra" :key="detalle.id_detallecompra">
+                              <td>
+                                <div class="fw-semibold">{{ detalle.VarianteProducto?.ProductoPrincipal?.nombre || ('Variante #' + detalle.id_variante) }}</div>
+                                <div class="small text-muted">ID Variante: {{ detalle.id_variante }} — Talla: {{ detalle.VarianteProducto?.talla || 'N/A' }} — Color: {{ detalle.VarianteProducto?.color || 'N/A' }}</div>
+                              </td>
+                              <td class="text-center">{{ detalle.cantidad }}</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              </template>
             </tbody>
           </table>
         </div>
@@ -472,6 +515,8 @@
       </div>
     </div>
   </div>
+  
+  <!-- Panel inline para Detalle de Compra (se muestra bajo la fila seleccionada) -->
 </template>
 
 <script setup>
@@ -479,12 +524,15 @@ import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import Header from '@/components/Header.vue'
 import { 
-    obtenerTodasLasCompras,
-    registrarCompra,
-    eliminarCompra,
-    buscarProductosParaCompra,
-    buscarProductoPorCodigo 
+  obtenerTodasLasCompras,
+  obtenerCompraPorId,
+  registrarCompra,
+  eliminarCompra,
+  buscarProductosParaCompra,
+  buscarProductoPorCodigo 
 } from '@/compras.js'
+
+import { obtenerMetodosPago } from '@/metodosPago.js'
 
 import { 
     obtenerTodosLosProveedores 
@@ -509,8 +557,12 @@ const nuevaCompra = ref({
   subtotal: 0,
   iva: 0,
   total: 0,
-  id_usuario: 1
+  id_usuario: 1,
+  id_metodo_pago: null
 })
+
+
+const metodosPago = ref([])
 
 const detalles = ref([])
 
@@ -582,6 +634,15 @@ const cargarProveedores = async () => {
     console.error('Error al cargar proveedores:', error)
     mensaje.value = '❌ Error al cargar proveedores'
     esError.value = true
+  }
+}
+
+const cargarMetodosPago = async () => {
+  try {
+    const data = await obtenerMetodosPago()
+    metodosPago.value = data
+  } catch (error) {
+    console.error('Error al cargar métodos de pago:', error)
   }
 }
 
@@ -749,6 +810,7 @@ const registrarCompraEnComponente = async () => {
       nro_factura: nuevaCompra.value.nro_factura,
       fecha: nuevaCompra.value.fecha,
       id_usuario: nuevaCompra.value.id_usuario,
+      id_metodo_pago: nuevaCompra.value.id_metodo_pago || null,
       subtotal: nuevaCompra.value.subtotal || 0,
       iva: nuevaCompra.value.iva || 0,
       total: nuevaCompra.value.total || 0,
@@ -758,8 +820,6 @@ const registrarCompraEnComponente = async () => {
         precio_unitario_costo: parseFloat(d.precio_unitario_costo) || 0
       }))
     };
-
-  console.log('📤 Datos a enviar:', JSON.stringify(payload, null, 2));
 
     // INTENTAR REGISTRAR
     const resultado = await registrarCompra(payload);
@@ -806,7 +866,8 @@ const limpiarFormulario = () => {
     subtotal: 0,
     iva: 0,
     total: 0,
-    id_usuario: 1
+    id_usuario: 1,
+    id_metodo_pago: null
   }
   proveedorSeleccionado.value = null
 }
@@ -855,11 +916,25 @@ const filtrarCompras = () => {
   paginaActual.value = 1
 }
 
-const verDetalleCompra = (id_compra) => {
-  // Aquí podrías implementar un modal o vista de detalle
-  alert(`Ver detalle de compra #${id_compra}`)
-  // O podrías redirigir a una vista de detalle:
-  // router.push(`/compras/detalle/${id_compra}`)
+const openDetalleId = ref(null)
+const compraSeleccionada = ref(null)
+
+const verDetalleCompra = async (id_compra) => {
+  if (openDetalleId.value === id_compra) {
+    // Si ya está abierto, cerrarlo
+    openDetalleId.value = null
+    compraSeleccionada.value = null
+    return
+  }
+
+  try {
+    const compra = await obtenerCompraPorId(id_compra)
+    compraSeleccionada.value = compra
+    openDetalleId.value = id_compra
+  } catch (error) {
+    console.error('Error al cargar detalle de compra:', error)
+    alert('Error al cargar detalle de la compra. Revisa la consola del servidor.')
+  }
 }
 
 const manejarEliminacion = async (id_compra, nombreProveedor) => { 
@@ -881,6 +956,7 @@ const manejarEliminacion = async (id_compra, nombreProveedor) => {
 onMounted(async () => {
   cargando.value = true
   await cargarProveedores()
+  await cargarMetodosPago()
   await cargarCompras()
   cargando.value = false
 })

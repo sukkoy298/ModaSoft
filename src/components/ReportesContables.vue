@@ -1,5 +1,6 @@
 <template>
-  <div class="container mt-4">
+  <Header />
+  <div class="container mt-4 mb-5">
     <div class="moda-container">
       <!-- Encabezado -->
       <div class="d-flex justify-content-between align-items-center mb-4">
@@ -13,7 +14,12 @@
           </button>
         </div>
       </div>
-
+      <div v-if="cargando" class="text-center py-5">
+        <div class="spinner-border text-moda-primary" role="status">
+          <span class="visually-hidden">Cargando...</span>
+        </div>
+        <p class="mt-2 text-muted">Cargando movimientos...</p>
+      </div>
       <!-- Tarjetas de resumen -->
       <div class="row mb-4">
         <div class="col-md-3">
@@ -50,10 +56,7 @@
               </div>
               <div class="ms-3">
                 <div class="text-muted small">Diferencia</div>
-                <div 
-                  class="h4 fw-bold"
-                  :class="diferencia >= 0 ? 'text-success' : 'text-danger'"
-                >
+                <div class="h4 fw-bold" :class="diferencia >= 0 ? 'text-success' : 'text-danger'">
                   {{ formatoMoneda(diferencia) }}
                 </div>
               </div>
@@ -130,8 +133,8 @@
                   </div>
                 </td>
                 <td>
-                  <span class="badge badge-moda">
-                    {{ m.codigo_cuenta }}
+                  <span class="badge badge-moda" :title="nombreCuenta(m.codigo_cuenta)">
+                    {{ nombreCuenta(m.codigo_cuenta) }}
                   </span>
                 </td>
                 <td>
@@ -179,10 +182,7 @@
             <div class="col-md-4">
               <div class="d-flex justify-content-between">
                 <span class="fw-semibold">Balance:</span>
-                <span 
-                  class="fw-bold"
-                  :class="balanceFiltrado >= 0 ? 'text-success' : 'text-danger'"
-                >
+                <span class="fw-bold" :class="balanceFiltrado >= 0 ? 'text-success' : 'text-danger'">
                   {{ formatoMoneda(balanceFiltrado) }}
                 </span>
               </div>
@@ -204,10 +204,14 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
-import axios from 'axios'
+import { ref, onMounted, computed, watch } from 'vue'
+import { obtenerMovimientos } from '../movimiento.js'
+import { obtenerCatalogoCuentas } from '../catalogoCuentas.js'
+import Header from '@/components/Header.vue'
 
+const catalogoCuentas = ref([])
 const movimientos = ref([])
+const cargando = ref(false)
 const filtros = ref({
   fechaDesde: '',
   fechaHasta: '',
@@ -216,17 +220,55 @@ const filtros = ref({
 })
 
 const cargar = async () => {
+  cargando.value = true;
   try {
     const params = {}
     if (filtros.value.fechaDesde) params.fecha_inicio = filtros.value.fechaDesde
     if (filtros.value.fechaHasta) params.fecha_fin = filtros.value.fechaHasta
     if (filtros.value.cuenta) params.codigo_cuenta = filtros.value.cuenta
-    const res = await axios.get('/api/movimientos', { params })
-    movimientos.value = res.data.data || res.data
+    if (filtros.value.tipo) params.tipo = filtros.value.tipo
+
+    // Cargar movimientos y catálogo en paralelo
+    const [movimientosData, cuentasData] = await Promise.all([
+      obtenerMovimientos(params),
+      obtenerCatalogoCuentas()
+    ])
+
+    movimientos.value = Array.isArray(movimientosData) ? movimientosData : []
+    catalogoCuentas.value = Array.isArray(cuentasData) ? cuentasData : []
+
+    console.log('Movimientos cargados:', movimientos.value.length)
+    console.log('Cuentas cargadas:', catalogoCuentas.value.length)
+
   } catch (error) {
-    console.error('Error al cargar movimientos:', error)
-    alert('Error al cargar los reportes contables')
+    console.error('Error al cargar datos:', error)
+    movimientos.value = []
+    catalogoCuentas.value = []
+  } finally {
+    cargando.value = false
   }
+}
+
+const nombreCuenta = (codigo) => {
+  const cuenta = catalogoCuentas.value.find(c => c.codigo === codigo)
+  return cuenta ? `${cuenta.codigo} - ${cuenta.nombre}` : codigo
+}
+watch(
+  () => filtros.value,
+  () => {
+    cargar()
+  },
+  { deep: true, immediate: false }
+)
+const agregarLoader = () => {
+  return `
+        <div v-if="cargando" class="text-center py-5">
+            <div class="spinner-border text-moda-primary" role="status">
+                <span class="visually-hidden">Cargando...</span>
+            </div>
+            <p class="mt-2 text-muted">Cargando movimientos...</p>
+        </div>
+    `
 }
 
 // Computeds
@@ -251,20 +293,20 @@ const movimientosFiltrados = computed(() => {
 
   // Filtrar por fecha
   if (filtros.value.fechaDesde) {
-    filtrados = filtrados.filter(m => 
+    filtrados = filtrados.filter(m =>
       new Date(m.fecha_movimiento) >= new Date(filtros.value.fechaDesde)
     )
   }
-  
+
   if (filtros.value.fechaHasta) {
-    filtrados = filtrados.filter(m => 
+    filtrados = filtrados.filter(m =>
       new Date(m.fecha_movimiento) <= new Date(filtros.value.fechaHasta)
     )
   }
 
   // Filtrar por cuenta
   if (filtros.value.cuenta) {
-    filtrados = filtrados.filter(m => 
+    filtrados = filtrados.filter(m =>
       m.codigo_cuenta === filtros.value.cuenta
     )
   }
@@ -333,7 +375,7 @@ const exportarReporte = () => {
     return
   }
 
-  const header = ['fecha_movimiento','codigo_cuenta','descripcion','debe','haber']
+  const header = ['fecha_movimiento', 'codigo_cuenta', 'descripcion', 'debe', 'haber']
   const csv = [header.join(',')]
   filas.forEach(f => {
     const row = [
@@ -350,7 +392,7 @@ const exportarReporte = () => {
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
-  a.download = `reporte_contable_${new Date().toISOString().slice(0,10)}.csv`
+  a.download = `reporte_contable_${new Date().toISOString().slice(0, 10)}.csv`
   a.click()
   URL.revokeObjectURL(url)
 }
