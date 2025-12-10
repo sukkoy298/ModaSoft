@@ -1,246 +1,207 @@
-import VentaModel from '../../models/VentaModel.js';
-import DetalleVentaModel from '../../models/DetalleVentaModel.js';
-import ClienteModel from '../../models/ClienteModel.js';
-import VarianteProductoModel from '../../models/VarianteProductoModel.js';
-import InventarioModel from '../../models/InventarioModel.js';
-import { Op } from 'sequelize';
+import { sequelize } from '../../../db.js' // <-- ruta correcta hacia db.js en la raíz del proyecto
+import { Sequelize } from 'sequelize'
+import Venta from '../../models/VentaModel.js'
+import DetalleVenta from '../../models/DetalleVentaModel.js'
+import VarianteProducto from '../../models/VarianteProductoModel.js'
+import Inventario from '../../models/InventarioModel.js'
+import MetodoPago from '../../models/MetodoPagoModel.js'
+import Cliente from '../../models/ClienteModel.js'
+import Usuario from '../../models/UsuarioModel.js'
 
-export const registrarVenta = async (ventaData) => {
-    const transaction = await VentaModel.sequelize.transaction();
+const IVA_RATE = 0.16 // ajusta si corresponde
 
-    try {
-        // 1. Crear la venta principal
-        const nuevaVenta = await VentaModel.create({
-            cedula_cliente: ventaData.cedula_cliente,
-            fecha: new Date(),
-            total: ventaData.total,
-            estado: 'pagada',
-            id_usuario: ventaData.id_usuario || 1
-        }, { transaction });
-
-        // 2. Crear los detalles de venta y actualizar inventario
-        for (const detalle of ventaData.detalles) {
-            // Crear detalle de venta
-            await DetalleVentaModel.create({
-                id_venta: nuevaVenta.id_venta,
-                id_variante: detalle.id_variante,
-                id_metodo: detalle.id_metodo,
-                cantidad: detalle.cantidad,
-                precio_unitario_venta: detalle.precio_unitario_venta
-            }, { transaction });
-
-            // Actualizar inventario (reducir stock)
-            const inventario = await InventarioModel.findOne({
-                where: { id_variante: detalle.id_variante },
-                transaction
-            });
-
-            if (inventario) {
-                const nuevoStock = inventario.stock_actual - detalle.cantidad;
-                if (nuevoStock < 0) {
-                    throw new Error(`Stock insuficiente para la variante ${detalle.id_variante}`);
-                }
-
-                await InventarioModel.update({
-                    stock_actual: nuevoStock,
-                    fecha_ultima_entrada: new Date()
-                }, {
-                    where: { id_variante: detalle.id_variante },
-                    transaction
-                });
-            }
-        }
-
-        await transaction.commit();
-        return nuevaVenta;
-
-
-        /*
-            Estructura para registrar una venta
-
-            {
-                "cedula_cliente": "27586745",
-                "total": "287.00",
-                "estado": "pagada",
-                "id_usuario": 1,
-                "detalles": [
-                    {
-                    "id_variante": 1,
-                    "id_metodo": 1,
-                    "cantidad": 1,
-                    "precio_unitario_venta": 89.99
-                    }
-                ]
-            }
-        */
-    } catch (error) {
-        await transaction.rollback();
-        console.error("Error al registrar venta:", error);
-        throw error;
+export async function registrarVenta(payload) {
+  const t = await sequelize.transaction()
+  try {
+    // payload esperado:
+    // { cedula_cliente, id_usuario, estado?, detalles: [{ id_variante, id_metodo, cantidad, precio_unitario_venta }] }
+    if (!Array.isArray(payload.detalles) || payload.detalles.length === 0) {
+      throw new Error('La venta debe contener al menos un detalle.')
     }
-};
 
-export const obtenerTodasLasVentas = async (fechaInicio, fechaFin) => {
-    try {
-        const whereConditions = {};
-        
-        // Agregar filtro por rango de fechas si se proporcionan
-        if (fechaInicio && fechaFin) {
-            whereConditions.fecha = {
-                [Op.between]: [new Date(fechaInicio), new Date(fechaFin)]
-            };
-        } else if (fechaInicio) {
-            whereConditions.fecha = {
-                [Op.gte]: new Date(fechaInicio)
-            };
-        } else if (fechaFin) {
-            whereConditions.fecha = {
-                [Op.lte]: new Date(fechaFin)
-            };
-        }
-        
-        // Solo ventas activas (no anuladas)
-        whereConditions.estado = 'pagada';
+    // calcular subtotal
+    const subtotal = payload.detalles.reduce((s, d) => {
+      const price = Number(d.precio_unitario_venta ?? 0)
+      const qty = Number(d.cantidad ?? 0)
+      return s + price * qty
+    }, 0)
 
-        const ventas = await VentaModel.findAll({
-            where: whereConditions,
-            include: [
-                {
-                    model: ClienteModel,
-                    as: 'Cliente',
-                    attributes: ['nombre', 'cedula']
-                }
-            ],
-            order: [['fecha', 'DESC']]
-        });
-        return ventas;
-    } catch (error) {
-        console.error("Error al obtener las ventas:", error);
-        throw new Error("No se pudo obtener la lista de ventas.");
+    const iva = Number((subtotal * IVA_RATE).toFixed(2))
+    const total = Number((subtotal + iva).toFixed(2))
+
+    // Crear registro en tabla venta
+    const venta = await Venta.create({
+      cedula_cliente: payload.cedula_cliente || '23948576', // cliente genérico si no viene
+      fecha: payload.fecha ? payload.fecha : new Date(),
+      total,
+      estado: payload.estado || 'pagada',
+      id_usuario: payload.id_usuario || 1,
+      subtotal,
+      iva
+    }, { transaction: t })
+
+    // Procesar cada detalle: validar variante, stock, insertar detalle_venta y registrar movimiento en inventario
+    for (const d of payload.detalles) {
+      const id_variante = Number(d.id_variante)
+      const cantidad = Number(d.cantidad)
+      const precio_unitario_venta = Number(d.precio_unitario_venta)
+
+      if (!id_variante || cantidad <= 0) {
+        throw new Error('Detalle de venta inválido (id_variante o cantidad).')
+      }
+
+      // verificar variante existe
+      const variante = await VarianteProducto.findByPk(id_variante, { transaction: t, lock: t.LOCK.SHARE })
+      if (!variante) {
+        throw new Error(`Variante no encontrada: ${id_variante}`)
+      }
+
+      // obtener última fila de inventario para esa variante (lock para evitar condiciones de carrera)
+      const invRow = await Inventario.findOne({
+        where: { id_variante },
+        order: [['id_inventario', 'DESC']],
+        transaction: t,
+        lock: t.LOCK.UPDATE
+      })
+
+      const stockActual = invRow ? Number(invRow.stock_actual) : 0
+      if (stockActual < cantidad) {
+        throw new Error(`Stock insuficiente para la variante ${id_variante}. Disponible: ${stockActual}`)
+      }
+
+      // crear nuevo registro de inventario tipo 'salida' (mantener historial)
+      const nuevoStock = stockActual - cantidad
+      await Inventario.create({
+        id_variante,
+        tipo: 'salida',
+        cantidad,
+        stock_actual: nuevoStock,
+        stock_minimo: invRow ? invRow.stock_minimo : 0,
+        fecha_ultima_entrada: new Date(),
+        referencia: `venta_${venta.id_venta}`,
+        id_usuario: payload.id_usuario || 1
+      }, { transaction: t })
+
+      // crear detalle_venta (id_metodo debe corresponder a metodo_pago.id_metodopago)
+      await DetalleVenta.create({
+        id_venta: venta.id_venta,
+        id_variante,
+        id_metodo: d.id_metodo || null,
+        cantidad,
+        precio_unitario_venta
+      }, { transaction: t })
     }
-};
 
-export const obtenerVentaPorId = async (id_venta) => {
-    try {
-        const venta = await VentaModel.findByPk(id_venta, {
-            include: [
-                {
-                    model: ClienteModel,
-                    as: 'Cliente',
-                    attributes: ['nombre', 'cedula']
-                },
-                {
-                    model: DetalleVentaModel,
-                    as: 'Detalles',
-                    include: [{
-                        model: VarianteProductoModel,
-                        as: 'VarianteProducto'
-                    }]
-                }
-            ]
-        });
-        return venta;
-    } catch (error) {
-        console.error("Error al obtener venta por ID:", error);
-        throw new Error("Error al obtener la venta.");
+    await t.commit()
+    return { id_venta: venta.id_venta, subtotal, iva, total }
+  } catch (err) {
+    await t.rollback()
+    // normalizar mensajes de error
+    if (err instanceof Sequelize.ForeignKeyConstraintError) {
+      throw new Error('Error de integridad referencial: ' + (err.message || ''))
     }
-};
+    throw err
+  }
+}
 
-export const obtenerDetalleVenta = async (id_venta) => {
-    try {
-        const venta = await VentaModel.findByPk(id_venta, {
-            include: [
-                {
-                    model: ClienteModel,
-                    as: 'Cliente',
-                    attributes: ['nombre', 'cedula', 'telefono', 'email']
-                },
-                {
-                    model: DetalleVentaModel,
-                    as: 'Detalles',
-                    include: [{
-                        model: VarianteProductoModel,
-                        as: 'VarianteProducto',
-                        include: [{
-                            model: ProductoModel,
-                            as: 'ProductoPrincipal',
-                            attributes: ['nombre']
-                        }]
-                    }]
-                }
-            ]
-        });
-        return venta;
-    } catch (error) {
-        console.error("Error al obtener detalle de venta:", error);
-        throw new Error("Error al obtener el detalle de la venta.");
+export async function obtenerHistorialVentas(fechaInicio = null, fechaFin = null) {
+  const where = {}
+  if (fechaInicio && fechaFin) {
+    where.fecha = { [Sequelize.Op.between]: [fechaInicio, fechaFin] }
+  } else if (fechaInicio) {
+    where.fecha = fechaInicio
+  }
+
+  return Venta.findAll({
+    where,
+    include: [
+      { model: Cliente, attributes: ['cedula', 'nombre'] },
+      { model: Usuario, attributes: ['usuario'] }
+    ],
+    order: [['fecha', 'DESC'], ['id_venta', 'DESC']]
+  })
+}
+
+export async function obtenerVentaPorId(idVenta) {
+  return Venta.findByPk(idVenta, {
+    include: [
+      { model: Cliente, attributes: ['cedula', 'nombre', 'telefono', 'email', 'direccion'] },
+      { model: Usuario, attributes: ['usuario'] },
+      {
+        model: DetalleVenta,
+        include: [
+          { model: VarianteProducto },
+          { model: MetodoPago }
+        ]
+      }
+    ]
+  })
+}
+
+export async function obtenerDetalleVenta(idVenta) {
+  return DetalleVenta.findAll({
+    where: { id_venta: idVenta },
+    include: [
+      { model: VarianteProducto },
+      { model: MetodoPago }
+    ]
+  })
+}
+
+export async function anularVenta(idVenta) {
+  const t = await sequelize.transaction()
+  try {
+    const venta = await Venta.findByPk(idVenta, { transaction: t })
+    if (!venta) throw new Error('Venta no encontrada')
+
+    // si ya está anulada
+    if (venta.estado === 'anulada') {
+      await t.commit()
+      return venta
     }
-};
 
-export const anularVenta = async (id_venta) => {
-    const transaction = await VentaModel.sequelize.transaction();
+    // obtener detalles para devolver stock
+    const detalles = await DetalleVenta.findAll({ where: { id_venta: idVenta }, transaction: t, lock: t.LOCK.UPDATE })
 
-    try {
-        const venta = await VentaModel.findByPk(id_venta);
-        if (!venta) {
-            throw new Error('Venta no encontrada');
-        }
+    // revertir inventario creando movimientos de tipo 'entrada'
+    for (const det of detalles) {
+      const invRow = await Inventario.findOne({
+        where: { id_variante: det.id_variante },
+        order: [['id_inventario', 'DESC']],
+        transaction: t,
+        lock: t.LOCK.UPDATE
+      })
 
-        if (venta.estado === 'anulada') {
-            throw new Error('La venta ya está anulada');
-        }
+      const stockActual = invRow ? Number(invRow.stock_actual) : 0
+      const nuevoStock = stockActual + det.cantidad
 
-        // Cambiar estado a anulada
-        venta.estado = 'anulada';
-        await venta.save({ transaction });
-
-        // Devolver productos al inventario
-        const detalles = await DetalleVentaModel.findAll({
-            where: { id_venta },
-            transaction
-        });
-
-        for (const detalle of detalles) {
-            const inventario = await InventarioModel.findOne({
-                where: { id_variante: detalle.id_variante },
-                transaction
-            });
-
-            if (inventario) {
-                inventario.stock_actual += detalle.cantidad;
-                inventario.fecha_ultima_entrada = new Date();
-                await inventario.save({ transaction });
-            }
-        }
-
-        await transaction.commit();
-        return venta;
-
-    } catch (error) {
-        await transaction.rollback();
-        console.error("Error al anular venta:", error);
-        throw error;
+      await Inventario.create({
+        id_variante: det.id_variante,
+        tipo: 'entrada',
+        cantidad: det.cantidad,
+        stock_actual: nuevoStock,
+        stock_minimo: invRow ? invRow.stock_minimo : 0,
+        fecha_ultima_entrada: new Date(),
+        referencia: `anulacion_venta_${idVenta}`,
+        id_usuario: venta.id_usuario || 1
+      }, { transaction: t })
     }
-};
 
-export const obtenerVentasPorFecha = async (fecha) => {
-    try {
-        const ventas = await VentaModel.findAll({
-            where: {
-                fecha: fecha
-            },
-            include: [
-                {
-                    model: ClienteModel,
-                    as: 'Cliente',
-                    attributes: ['nombre', 'cedula']
-                }
-            ],
-            order: [['fecha', 'DESC']]
-        });
-        return ventas;
-    } catch (error) {
-        console.error("Error al obtener ventas por fecha:", error);
-        throw new Error("Error al obtener las ventas de la fecha especificada.");
-    }
-};
+    venta.estado = 'anulada'
+    await venta.save({ transaction: t })
+
+    await t.commit()
+    return venta
+  } catch (err) {
+    await t.rollback()
+    throw err
+  }
+}
+
+export default {
+  registrarVenta,
+  obtenerHistorialVentas,
+  obtenerVentaPorId,
+  obtenerDetalleVenta,
+  anularVenta
+}
