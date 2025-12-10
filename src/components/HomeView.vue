@@ -59,7 +59,7 @@
                                 <i class="bi bi-list-check me-2"></i> Ir a Inventario
                             </router-link>
                             <router-link to="/compras" class="btn btn-moda-outline mt-2 w-50 mx-auto p-2">
-                                <i class="bi bi-bag-plus me-2"></i> Comprar Productos
+                                <i class="bi bi-bag-plus me-2"></i> Registrar Compras
                             </router-link>
                         </div>
                     </div>
