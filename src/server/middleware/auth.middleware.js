@@ -1,4 +1,8 @@
-// auth.middleware.js - Agrega esto después de importar jwt
+import jwt from 'jsonwebtoken';
+import UsuariosModel from '../../models/UsuarioModel.js';
+
+const JWT_SECRET = process.env.JWT_SECRET || global.__MODASOFT_SESSION_SECRET || 'modasoft_secret';
+
 export const authenticateToken = async (req, res, next) => {
   try {
     console.log('🔐 Iniciando autenticación para ruta:', req.path);
