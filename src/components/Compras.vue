@@ -483,7 +483,8 @@ import {
     registrarCompra,
     eliminarCompra,
     buscarProductosParaCompra,
-    buscarProductoPorCodigo 
+    buscarProductoPorCodigo,
+    obtenerTodasLasVariantes
 } from '@/compras.js'
 
 import { 

@@ -21,34 +21,34 @@ export const obtenerCompraPorId = async (id_compra) => {
         return response.data;
     } catch (error) {
         console.error(`Error al obtener compra ${id_compra}:`, error);
-        
+
         if (error.response?.status === 404) {
             throw new Error('Compra no encontrada');
         }
-        
+
         throw error;
     }
 };
 
 // 3. Registrar nueva compra
 export const registrarCompra = async (datosCompra) => {
-  try {
-    
-    const response = await axios.post(API_URL, datosCompra);
-    
-    return response.data;
-  } catch (error) {
-    
-    if (error.response) {
-      console.error('Detalles del error:', {
-        status: error.response.status,
-        data: error.response.data,
-        headers: error.response.headers
-      });
+    try {
+
+        const response = await axios.post(API_URL, datosCompra);
+
+        return response.data;
+    } catch (error) {
+
+        if (error.response) {
+            console.error('Detalles del error:', {
+                status: error.response.status,
+                data: error.response.data,
+                headers: error.response.headers
+            });
+        }
+
+        throw error;
     }
-    
-    throw error;
-  }
 };
 
 // 4. Eliminar compra
@@ -137,6 +137,17 @@ export const buscarProductoPorCodigo = async (codigo_barras) => {
         return response.data;
     } catch (error) {
         console.error(`Error al buscar producto ${codigo_barras}:`, error);
+        throw error;
+    }
+};
+
+// 12. Obtener todas las variantes de productos
+export const obtenerTodasLasVariantes = async () => {
+    try {
+        const response = await axios.get(`${API_PRODUCTOS}/variantes`);
+        return response.data;
+    } catch (error) {
+        console.error('Error al obtener variantes de productos:', error);
         throw error;
     }
 };
