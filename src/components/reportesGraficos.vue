@@ -52,7 +52,7 @@
       <div class="col-12 col-md-3">
         <button @click="handleReportClick('sales')"
           :class="{ 'moda-btn-primary': activeReport === 'sales', 'moda-btn-outline': activeReport !== 'sales' }"
-          class="btn w-100 moda-report-btn py-3" :disabled="cargando">
+          class="btn w-100 moda-report-btn py-2" :disabled="cargando">
           <div class="moda-report-icon">
             <i class="bi bi-cash-coin"></i>
           </div>
@@ -69,7 +69,7 @@
       <div class="col-12 col-md-3">
         <button @click="handleReportClick('purchases')"
           :class="{ 'moda-btn-primary': activeReport === 'purchases', 'moda-btn-outline': activeReport !== 'purchases' }"
-          class="btn w-100 moda-report-btn py-3" :disabled="cargando">
+          class="btn w-100 moda-report-btn py-2" :disabled="cargando">
           <div class="moda-report-icon">
             <i class="bi bi-shop"></i>
           </div>
@@ -83,7 +83,7 @@
       <div class="col-12 col-md-3">
         <button @click="handleReportClick('products')"
           :class="{ 'moda-btn-primary': activeReport === 'products', 'moda-btn-outline': activeReport !== 'products' }"
-          class="btn w-100 moda-report-btn py-3" :disabled="cargando">
+          class="btn w-100 moda-report-btn py-2" :disabled="cargando">
           <div class="moda-report-icon">
             <i class="bi bi-receipt-cutoff"></i>
           </div>
@@ -97,7 +97,7 @@
       <div class="col-12 col-md-3">
         <button @click="handleReportClick('projection')"
           :class="{ 'moda-btn-primary': activeReport === 'projection', 'moda-btn-outline': activeReport !== 'projection' }"
-          class="btn w-100 moda-report-btn py-3" :disabled="cargando">
+          class="btn w-100 moda-report-btn py-2" :disabled="cargando">
           <div class="moda-report-icon">
             <i class="bi bi-graph-up-arrow"></i>
           </div>
@@ -1119,6 +1119,14 @@ onMounted(() => {
   box-shadow: 0 4px 12px rgba(74, 59, 52, 0.3);
 }
 
+/* Fix para texto dentro de botón activo o hover */
+.moda-btn-primary .moda-report-title,
+.moda-btn-primary .moda-report-subtitle,
+.moda-btn-outline:hover .moda-report-title,
+.moda-btn-outline:hover .moda-report-subtitle {
+  color: white !important;
+}
+
 .moda-btn-outline {
   background-color: transparent;
   border: 2px solid #4A3B34;
@@ -1140,7 +1148,7 @@ onMounted(() => {
 .moda-report-btn {
   flex-direction: column;
   height: 100%;
-  min-height: 120px;
+  min-height: 80px;
   transition: all 0.3s ease;
 }
 
@@ -1150,7 +1158,7 @@ onMounted(() => {
 }
 
 .moda-report-icon {
-  font-size: 2rem;
+  font-size: 1.5rem;
   margin-bottom: 0.5rem;
 }
 
