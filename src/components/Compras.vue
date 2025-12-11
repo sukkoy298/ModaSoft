@@ -147,20 +147,22 @@
                 <h6 class="moda-subtitle mb-0">
                   <i class="bi bi-list-check me-2"></i> Detalles de Productos
                 </h6>
+                <div>
                   <button 
-                  type="button" 
-                  class="btn btn-sm btn-moda-outline me-2"
-                  @click="abrirModalNuevoProducto"
-                >
-                  <i class="bi bi-star me-1"></i> Crear Nuevo Producto
-                </button>
-                <button 
-                  type="button" 
-                  class="btn btn-sm btn-moda-primary"
-                  @click="agregarDetalle"
-                >
-                  <i class="bi bi-plus-circle me-1"></i> Agregar Productos
-                </button>
+                    type="button" 
+                    class="btn btn-sm btn-moda-outline me-2"
+                    @click="abrirModalNuevoProducto"
+                  >
+                    <i class="bi bi-star me-1"></i> Crear Nuevo Producto
+                  </button>
+                  <button 
+                    type="button" 
+                    class="btn btn-sm btn-moda-primary"
+                    @click="agregarDetalle"
+                  >
+                    <i class="bi bi-plus-circle me-1"></i> Agregar Productos
+                  </button>
+                </div>
               </div>
               <div class="moda-card-body">
                 <div v-if="detalles.length === 0" class="moda-alert moda-alert-info">
