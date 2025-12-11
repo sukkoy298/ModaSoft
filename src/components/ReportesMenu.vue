@@ -63,14 +63,14 @@
                 </div>
             </div>
 
-            <!-- Reportes de Ventas -->
+            <!-- Reportes de Contabilidad -->
             <div class="col-lg-4 col-md-6">
                 <div class="card h-100 moda-card shadow-lg hover-card" @click="navegarA('ventas')">
                     <div class="card-body text-center p-4 d-flex flex-column">
                         <div class="moda-card-icon bg-secondary-moda mb-4">
                             <i class="bi bi-cash-stack fs-1 text-white"></i>
                         </div>
-                        <h4 class="card-title fw-bold mb-3 moda-title">Reportes de Ventas</h4>
+                        <h4 class="card-title fw-bold mb-3 moda-title">Reportes Contables</h4>
                         <p class="card-text moda-subtitle mb-4 flex-grow-1">
                             Informes detallados de ventas, transacciones,
                             análisis de tendencias y rendimiento.
@@ -80,10 +80,10 @@
                             <span class="badge moda-badge-success">Tendencias</span>
                         </div>
                     </div>
-                    <div class="card-footer bg-transparent border-top moda-card-footer text-center py-3">
-                        <button class="btn btn-moda-primary">
-                            <i class="bi bi-receipt me-2"></i> Ver Ventas
-                        </button>
+                    <div class="card-footer bg-transparent border-top moda-card-footer text-center py-3 d-flex flex-column gap-2">
+                        <router-link to="/reportes-contables" class="btn btn-moda-primary" @click.stop>
+                            <i class="bi bi-journal-text me-2"></i> Ver Reporte Contable
+                        </router-link>
                     </div>
                 </div>
             </div>
@@ -206,6 +206,21 @@ const navegarA = (tipo) => {
     border-color: #352822 !important;
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(74, 59, 52, 0.3);
+}
+
+.btn-moda-outline {
+    background-color: transparent !important;
+    border: 2px solid #4A3B34 !important;
+    color: #4A3B34 !important;
+    border-radius: 8px;
+    padding: 0.6rem 1.5rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-moda-outline:hover {
+    background-color: #4A3B34 !important;
+    color: white !important;
 }
 
 /* Badges */

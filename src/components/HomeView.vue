@@ -18,7 +18,7 @@
                             </div>
                             
                             <router-link to="/facturacion" class="btn btn-moda-primary w-50 mx-auto p-2">
-                                <i class="bi bi-arrow-right-circle me-2"></i> Realizar Venta
+                                <i class="bi bi-arrow-right-circle me-2"></i> Registrar Venta
                             </router-link>
                         </div>
                     </div>
@@ -97,11 +97,9 @@
                             </div>
                             
                             <router-link to="/proveedor" class="btn btn-moda-primary w-50 mx-auto p-2">
-                                <i class="bi bi-box-seam me-2"></i> Ver Proveedor
+                                <i class="bi bi-box-seam me-2"></i> Ver Proveedores
                             </router-link>
-                            <router-link to="/reportes-contables" class="btn btn-moda-outline mt-2 w-50 mx-auto p-2">
-                                <i class="bi bi-journal-text me-2"></i> Contabilidad
-                            </router-link>
+
                         </div>
                     </div>
                 </div>
