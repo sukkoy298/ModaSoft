@@ -20,6 +20,9 @@ export async function registrarVenta(payload) {
       throw new Error('La venta debe contener al menos un detalle.')
     }
 
+    // normalizar fecha
+    const fechaRegistro = payload.fecha ? new Date(payload.fecha) : new Date()
+
     // calcular subtotal
     const subtotal = payload.detalles.reduce((s, d) => {
       const price = Number(d.precio_unitario_venta ?? 0)
@@ -33,7 +36,7 @@ export async function registrarVenta(payload) {
     // Crear registro en tabla venta
     const venta = await Venta.create({
       cedula_cliente: payload.cedula_cliente || '23948576', // cliente genérico si no viene
-      fecha: payload.fecha ? payload.fecha : new Date(),
+      fecha: fechaRegistro,
       total,
       estado: payload.estado || 'pagada',
       id_usuario: payload.id_usuario || 1,
@@ -112,7 +115,7 @@ export async function registrarVenta(payload) {
 
       // Caja (DEBE)
       movimientosContables.push({
-        fecha_movimiento: venta.fecha,
+        fecha_movimiento: fechaRegistro,
         codigo_cuenta: '1.1.1',
         descripcion: `Venta #${venta.id_venta} - Cobro`,
         debe: total,
@@ -123,7 +126,7 @@ export async function registrarVenta(payload) {
 
       // Ventas (HABER)
       movimientosContables.push({
-        fecha_movimiento: venta.fecha,
+        fecha_movimiento: fechaRegistro,
         codigo_cuenta: '4.1.1',
         descripcion: `Ingreso por venta #${venta.id_venta}`,
         debe: 0,
@@ -135,7 +138,7 @@ export async function registrarVenta(payload) {
       // IVA por pagar (HABER)
       if (iva > 0) {
         movimientosContables.push({
-          fecha_movimiento: venta.fecha,
+          fecha_movimiento: fechaRegistro,
           codigo_cuenta: '2.1.2',
           descripcion: `IVA venta #${venta.id_venta}`,
           debe: 0,
@@ -148,7 +151,7 @@ export async function registrarVenta(payload) {
       // Costo de ventas (DEBE) y ajuste de Inventario (HABER)
       if (costo_total > 0) {
         movimientosContables.push({
-          fecha_movimiento: venta.fecha,
+          fecha_movimiento: fechaRegistro,
           codigo_cuenta: '5.1.1',
           descripcion: `Costo venta #${venta.id_venta}`,
           debe: costo_total,
@@ -158,7 +161,7 @@ export async function registrarVenta(payload) {
         })
 
         movimientosContables.push({
-          fecha_movimiento: venta.fecha,
+          fecha_movimiento: fechaRegistro,
           codigo_cuenta: '1.1.3',
           descripcion: `Salida inventario venta #${venta.id_venta}`,
           debe: 0,

@@ -333,6 +333,16 @@ const balanceFiltrado = computed(() => totalDebeFiltrado.value - totalHaberFiltr
 
 // Métodos
 const formatoFecha = (fecha) => {
+  if (!fecha) return ''
+  // Si la fecha es string 'YYYY-MM-DD', le agregamos hora local para evitar conversión a UTC anterior
+  if (typeof fecha === 'string' && fecha.length === 10) {
+    return new Date(`${fecha}T00:00:00`).toLocaleDateString('es-ES', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    })
+  }
+
   return new Date(fecha).toLocaleDateString('es-ES', {
     day: '2-digit',
     month: '2-digit',
