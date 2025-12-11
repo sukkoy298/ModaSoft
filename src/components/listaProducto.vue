@@ -127,7 +127,7 @@
 
                             <td class="moda-table-td text-center">
                                 <span class="moda-price">
-                                    ${{ variante.precio_venta.toFixed(2) }}
+                                    ${{ (variante.precio_venta || 0).toFixed(2) }}
                                 </span>
                             </td>
 
@@ -238,7 +238,7 @@ const transformarDatosInventario = (productos) => {
                     color: variante.color || 'N/A',
                     stock_minimo: 10,
                     stock_actual: variante.stock_actual || 0,
-                    precio_venta: variante.precio || 0,
+                    precio_venta: Number(variante.precio_unitario_venta) || 0,
                     id_producto: producto.id_producto,
                     id_variante: variante.id_variante,
                     descripcion: producto.descripcion || ''
