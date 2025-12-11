@@ -20,47 +20,47 @@
           Iniciar sesión
         </button>
 
-        <div class="text-center">
+        <!-- <div class="text-center">
           <a href="#" class="forgot-link">¿Olvidaste tu contraseña?</a>
-        </div>
+        </div> -->
       </form>
-      </div>
     </div>
-  </template>
+  </div>
+</template>
 
-  <script>
-  import axios from 'axios'
-  import { saveAuth } from '@/auth.js'
+<script>
+import axios from 'axios'
+import { saveAuth } from '@/auth.js'
 
-  export default {
-    data() {
-      return {
-        username: "",
-        password: ""
-      };
-    },
-    methods: {
-      async login() {
-        try {
-          const res = await axios.post('http://localhost:3000/api/usuarios/login', { usuario: this.username, password: this.password })
-          const { token, usuario } = res.data
-          if (token && usuario) {
-            saveAuth({ token, usuario })
-            // configurar axios para futuras peticiones
-            axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
-            // redirigir al home
-            this.$router.push('/')
-          } else {
-            alert('Login correcto pero no se recibió token')
-          }
-        } catch (err) {
-          console.error('Error login:', err)
-          alert(err.response?.data?.message || err.message || 'Error en login')
+export default {
+  data() {
+    return {
+      username: "",
+      password: ""
+    };
+  },
+  methods: {
+    async login() {
+      try {
+        const res = await axios.post('http://localhost:3000/api/usuarios/login', { usuario: this.username, password: this.password })
+        const { token, usuario } = res.data
+        if (token && usuario) {
+          saveAuth({ token, usuario })
+          // configurar axios para futuras peticiones
+          axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
+          // redirigir al home
+          this.$router.push('/')
+        } else {
+          alert('Login correcto pero no se recibió token')
         }
+      } catch (err) {
+        console.error('Error login:', err)
+        alert(err.response?.data?.message || err.message || 'Error en login')
       }
     }
   }
-  </script>
+}
+</script>
 
 <style scoped>
 /* :root {

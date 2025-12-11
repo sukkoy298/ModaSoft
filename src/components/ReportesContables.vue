@@ -351,9 +351,9 @@ const formatoFecha = (fecha) => {
 }
 
 const formatoMoneda = (valor) => {
-  return new Intl.NumberFormat('es-PE', {
+  return new Intl.NumberFormat('es-US', {
     style: 'currency',
-    currency: 'PEN'
+    currency: 'USD'
   }).format(valor)
 }
 

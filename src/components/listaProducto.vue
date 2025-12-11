@@ -1,5 +1,5 @@
 <template>
-    <Header/>
+    <Header />
     <div class="container moda-main-container">
         <h1 class="moda-title text-center mb-4">
             <i class="bi bi-box-seam moda-icon-primary me-2"></i>
@@ -11,12 +11,8 @@
             <div class="moda-search-container">
                 <div class="moda-search-group">
                     <i class="bi bi-search moda-search-icon"></i>
-                    <input 
-                        type="text" 
-                        v-model="busqueda" 
-                        placeholder="Buscar por SKU, Producto, Talla o Color..."
-                        class="moda-search-input"
-                    />
+                    <input type="text" v-model="busqueda" placeholder="Buscar por SKU, Producto, Talla o Color..."
+                        class="moda-search-input" />
                 </div>
             </div>
 
@@ -59,7 +55,7 @@
                     <span v-if="busqueda" class="moda-filter-note"> (filtrados por: "{{ busqueda }}")</span>
                 </p>
             </div>
-            
+
             <!-- Tabla -->
             <div class="moda-table-container">
                 <table class="moda-table">
@@ -74,28 +70,28 @@
                             <th scope="col" class="moda-table-th text-center">STOCK ACT.</th>
                             <th scope="col" class="moda-table-th text-center">PRECIO VENTA</th>
                             <th scope="col" class="moda-table-th text-center">ESTADO</th>
-                            <th scope="col" class="moda-table-th text-center">ACCIONES</th>
+                            <!-- <th scope="col" class="moda-table-th text-center">ACCIONES</th> -->
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="(variante, index) in inventarioFiltrado" :key="variante.sku + '-' + index" 
+                        <tr v-for="(variante, index) in inventarioFiltrado" :key="variante.sku + '-' + index"
                             :class="getEstadoRowClass(variante.stock_actual, variante.stock_minimo)">
-                            
+
                             <td class="moda-table-td text-center">{{ index + 1 }}</td>
-                            
+
                             <td class="moda-table-td">
                                 <span class="moda-badge moda-badge-sku">
                                     {{ variante.sku }}
                                 </span>
                             </td>
-                            
+
                             <td class="moda-table-td">
                                 <div class="moda-product-name">{{ variante.producto }}</div>
                                 <div class="moda-product-desc" v-if="variante.descripcion">
                                     {{ variante.descripcion.substring(0, 50) }}...
                                 </div>
                             </td>
-                            
+
                             <td class="moda-table-td">
                                 <div class="moda-tags">
                                     <span class="moda-tag moda-tag-brand">{{ variante.marca }}</span>
@@ -106,7 +102,7 @@
                             <td class="moda-table-td text-center">
                                 <div class="moda-variant-info">
                                     <span class="moda-badge moda-badge-size">{{ variante.talla }}</span>
-                                    <span class="moda-badge moda-badge-color" :style="{ 
+                                    <span class="moda-badge moda-badge-color" :style="{
                                         backgroundColor: getColorHex(variante.color),
                                         color: getContrastColor(variante.color)
                                     }">
@@ -120,7 +116,8 @@
                             </td>
 
                             <td class="moda-table-td text-center">
-                                <span class="moda-stock-count" :class="getStockCountClass(variante.stock_actual, variante.stock_minimo)">
+                                <span class="moda-stock-count"
+                                    :class="getStockCountClass(variante.stock_actual, variante.stock_minimo)">
                                     {{ variante.stock_actual }}
                                 </span>
                             </td>
@@ -136,8 +133,8 @@
                                     {{ getEstadoStock(variante.stock_actual, variante.stock_minimo) }}
                                 </span>
                             </td>
-                            
-                            <td class="moda-table-td text-center">
+
+                            <!-- <td class="moda-table-td text-center">
                                 <div class="moda-action-buttons-small">
                                     <button class="btn moda-btn-icon" title="Editar">
                                         <i class="bi bi-pencil-square"></i>
@@ -149,12 +146,12 @@
                                         <i class="bi bi-eye"></i>
                                     </button>
                                 </div>
-                            </td>
+                            </td> -->
                         </tr>
                     </tbody>
                 </table>
             </div>
-            
+
             <!-- Pie de tabla -->
             <div class="moda-table-footer">
                 <div class="moda-status-legend">
@@ -225,7 +222,7 @@ const getContrastColor = (colorName) => {
 
 const transformarDatosInventario = (productos) => {
     const variantesLista = [];
-    
+
     productos.forEach(producto => {
         if (producto.variantes && Array.isArray(producto.variantes)) {
             producto.variantes.forEach(variante => {
@@ -261,7 +258,7 @@ const transformarDatosInventario = (productos) => {
             });
         }
     });
-    
+
     return variantesLista;
 };
 
@@ -274,7 +271,7 @@ const getEstadoStock = (stockActual, stockMinimo) => {
 
 const getEstadoRowClass = (stockActual, stockMinimo) => {
     const estado = getEstadoStock(stockActual, stockMinimo);
-    switch(estado) {
+    switch (estado) {
         case 'Agotado': return 'moda-row-out';
         case 'REORDENAR': return 'moda-row-low';
         default: return 'moda-row-ok';
@@ -283,7 +280,7 @@ const getEstadoRowClass = (stockActual, stockMinimo) => {
 
 const getStockCountClass = (stockActual, stockMinimo) => {
     const estado = getEstadoStock(stockActual, stockMinimo);
-    switch(estado) {
+    switch (estado) {
         case 'Agotado': return 'moda-stock-out';
         case 'REORDENAR': return 'moda-stock-low';
         default: return 'moda-stock-ok';
@@ -292,7 +289,7 @@ const getStockCountClass = (stockActual, stockMinimo) => {
 
 const getEstadoBadgeClass = (stockActual, stockMinimo) => {
     const estado = getEstadoStock(stockActual, stockMinimo);
-    switch(estado) {
+    switch (estado) {
         case 'Agotado': return 'moda-badge moda-badge-danger';
         case 'REORDENAR': return 'moda-badge moda-badge-warning';
         default: return 'moda-badge moda-badge-success';
@@ -304,7 +301,7 @@ const cargarInventario = async () => {
     errorConexion.value = false;
     try {
         const data = await obtenerTodoElInventario();
-        
+
         if (Array.isArray(data)) {
             inventarioList.value = transformarDatosInventario(data);
         } else {
@@ -865,7 +862,9 @@ onMounted(() => {
 }
 
 @keyframes spin {
-    to { transform: rotate(360deg); }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 .moda-subtitle {
@@ -879,7 +878,7 @@ onMounted(() => {
     .moda-table-container {
         overflow-x: auto;
     }
-    
+
     .moda-table {
         min-width: 1100px;
     }
@@ -889,26 +888,26 @@ onMounted(() => {
     .moda-main-container {
         padding: 1rem;
     }
-    
+
     .moda-action-bar {
         flex-direction: column;
         align-items: stretch;
     }
-    
+
     .moda-search-container {
         width: 100%;
     }
-    
+
     .moda-action-buttons {
         justify-content: center;
     }
-    
+
     .moda-table-footer {
         flex-direction: column;
         gap: 1rem;
         text-align: center;
     }
-    
+
     .moda-status-legend {
         justify-content: center;
     }
@@ -918,11 +917,11 @@ onMounted(() => {
     .moda-title {
         font-size: 1.5rem;
     }
-    
+
     .moda-action-buttons {
         flex-direction: column;
     }
-    
+
     .moda-action-buttons .btn {
         width: 100%;
         justify-content: center;
