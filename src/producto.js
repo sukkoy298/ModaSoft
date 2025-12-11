@@ -9,7 +9,7 @@ export const obtenerTodoElInventario = async () => {
     return response.data
   } catch (error) {
     console.error('Error cargando inventario:', error)
-    
+
     // Si falla, intentar la ruta alternativa
     try {
       const response = await axios.get(`${API_URL}/productos`)
@@ -41,4 +41,27 @@ export const obtenerMetodosPago = async () => {
     console.error('Error obteniendo métodos de pago:', error)
     throw error
   }
+}
+
+// === Nuevas funciones para ModalNuevoProducto ===
+
+export const obtenerCategorias = async () => {
+  const response = await axios.get(`${API_URL}/categorias`)
+  return response.data
+}
+
+export const obtenerMarcas = async () => {
+  const response = await axios.get(`${API_URL}/marcas`)
+  return response.data
+}
+
+export const registrarProductoPrincipal = async (productoData) => {
+  const response = await axios.post(`${API_URL}/productos`, productoData)
+  return response.data
+}
+
+export const registrarVariante = async (varianteData) => {
+  // Asegurarse de que varianteData tenga id_producto, sku, talla, color, precio_venta, stock_actual
+  const response = await axios.post(`${API_URL}/productos/variantes`, varianteData)
+  return response.data
 }

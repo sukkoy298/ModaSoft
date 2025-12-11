@@ -147,12 +147,19 @@
                 <h6 class="moda-subtitle mb-0">
                   <i class="bi bi-list-check me-2"></i> Detalles de Productos
                 </h6>
+                  <button 
+                  type="button" 
+                  class="btn btn-sm btn-moda-outline me-2"
+                  @click="abrirModalNuevoProducto"
+                >
+                  <i class="bi bi-star me-1"></i> Crear Nuevo Producto
+                </button>
                 <button 
                   type="button" 
                   class="btn btn-sm btn-moda-primary"
                   @click="agregarDetalle"
                 >
-                  <i class="bi bi-plus-circle me-1"></i> Agregar Producto
+                  <i class="bi bi-plus-circle me-1"></i> Agregar Productos
                 </button>
               </div>
               <div class="moda-card-body">
@@ -175,18 +182,28 @@
                     <tbody>
                       <tr v-for="(detalle, index) in detalles" :key="index">
                         <td>
-                          <input 
-                            type="number" 
-                            v-model="detalle.id_variante"
-                            class="form-control form-control-sm"
-                            placeholder="ID Variante"
-                            @input="buscarProducto(index)"
-                          >
-                          <small v-if="detalle.productoInfo" class="text-success">
-                            {{ detalle.productoInfo }}
+                          <!-- Selector de variante -->
+                          <div class="d-flex w-100">
+                             <select 
+                                v-model="detalle.id_variante" 
+                                class="form-select form-select-sm"
+                                @change="seleccionarProducto(index)"
+                              >
+                                <option value="">-- Seleccionar Producto --</option>
+                                <option 
+                                  v-for="v in variantesDisponibles" 
+                                  :key="v.id_variante" 
+                                  :value="v.id_variante"
+                                >
+                                  {{ v.nombre_completo }}
+                                </option>
+                              </select>
+                          </div>
+                          <small v-if="detalle.stockInfo" class="text-muted d-block mt-1">
+                             {{ detalle.stockInfo }}
                           </small>
                         </td>
-                        <td class="text-center">
+                        <td class="text-center" style="width: 120px;">
                           <div class="input-group input-group-sm">
                             <button 
                               type="button" 
@@ -211,7 +228,7 @@
                             </button>
                           </div>
                         </td>
-                        <td class="text-end">
+                        <td class="text-end" style="width: 150px;">
                           <div class="input-group input-group-sm">
                             <span class="input-group-text">$</span>
                             <input 
@@ -224,12 +241,12 @@
                             >
                           </div>
                         </td>
-                        <td class="text-end align-middle">
+                        <td class="text-end align-middle" style="width: 120px;">
                           <span class="fw-semibold">
                             ${{ (detalle.cantidad * detalle.precio_unitario_costo).toFixed(2) }}
                           </span>
                         </td>
-                        <td class="text-center align-middle">
+                        <td class="text-center align-middle" style="width: 50px;">
                           <button 
                             type="button"
                             class="btn btn-sm btn-link text-danger"
@@ -501,7 +518,7 @@
                 :key="page" 
                 class="page-item" 
                 :class="{ active: page === paginaActual }"
-              >
+                >
                 <a class="page-link" href="#" @click.prevent="paginaActual = page">{{ page }}</a>
               </li>
               <li class="page-item">
@@ -516,7 +533,7 @@
     </div>
   </div>
   
-  <!-- Panel inline para Detalle de Compra (se muestra bajo la fila seleccionada) -->
+  <ModalNuevoProducto ref="modalProductoRef" @productoCreado="onProductoCreado" />
 </template>
 
 <script setup>
@@ -538,6 +555,10 @@ import {
     obtenerTodosLosProveedores 
 } from '@/proveedor.js'
 
+import { 
+    obtenerTodoElInventario 
+} from '@/producto.js'
+
 const router = useRouter()
 
 // Estado
@@ -550,6 +571,8 @@ const esError = ref(false)
 // Datos para nueva compra
 const proveedores = ref([])
 const proveedorSeleccionado = ref(null)
+const inventario = ref([]) // Nuevo estado para el inventario crudo
+
 const nuevaCompra = ref({
   cedula_proveedor: '',
   nro_factura: '',
@@ -577,6 +600,27 @@ const paginaActual = ref(1)
 const itemsPorPagina = 10
 
 // Computed
+// Aplanamos la estructura jerárquica (Producto -> Variantes) a una lista plana de variantes
+const variantesDisponibles = computed(() => {
+    const lista = []
+    if (!inventario.value) return lista
+    
+    inventario.value.forEach(prod => {
+        if (prod.variantes && prod.variantes.length > 0) {
+            prod.variantes.forEach(variante => {
+                lista.push({
+                    id_variante: variante.id_variante,
+                    nombre_completo: `${prod.nombre} - ${variante.talla}/${variante.color}`,
+                    stock_actual: variante.stock_actual,
+                    precio_venta: variante.precio_unitario_venta,
+                    sku: variante.sku
+                })
+            })
+        }
+    })
+    return lista
+})
+
 const fechaHoy = computed(() => {
   return new Date().toISOString().split('T')[0]
 })
@@ -676,6 +720,27 @@ const agregarDetalle = () => {
 
 const eliminarDetalle = (index) => {
   detalles.value.splice(index, 1)
+  calcularTotales()
+}
+
+const seleccionarProducto = (index) => {
+  const detalle = detalles.value[index]
+  const idVar = detalle.id_variante
+  
+  if (!idVar) {
+    detalle.productoInfo = ''
+    return
+  }
+  
+  const variante = variantesDisponibles.value.find(v => v.id_variante === idVar)
+  if (variante) {
+    detalle.stockInfo = `Stock actual: ${variante.stock_actual}`
+    
+    // Auto-popular precio de costo estimado (70% del precio de venta)
+    if (variante.precio_venta) {
+      detalle.precio_unitario_costo = Number((variante.precio_venta * 0.70).toFixed(2))
+    }
+  }
   calcularTotales()
 }
 
@@ -953,12 +1018,61 @@ const manejarEliminacion = async (id_compra, nombreProveedor) => {
   }
 }
 
+const cargarInventario = async () => {
+  try {
+    const data = await obtenerTodoElInventario()
+    inventario.value = data
+  } catch (error) {
+    console.error('Error al cargar inventario:', error)
+    mensaje.value = '⚠️ No se pudo cargar el inventario de productos'
+  }
+}
+
+import ModalNuevoProducto from '@/components/ModalNuevoProducto.vue'
+
+// ... existing imports ...
+
+const modalProductoRef = ref(null)
+
+const abrirModalNuevoProducto = () => {
+  if (modalProductoRef.value) {
+    modalProductoRef.value.abrir()
+  }
+}
+
+const onProductoCreado = async ({ producto, variante }) => {
+  await cargarInventario()
+  mensaje.value = `✅ Producto "${producto.nombre}" creado exitosamente`
+  esError.value = false
+  
+  // Opcional: Agregar automáticamente una línea con este producto
+  detalles.value.push({
+    id_variante: variante.id_variante,
+    cantidad: 1,
+    precio_unitario_costo: Number((variante.precio_unitario_venta * 0.7).toFixed(2)),
+    stockInfo: `Stock actual: ${variante.stock_actual || 0}`
+  })
+  calcularTotales()
+}
+
 onMounted(async () => {
-  cargando.value = true
-  await cargarProveedores()
-  await cargarMetodosPago()
-  await cargarCompras()
-  cargando.value = false
+  console.log('🚀 Compras.vue mounted - INICIO');
+  try {
+    cargando.value = true;
+    await Promise.all([
+      cargarProveedores().then(() => console.log('✅ Proveedores OK')),
+      cargarMetodosPago().then(() => console.log('✅ Metodos Pago OK')),
+      cargarCompras().then(() => console.log('✅ Compras OK')),
+      cargarInventario().then(() => console.log('✅ Inventario OK'))
+    ]);
+  } catch(e) {
+    console.error('❌ Error fatal en onMounted:', e);
+    mensaje.value = 'Error cargando componente: ' + e.message;
+    esError.value = true;
+  } finally {
+    cargando.value = false;
+    console.log('🏁 Compras.vue mounted - FIN');
+  }
 })
 </script>
 
